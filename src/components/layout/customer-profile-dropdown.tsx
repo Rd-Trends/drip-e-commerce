@@ -1,0 +1,105 @@
+'use client'
+
+import { UserIcon, Settings, ShoppingBag, LogOutIcon } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { User } from '@/payload-types'
+import { useLogout } from '@/hooks/use-auth-mutations'
+import Link from 'next/link'
+import { getUserInitials } from '@/utils/get-user-initials'
+
+export function UserProfileDropdownMenu({
+  user,
+  children,
+}: {
+  user: User
+  children: React.ReactNode
+}) {
+  const router = useRouter()
+  const { mutate, isPending } = useLogout()
+
+  const handleLogout = async () => {
+    // startTransition(async () => {
+    //   const { data } = await logoutAction()
+    //   if (data?.success) {
+    //     setuser(null)
+    //     router.refresh()
+    //   } else {
+    //     toast.error('Failed to log out')
+    //   }
+    // })
+    mutate(void 0, {
+      onSuccess: () => {
+        router.refresh()
+        toast.success('Logged out successfully')
+      },
+      onError: () => {
+        toast.error('Failed to log out')
+      },
+    })
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {getUserInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              {user?.name && <span className="truncate font-medium">{user.name}</span>}
+              <span className="truncate text-xs">{user.email}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/account" className="flex items-center">
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/orders" className="flex items-center">
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            <span>Orders</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={(e) => {
+            e.preventDefault()
+            handleLogout()
+          }}
+        >
+          <LogOutIcon className="mr-2 h-4 w-4 " />
+          {isPending ? 'Logging out...' : 'Log out'}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
