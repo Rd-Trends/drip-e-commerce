@@ -1,6 +1,7 @@
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { Plugin } from 'payload'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 import { Product } from '@/payload-types'
 import { getServerSideURL } from '@/utils/get-url'
@@ -15,9 +16,32 @@ const generateURL: GenerateURL<Product> = ({ doc }) => {
   return doc?.slug ? `${url}/${doc.slug}` : url
 }
 
+const isLocal = process.env.IS_LOCAL === 'true'
+
 export const plugins: Plugin[] = [
   seoPlugin({
     generateTitle,
     generateURL,
   }),
+  ...(isLocal
+    ? []
+    : [
+        s3Storage({
+          collections: {
+            media: {
+              prefix: 'media',
+            },
+          },
+          bucket: process.env.S3_BUCKET!,
+          config: {
+            forcePathStyle: true,
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+            },
+            region: process.env.S3_REGION!,
+            endpoint: process.env.S3_ENDPOINT!,
+          },
+        }),
+      ]),
 ]
