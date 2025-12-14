@@ -911,8 +911,8 @@ export interface Header {
   navItems?:
     | {
         link: {
-          url: string;
           label: string;
+          url: string;
           newTab?: boolean | null;
         };
         id?: string | null;
@@ -930,8 +930,8 @@ export interface Footer {
   navItems?:
     | {
         link: {
-          url: string;
           label: string;
+          url: string;
           newTab?: boolean | null;
         };
         id?: string | null;
@@ -951,8 +951,8 @@ export interface HeaderSelect<T extends boolean = true> {
         link?:
           | T
           | {
-              url?: T;
               label?: T;
+              url?: T;
               newTab?: T;
             };
         id?: T;
@@ -972,8 +972,8 @@ export interface FooterSelect<T extends boolean = true> {
         link?:
           | T
           | {
-              url?: T;
               label?: T;
+              url?: T;
               newTab?: T;
             };
         id?: T;

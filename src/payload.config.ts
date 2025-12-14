@@ -113,7 +113,6 @@ export default buildConfig({
       handler: confirmPaystackOrderHandler,
     },
   ],
-  // globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
