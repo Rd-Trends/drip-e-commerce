@@ -1,26 +1,26 @@
 import { Suspense } from 'react'
 import { FilterDropdowns } from './_components/dropdowns'
 import { CategoryList, SortingList } from './_components/lists'
-import { Search, SearchSkeleton } from './_components/search'
+import Section from '@/components/layout/section'
+import Container from '@/components/layout/container'
 
 export default function SearchLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full mx-auto container py-10 ">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Suspense fallback={<SearchSkeleton />}>
-          <Search />
-        </Suspense>
-        <FilterDropdowns />
-      </div>
-
-      <div className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-4">
-        <div className="w-full flex-none flex flex-col gap-4 md:gap-8 basis-1/5">
-          <CategoryList />
-          <SortingList />
+    <Section paddingY="xs">
+      <Container>
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 md:hidden">
+          <FilterDropdowns />
         </div>
-        <div className="min-h-screen w-full">{children}</div>
-      </div>
-    </div>
+
+        <div className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-4">
+          <div className="w-full hidden md:flex flex-col gap-4 md:gap-8 basis-1/5">
+            <CategoryList />
+            <SortingList />
+          </div>
+          <div className="min-h-screen w-full">{children}</div>
+        </div>
+      </Container>
+    </Section>
     // <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-col md:gap-x-8 text-black md:flex-row dark:text-white md:pt-0">
     //   <FilterDropdowns />
 

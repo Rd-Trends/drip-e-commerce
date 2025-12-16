@@ -13,7 +13,11 @@ async function Categories() {
   })
 
   return (
-    <FilterList list={[{ title: 'All', path: '/search' }, ...categories.docs]} title="Categories" />
+    <FilterList
+      list={[{ title: 'All', path: '/shop' }, ...categories.docs]}
+      title="Categories"
+      queryKey="category"
+    />
   )
 }
 

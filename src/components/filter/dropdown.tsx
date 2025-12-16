@@ -18,10 +18,12 @@ export default function FilterDropdown({
   list,
   placeholder,
   title,
+  queryKey = 'sort',
 }: {
   list: ListItem[]
   placeholder: string
   title?: string
+  queryKey?: string
 }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -31,12 +33,12 @@ export default function FilterDropdown({
     list.forEach((listItem: ListItem) => {
       if (
         ('path' in listItem && pathname === listItem.path) ||
-        ('slug' in listItem && searchParams.get('sort') === listItem.slug)
+        ('slug' in listItem && searchParams.get(queryKey) === listItem.slug)
       ) {
         setActive(listItem.title)
       }
     })
-  }, [pathname, list, searchParams])
+  }, [pathname, list, searchParams, queryKey])
 
   return (
     <DropdownMenu>
@@ -59,6 +61,7 @@ export default function FilterDropdown({
                 pathname,
                 listItem: item,
                 searchParams: new URLSearchParams(searchParams.toString()),
+                queryKey,
               })}
             >
               {item.title}

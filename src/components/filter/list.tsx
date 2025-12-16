@@ -5,7 +5,15 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createUrl, ListItem } from './helper'
 
-const FilterList = ({ list, title }: { list: ListItem[]; title?: string }) => {
+const FilterList = ({
+  list,
+  title,
+  queryKey = 'sort',
+}: {
+  list: ListItem[]
+  title?: string
+  queryKey?: string
+}) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -18,7 +26,9 @@ const FilterList = ({ list, title }: { list: ListItem[]; title?: string }) => {
       ) : null}
       <ul className="list-none p-0 m-0 hidden md:flex flex-col gap-2 ">
         {list.map((item) => {
-          const active = item.path ? pathname === item.path : searchParams.get('sort') === item.slug
+          const active = item.path
+            ? pathname === item.path
+            : searchParams.get(queryKey) === item.slug
 
           return (
             <li key={item.title} className="text-sm text-black dark:text-white">
@@ -30,6 +40,7 @@ const FilterList = ({ list, title }: { list: ListItem[]; title?: string }) => {
                     pathname,
                     listItem: item,
                     searchParams: new URLSearchParams(searchParams.toString()),
+                    queryKey,
                   })}
                   className="hover:underline hover:underline-offset-4 inline-block"
                 >

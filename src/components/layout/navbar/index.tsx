@@ -25,9 +25,9 @@ export async function Navbar() {
             {menu.map((item) => (
               <Suspense
                 key={item.id}
-                fallback={<NavLink label={item.link.label} url={`/${item.link.url}`} />}
+                fallback={<NavLink label={item.link.label} url={`${item.link.url}`} />}
               >
-                <ActiveStateNavLink label={item.link.label} url={`/${item.link.url}`} />
+                <ActiveStateNavLink label={item.link.label} url={`${item.link.url}`} />
               </Suspense>
             ))}
           </ul>

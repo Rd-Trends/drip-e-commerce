@@ -18,6 +18,7 @@ async function CategoryDropdown() {
       list={[{ title: 'All', path: '/shop' }, ...categories.docs]}
       title="Categories"
       placeholder="Filter by "
+      queryKey="category"
     />
   )
 }

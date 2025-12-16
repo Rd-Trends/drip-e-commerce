@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Section } from '@/components/layout/section'
 import { Container } from '@/components/layout/container'
+import { Fragment } from 'react'
 
 export const metadata = {
   description: 'Search for products in the store.',
@@ -76,29 +77,27 @@ export default async function ShopPage({ searchParams }: Props) {
   const resultsText = products.docs.length > 1 ? 'results' : 'result'
 
   return (
-    <Section>
-      <Container>
-        {searchValue ? (
-          <p className="mb-4">
-            {products.docs?.length === 0
-              ? 'There are no products that match '
-              : `Showing ${products.docs.length} ${resultsText} for `}
-            <span className="font-bold">&quot;{searchValue}&quot;</span>
-          </p>
-        ) : null}
+    <Fragment>
+      {searchValue ? (
+        <p className="mb-4">
+          {products.docs?.length === 0
+            ? 'There are no products that match '
+            : `Showing ${products.docs.length} ${resultsText} for `}
+          <span className="font-bold">&quot;{searchValue}&quot;</span>
+        </p>
+      ) : null}
 
-        {!searchValue && products.docs?.length === 0 && (
-          <p className="mb-4">No products found. Please try different filters.</p>
-        )}
+      {!searchValue && products.docs?.length === 0 && (
+        <p className="mb-4">No products found. Please try different filters.</p>
+      )}
 
-        {products?.docs.length > 0 ? (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.docs.map((product) => {
-              return <ProductGridItem key={product.id} product={product} />
-            })}
-          </section>
-        ) : null}
-      </Container>
-    </Section>
+      {products?.docs.length > 0 ? (
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.docs.map((product) => {
+            return <ProductGridItem key={product.id} product={product} />
+          })}
+        </section>
+      ) : null}
+    </Fragment>
   )
 }
