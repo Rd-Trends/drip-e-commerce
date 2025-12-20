@@ -47,7 +47,7 @@ export default function FilterDropdown({
           {active || placeholder}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width)">
         {!!title && (
           <>
             <DropdownMenuLabel>{title}</DropdownMenuLabel>

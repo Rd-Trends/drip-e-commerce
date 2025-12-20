@@ -1,10 +1,10 @@
 [] - Setup Payload Collections
-[] - Setup Payload E-commerce plugin
+[x] - Setup Payload E-commerce plugin
 [x] - Setup Paytack Payment Adapter
-[] - Implement Checkout Page
+[x] - Implement Checkout Page
 [] - Implement Confirm Order Page
 [] - Implement Product Details Page
-[] - Implement Shop Page
+[x] - Implement Shop Page
 [] - Implement Home Page
 [] - Implement Auth Pages (Login, Sign up, Forgot Password, Reset Password)
 [] - Implement Customer Account Page

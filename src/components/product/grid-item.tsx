@@ -37,7 +37,7 @@ export const ProductGridItem: React.FC<Props> = ({ product }) => {
       {image ? (
         <Media
           className={cn(
-            'relative aspect-square object-cover border rounded-2xl p-8 bg-primary-foreground',
+            'relative aspect-square object-cover border rounded-xl md:rounded-2xl p-2 md:p-8 bg-primary-foreground group-hover:border-primary',
           )}
           height={80}
           imgClassName={cn('h-full w-full object-cover rounded-2xl', {
@@ -48,11 +48,11 @@ export const ProductGridItem: React.FC<Props> = ({ product }) => {
         />
       ) : null}
 
-      <div className="font-mono text-primary/50 group-hover:text-primary flex justify-between items-center mt-4">
-        <div>{title}</div>
+      <div className="group-hover:text-primary flex flex-col md:flex-row justify-between items-start md:items-center mt-4">
+        <h3 className="text-md font-medium">{title}</h3>
 
         {typeof price === 'number' && (
-          <div className="">
+          <div className="font-mono">
             <Price amount={price} />
           </div>
         )}

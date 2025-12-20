@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 
-import Search, { SearchSkeleton } from '../navbar/search'
+import { Search, SearchSkeleton } from '../navbar/search'
 import { MobileUserMenu } from './user-dropdown'
 import {
   Sheet,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { PanelLeftIcon, X } from 'lucide-react'
+import { MenuIcon, X } from 'lucide-react'
 import { Header } from '@/payload-types'
 
 export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItems']> }) {
@@ -43,7 +43,7 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className={cn('size-11 md:hidden')}>
-          <PanelLeftIcon className="size-6" />
+          <MenuIcon className="size-6" />
           <span className="sr-only">
             Open mobile <menu></menu>
           </span>
@@ -84,7 +84,7 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
                   className="py-2 text-base text-black transition-colors hover:text-neutral-500 dark:text-white"
                   key={item.id}
                 >
-                  <Link href={`search/${item.link.url}`} prefetch={true} onClick={closeMobileMenu}>
+                  <Link href={`${item.link.url}`} prefetch={true} onClick={closeMobileMenu}>
                     {item.link.label}
                   </Link>
                 </li>

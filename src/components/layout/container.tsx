@@ -10,7 +10,8 @@ const sizeClassMap: Record<ContainerSize, string> = {
   full: 'max-w-full',
 }
 
-export type ContainerProps = React.HTMLAttributes<HTMLDivElement> & {
+export type ContainerProps = React.HTMLAttributes<HTMLElement> & {
+  as?: keyof HTMLElementTagNameMap
   size?: ContainerSize
   center?: boolean
 }
@@ -24,9 +25,18 @@ export type ContainerProps = React.HTMLAttributes<HTMLDivElement> & {
  * Usage:
  * <Container size="xl" paddingX="md">...</Container>
  */
-export function Container({ className, size = 'lg', center = true, ...props }: ContainerProps) {
+export function Container({
+  as: Component = 'div',
+  className,
+  size = 'lg',
+  center = true,
+  ...props
+}: ContainerProps) {
   return (
-    <div className={cn('w-full', center && 'mx-auto', sizeClassMap[size], className)} {...props} />
+    <Component
+      className={cn('w-full', center && 'mx-auto', sizeClassMap[size], className)}
+      {...props}
+    />
   )
 }
 

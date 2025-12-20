@@ -3,20 +3,20 @@
 import { Input } from '@/components/ui/input'
 import { SearchIcon } from 'lucide-react'
 import Form from 'next/form'
-import { useSearchParams } from 'next/navigation'
+import { parseAsString, useQueryState } from 'nuqs'
 
-export default function Search() {
-  const searchParams = useSearchParams()
+export function Search() {
+  const [searchQuery] = useQueryState('q', parseAsString.withDefault(''))
 
   return (
-    <Form action="/search" className="w-max-[550px] relative w-full lg:w-80 xl:w-full">
+    <Form action="/shop" className="w-max-[550px] relative w-full lg:w-80 xl:w-full">
       <Input
-        key={searchParams?.get('q')}
+        key={searchQuery}
         type="text"
         name="q"
         placeholder="Search for products..."
         autoComplete="off"
-        defaultValue={searchParams?.get('q') || ''}
+        defaultValue={searchQuery}
       />
       <div className="absolute right-0 top-0 mr-3 flex h-full items-center">
         <SearchIcon className="h-4" />

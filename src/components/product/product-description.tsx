@@ -5,8 +5,6 @@ import { RichText } from '@/components/rich-text'
 import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
 import React, { Suspense } from 'react'
-import { Star } from 'lucide-react'
-import Link from 'next/link'
 
 import { VariantSelector } from './variant-selector'
 ;('@/providers/currency')
@@ -54,12 +52,8 @@ export function ProductDescription({ product }: { product: Product }) {
     amount = product[priceField]
   }
 
-  // Mock rating data - replace with actual data from product if available
-  const rating = 3.9
-  const reviewCount = 512
-
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6" id="product-description">
       {/* Title and Price */}
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">{product.title}</h1>
@@ -70,30 +64,6 @@ export function ProductDescription({ product }: { product: Product }) {
             <Price amount={amount} />
           )}
         </div>
-      </div>
-
-      {/* Rating */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          <span className="text-lg font-medium">{rating}</span>
-          <div className="flex items-center">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`h-5 w-5 ${
-                  star <= Math.floor(rating)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : star === Math.ceil(rating) && rating % 1 !== 0
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'fill-none text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-        <Link href="#reviews" className="text-sm text-primary hover:underline font-medium">
-          See all {reviewCount} reviews
-        </Link>
       </div>
 
       {/* Description */}

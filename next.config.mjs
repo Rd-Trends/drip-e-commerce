@@ -29,7 +29,6 @@ const nextConfig = {
 
     return webpackConfig
   },
-  ignoreBuildErrors: true,
 }
 
 export default withPayload(nextConfig)

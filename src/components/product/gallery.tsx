@@ -4,8 +4,8 @@ import type { Product } from '@/payload-types'
 
 import { Media } from '@/components/media'
 import { GridTileImage } from '@/components/grid/tile'
-import { useSearchParams } from 'next/navigation'
-import React, { useEffect } from 'react'
+import { useQueryStates, parseAsInteger } from 'nuqs'
+import React, { useEffect, useMemo } from 'react'
 
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { DefaultDocumentIDType } from 'payload'
@@ -15,9 +15,20 @@ type Props = {
 }
 
 export const Gallery: React.FC<Props> = ({ gallery }) => {
-  const searchParams = useSearchParams()
+  const [params] = useQueryStates(
+    {
+      variant: parseAsInteger.withDefault(0),
+      image: parseAsInteger.withDefault(0),
+    },
+    { shallow: true },
+  )
   const [current, setCurrent] = React.useState(0)
   const [api, setApi] = React.useState<CarouselApi>()
+
+  // Get all variant option IDs from params
+  const variantOptionIds = useMemo(() => {
+    return Object.values(params).filter((value) => value !== 0)
+  }, [params])
 
   useEffect(() => {
     if (!api) {
@@ -26,9 +37,7 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
   }, [api])
 
   useEffect(() => {
-    const values = Array.from(searchParams.values())
-
-    if (values && api) {
+    if (variantOptionIds.length > 0 && api) {
       const index = gallery.findIndex((item) => {
         if (!item.variantOption) return false
 
@@ -38,14 +47,14 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
           variantID = item.variantOption.id
         } else variantID = item.variantOption
 
-        return Boolean(values.find((value) => value === String(variantID)))
+        return variantOptionIds.includes(Number(variantID))
       })
       if (index !== -1) {
         setCurrent(index)
         api.scrollTo(index, true)
       }
     }
-  }, [searchParams, api, gallery])
+  }, [variantOptionIds, api, gallery])
 
   return (
     <div>
@@ -53,7 +62,7 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
         <Media
           resource={gallery[current].image}
           className="w-full"
-          imgClassName="w-full rounded-lg"
+          imgClassName="w-full rounded-lg bg-secondary"
         />
       </div>
 

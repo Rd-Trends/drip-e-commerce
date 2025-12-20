@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
+import { revalidateTag } from 'next/cache'
 
 export const Header: GlobalConfig = {
   slug: 'header',
@@ -39,6 +40,11 @@ export const Header: GlobalConfig = {
             }
           })
         }
+      },
+    ],
+    afterChange: [
+      async ({ req }) => {
+        revalidateTag('global_header')
       },
     ],
   },

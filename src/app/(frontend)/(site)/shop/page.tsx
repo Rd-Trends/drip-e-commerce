@@ -1,8 +1,6 @@
 import { ProductGridItem } from '@/components/product/grid-item'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { Section } from '@/components/layout/section'
-import { Container } from '@/components/layout/container'
 import { Fragment } from 'react'
 
 export const metadata = {
@@ -19,6 +17,22 @@ type Props = {
 export default async function ShopPage({ searchParams }: Props) {
   const { q: searchValue, sort, category } = await searchParams
   const payload = await getPayload({ config: configPromise })
+
+  // If category slug(s) is provided, find the category ID(s)
+  let categoryIds: number[] = []
+  if (category) {
+    const categorySlugs = Array.isArray(category) ? category : [category]
+    const categoryDocs = await payload.find({
+      collection: 'categories',
+      where: {
+        slug: {
+          in: categorySlugs,
+        },
+      },
+      limit: categorySlugs.length,
+    })
+    categoryIds = categoryDocs.docs.map((doc) => doc.id)
+  }
 
   const products = await payload.find({
     collection: 'products',
@@ -51,7 +65,7 @@ export default async function ShopPage({ searchParams }: Props) {
                           },
                         },
                         {
-                          description: {
+                          'meta.description': {
                             like: searchValue,
                           },
                         },
@@ -59,11 +73,11 @@ export default async function ShopPage({ searchParams }: Props) {
                     },
                   ]
                 : []),
-              ...(category
+              ...(categoryIds.length > 0
                 ? [
                     {
                       categories: {
-                        contains: category,
+                        in: categoryIds,
                       },
                     },
                   ]
@@ -92,7 +106,7 @@ export default async function ShopPage({ searchParams }: Props) {
       )}
 
       {products?.docs.length > 0 ? (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
           {products.docs.map((product) => {
             return <ProductGridItem key={product.id} product={product} />
           })}

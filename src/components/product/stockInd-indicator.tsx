@@ -1,34 +1,10 @@
 'use client'
-import { Product, Variant } from '@/payload-types'
-import { useSearchParams } from 'next/navigation'
+import { useSelectedVariant } from '@/hooks/use-product-variant'
+import { Product } from '@/payload-types'
 import { useMemo } from 'react'
 
-type Props = {
-  product: Product
-}
-
-export const StockIndicator: React.FC<Props> = ({ product }) => {
-  const searchParams = useSearchParams()
-
-  const selectedVariant = useMemo<Variant | undefined>(() => {
-    const variants = product.variants?.docs || []
-
-    if (product.enableVariants && variants.length) {
-      const variantId = searchParams.get('variant')
-      const validVariant = variants.find((variant) => {
-        if (typeof variant === 'object') {
-          return String(variant.id) === variantId
-        }
-        return String(variant) === variantId
-      })
-
-      if (validVariant && typeof validVariant === 'object') {
-        return validVariant
-      }
-    }
-
-    return undefined
-  }, [product.enableVariants, searchParams])
+export const StockIndicator = ({ product }: { product: Product }) => {
+  const selectedVariant = useSelectedVariant(product)
 
   const stockQuantity = useMemo(() => {
     if (product.enableVariants) {
@@ -40,6 +16,12 @@ export const StockIndicator: React.FC<Props> = ({ product }) => {
   }, [product.enableVariants, selectedVariant, product.inventory])
 
   if (product.enableVariants && !selectedVariant) {
+    return null
+  }
+
+  const showStockIndicator = stockQuantity === 0 || stockQuantity < 10
+
+  if (!showStockIndicator) {
     return null
   }
 

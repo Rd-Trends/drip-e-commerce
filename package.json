@@ -39,6 +39,7 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
     "class-variance-authority": "^0.7.1",
@@ -50,6 +51,7 @@
     "lucide-react": "^0.559.0",
     "next": "15.4.8",
     "next-themes": "^0.4.6",
+    "nuqs": "^2.8.5",
     "payload": "3.68.5",
     "postcss": "^8.5.6",
     "qs-esm": "^7.0.2",
@@ -64,6 +66,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
+    "@tailwindcss/typography": "^0.5.19",
     "@testing-library/react": "16.3.0",
     "@types/node": "^22.19.3",
     "@types/paystack__inline-js": "^1.0.2",

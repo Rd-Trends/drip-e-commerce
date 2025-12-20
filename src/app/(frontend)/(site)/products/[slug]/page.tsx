@@ -2,10 +2,12 @@ import type { Media, Product } from '@/payload-types'
 
 import { Gallery } from '@/components/product/gallery'
 import { ProductDescription } from '@/components/product/product-description'
-import { ProductReviews } from '@/components/product/reviews'
+import { ShippingTimeline } from '@/components/product/shipping-timeline'
+import { SizeGuide } from '@/components/product/size-guide'
 import { Button } from '@/components/ui/button'
 import { Section } from '@/components/layout/section'
 import { Container } from '@/components/layout/container'
+import { StickyAddToCart } from '@/components/cart/sticky-add-to-cart'
 import configPromise from '@payload-config'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Metadata } from 'next'
@@ -119,7 +121,7 @@ export default async function ProductPage({ params }: Args) {
         }}
         type="application/ld+json"
       />
-      <Section paddingY="md">
+      <Section paddingY="xs">
         <Container>
           <Button asChild variant="ghost" className="mb-4">
             <Link href="/shop">
@@ -127,40 +129,47 @@ export default async function ProductPage({ params }: Args) {
               All products
             </Link>
           </Button>
-          <div className="flex flex-col gap-12 rounded-lg border p-8 md:py-12 lg:flex-row lg:gap-8 bg-primary-foreground">
-            <div className="h-full w-full basis-full lg:basis-1/2">
+          <div className="flex flex-col gap-12 lg:flex-row lg:gap-8">
+            <div className="h-full w-full basis-full lg:basis-1/2 lg:sticky lg:top-14">
               <Suspense
                 fallback={
-                  <div className="relative aspect-square h-full max-h-[550px] w-full overflow-hidden" />
+                  <div className="relative aspect-square h-full max-h-137.5 w-full overflow-hidden" />
                 }
               >
                 {Boolean(gallery?.length) && <Gallery gallery={gallery} />}
               </Suspense>
             </div>
 
-            <div className="basis-full lg:basis-1/2">
+            <div className="basis-full lg:basis-1/2 lg:sticky lg:top-14">
               <ProductDescription product={product} />
             </div>
           </div>
         </Container>
       </Section>
 
-      {/* Reviews Section */}
+      {/* Shipping Timeline & Size Guide */}
       <Section paddingY="md">
         <Container>
-          <ProductReviews productId={product.id} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ShippingTimeline />
+            <SizeGuide />
+          </div>
         </Container>
       </Section>
 
+      {/* Related Products */}
       {relatedProducts.length ? (
-        <Section paddingY="md">
+        <Section paddingY="none">
           <Container>
             <RelatedProducts products={relatedProducts} />
           </Container>
         </Section>
-      ) : (
-        <></>
-      )}
+      ) : null}
+
+      {/* Sticky Add to Cart - Mobile Only */}
+      <Suspense fallback={null}>
+        <StickyAddToCart product={product} />
+      </Suspense>
     </React.Fragment>
   )
 }
@@ -195,7 +204,7 @@ function RelatedProducts({ products }: { products: Product[] }) {
 
 const queryProductBySlug = async ({ slug }: { slug: string }) => {
   const { isEnabled: draft } = await draftMode()
-
+  
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({
