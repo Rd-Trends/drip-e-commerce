@@ -8,6 +8,7 @@ import { headers as getHeaders } from 'next/headers'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function Orders() {
   const headers = await getHeaders()
@@ -32,30 +33,32 @@ export default async function Orders() {
           equals: user?.id,
         },
       },
+      sort: '-createdAt',
     })
 
     orders = ordersResult?.docs || []
   } catch (error) {}
 
   return (
-    <>
-      <div className="border p-8 rounded-lg bg-primary-foreground w-full">
-        <h1 className="text-3xl font-medium mb-8">Orders</h1>
-        {(!orders || !Array.isArray(orders) || orders?.length === 0) && (
-          <p className="">You have no orders.</p>
-        )}
-
-        {orders && orders.length > 0 && (
-          <ul className="flex flex-col gap-6">
-            {orders?.map((order, index) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Orders</CardTitle>
+        <CardDescription>View and manage your order history.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!orders || !Array.isArray(orders) || orders?.length === 0 ? (
+          <p className="text-sm text-muted-foreground">You have no orders.</p>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {orders?.map((order) => (
               <li key={order.id}>
                 <OrderItem order={order} />
               </li>
             ))}
           </ul>
         )}
-      </div>
-    </>
+      </CardContent>
+    </Card>
   )
 }
 

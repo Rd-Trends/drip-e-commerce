@@ -2,10 +2,29 @@
 
 import type { User } from '@/payload-types'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { authApi } from '@/lib/api/auth'
 import { queryKeys } from '@/lib/query-keys'
+
+/**
+ * Hook to fetch and cache the current authenticated user
+ *
+ * @example
+ * const { data: user, isLoading, error } = useUser()
+ *
+ * @returns Query result with user data, loading state, and error
+ */
+export const useUser = () => {
+  return useQuery<User | null>({
+    queryKey: queryKeys.auth.user(),
+    queryFn: authApi.getMe,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true, // Revalidate when user returns to tab
+    refetchOnReconnect: true, // Revalidate on network reconnection
+  })
+}
 
 /**
  * Hook for user login
@@ -101,4 +120,40 @@ export const useSetUser = () => {
   return (user: User | null) => {
     queryClient.setQueryData(queryKeys.auth.user(), user)
   }
+}
+
+/**
+ * Hook for updating user profile
+ * @example
+ * const { mutate: updateProfile, isPending } = useUpdateProfile()
+ * updateProfile({ userID: 123, data: { name: 'John Doe' } })
+ */
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userID, data }: { userID: number; data: { name?: string } }) =>
+      authApi.updateProfile(userID, data),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.auth.user(), user)
+    },
+  })
+}
+
+/**
+ * Hook for changing password
+ * @example
+ * const { mutate: changePassword, isPending } = useChangePassword()
+ * changePassword({ userID: 123, password: 'newpassword' })
+ */
+export const useChangePassword = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userID, password }: { userID: number; password: string }) =>
+      authApi.changePassword(userID, { password }),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.auth.user(), user)
+    },
+  })
 }

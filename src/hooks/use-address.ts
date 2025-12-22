@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { addressApi, type AddressInput } from '@/lib/api/address'
 import { queryKeys } from '@/lib/query-keys'
-import { useAuth } from '@payloadcms/ui'
+import { useAuth } from '@/providers/auth'
 
 /**
  * Hook for fetching all addresses for the authenticated user
@@ -55,6 +55,7 @@ export const useCreateAddress = () => {
 
   return useMutation({
     mutationFn: (address: Partial<AddressInput>) => {
+      console.log('Creating address for user:', user)
       if (!user) {
         throw new Error('User must be logged in to create an address')
       }

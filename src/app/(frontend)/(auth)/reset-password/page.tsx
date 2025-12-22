@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Logo } from '@/components/logo'
-import { useResetPassword } from '@/hooks/use-auth-mutations'
+import { useResetPassword } from '@/hooks/use-auth'
 import { PasswordInput } from '@/components/ui/password-input'
 
 const resetPasswordSchema = z

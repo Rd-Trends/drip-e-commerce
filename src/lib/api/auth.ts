@@ -116,4 +116,42 @@ export const authApi = {
 
     return data.data?.loginUser?.user
   },
+
+  /**
+   * Update user profile (name, etc.)
+   */
+  updateProfile: async (userID: number, userData: { name?: string }): Promise<User> => {
+    const data = await fetchJSON(`${API_URL}/api/users/${userID}`, {
+      method: 'PATCH',
+      body: JSON.stringify(userData),
+    })
+
+    if (data.errors) {
+      throw new Error(data.errors[0].message)
+    }
+
+    return data.doc
+  },
+
+  /**
+   * Change password for logged-in user
+   * Note: This uses the standard user update endpoint with password fields
+   */
+  changePassword: async (
+    userID: number,
+    passwordData: {
+      password: string
+    },
+  ): Promise<User> => {
+    const data = await fetchJSON(`${API_URL}/api/users/${userID}`, {
+      method: 'PATCH',
+      body: JSON.stringify(passwordData),
+    })
+
+    if (data.errors) {
+      throw new Error(data.errors[0].message)
+    }
+
+    return data.doc
+  },
 }

@@ -18,4 +18,9 @@ export const queryKeys = {
     detail: (addressID: string | number) =>
       [...queryKeys.address.all, 'detail', addressID] as const,
   },
+  orders: {
+    all: ['orders'] as const,
+    list: () => [...queryKeys.orders.all, 'list'] as const,
+    detail: (orderID: string | number) => [...queryKeys.orders.all, 'detail', orderID] as const,
+  },
 } as const

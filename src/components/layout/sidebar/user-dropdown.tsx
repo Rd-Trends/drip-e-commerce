@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { LogIn, UserPlus, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { UserProfileDropdownMenu } from '../customer-profile-dropdown'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/providers/auth'
@@ -18,34 +17,28 @@ export function MobileUserMenu({ onMenuClose }: MobileUserMenuProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 pt-4">
-        <Separator />
-        <div className="space-y-2">
-          <div className="h-10 bg-muted animate-pulse rounded" />
-          <div className="h-10 bg-muted animate-pulse rounded" />
-        </div>
+      <div className="flex gap-2 items-center p-4 border-t">
+        <div className="h-10 bg-muted animate-pulse rounded" />
+        <div className="h-10 bg-muted animate-pulse rounded" />
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="space-y-3 pt-4">
-        <Separator />
-        <div className="space-y-2">
-          <Button variant="outline" className="w-full justify-start" asChild>
-            <Link href="/auth/login" onClick={onMenuClose}>
-              <LogIn className="mr-2 h-4 w-4" />
-              Sign in
-            </Link>
-          </Button>
-          <Button className="w-full justify-start" asChild>
-            <Link href="/auth/signup" onClick={onMenuClose}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Sign up
-            </Link>
-          </Button>
-        </div>
+      <div className="flex gap-2 items-center p-4 border-t">
+        <Button variant="outline" className="flex-1" asChild>
+          <Link href="/login" onClick={onMenuClose}>
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign in
+          </Link>
+        </Button>
+        <Button className="flex-1" asChild>
+          <Link href="/signup" onClick={onMenuClose}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Sign up
+          </Link>
+        </Button>
       </div>
     )
   }

@@ -10,9 +10,9 @@ export function OpenCartButton({
 }: React.ComponentProps<typeof Button> & { quantity?: number }) {
   return (
     <Button variant="ghost" size="icon" className={cn('relative', className)} {...rest}>
-      <ShoppingCart className="h-5 w-5" />
+      <ShoppingCart className="size-5" />
       {quantity && quantity > 0 && (
-        <div className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+        <div className="absolute -top-2 -right-2 size-5 rounded-full bg-primary flex items-center justify-center">
           <span className="text-xs font-bold text-primary-foreground">{quantity}</span>
         </div>
       )}

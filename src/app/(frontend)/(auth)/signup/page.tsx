@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Logo } from '@/components/logo'
-import { useCreateUser } from '@/hooks/use-auth-mutations'
+import { useCreateUser } from '@/hooks/use-auth'
 import { PasswordInput } from '@/components/ui/password-input'
 
 const signupSchema = z

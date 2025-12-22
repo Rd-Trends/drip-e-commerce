@@ -51,20 +51,22 @@ export const AddressForm: React.FC<Props> = ({
 }) => {
   const form = useForm<AddressFormValues>({
     defaultValues: initialData,
+    mode: 'all',
   })
 
-  const { mutate: createAddress, isPending: isCreating } = useCreateAddress()
-  const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress()
+  const createAddress = useCreateAddress()
+  const updateAddress = useUpdateAddress()
 
-  const isPending = isCreating || isUpdating
+  const isPending = createAddress.isPending || updateAddress.isPending
 
   const onSubmit = useCallback(
     async (data: AddressFormValues) => {
       const newData = deepMergeSimple(initialData || {}, data)
 
       if (!skipSubmission) {
+        console.log('Submitting address data:', newData)
         if (addressID) {
-          updateAddress(
+          updateAddress.mutate(
             { addressID, data: newData },
             {
               onSuccess: () => {
@@ -73,7 +75,8 @@ export const AddressForm: React.FC<Props> = ({
             },
           )
         } else {
-          createAddress(newData, {
+          console.log('Creating new address with data:', newData)
+          createAddress.mutate(newData, {
             onSuccess: () => {
               if (callback) callback(newData)
             },
@@ -83,7 +86,7 @@ export const AddressForm: React.FC<Props> = ({
         if (callback) callback(newData)
       }
     },
-    [initialData, skipSubmission, callback, addressID, updateAddress, createAddress],
+    [initialData, skipSubmission, callback, addressID, updateAddress.mutate, createAddress.mutate],
   )
 
   return (
@@ -329,23 +332,21 @@ export const AddressForm: React.FC<Props> = ({
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <ScrollArea className="h-[200px]">
-                          {supportedCountries.map((country) => {
-                            const value = typeof country === 'string' ? country : country.value
-                            const label =
-                              typeof country === 'string'
-                                ? country
-                                : typeof country.label === 'string'
-                                  ? country.label
-                                  : value
+                        {supportedCountries.map((country) => {
+                          const value = typeof country === 'string' ? country : country.value
+                          const label =
+                            typeof country === 'string'
+                              ? country
+                              : typeof country.label === 'string'
+                                ? country.label
+                                : value
 
-                            return (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            )
-                          })}
-                        </ScrollArea>
+                          return (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          )
+                        })}
                       </SelectContent>
                     </Select>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -358,7 +359,7 @@ export const AddressForm: React.FC<Props> = ({
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button type="submit" size="lg" className="min-w-[120px]" disabled={isPending}>
+        <Button type="submit" size="lg" className="min-w-30" disabled={isPending}>
           {isPending ? 'Saving...' : 'Save Address'}
         </Button>
       </div>

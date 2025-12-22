@@ -13,7 +13,7 @@ import {
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { User } from '@/payload-types'
-import { useLogout } from '@/hooks/use-auth-mutations'
+import { useLogout } from '@/hooks/use-auth'
 import Link from 'next/link'
 import { getUserInitials } from '@/utils/get-user-initials'
 

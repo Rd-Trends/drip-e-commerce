@@ -4,7 +4,7 @@ import type { User } from '@/payload-types'
 
 import React, { createContext, useContext } from 'react'
 
-import { useUser } from '@/hooks/use-user'
+import { useUser } from '@/hooks/use-auth'
 
 type AuthContext = {
   user: User | null
@@ -15,7 +15,7 @@ const Context = createContext({} as AuthContext)
 
 /**
  * Auth Provider - Provides user state and loading status
- * For mutations (login, logout, etc.), use the custom hooks from @/hooks/use-auth-mutations
+ * For mutations (login, logout, etc.), use the custom hooks from @/hooks/use-auth
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: user, isLoading } = useUser()

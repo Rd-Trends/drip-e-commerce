@@ -3,18 +3,16 @@ import type { Metadata } from 'next'
 import { mergeOpenGraph } from '@/utils/merge-open-graph'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
-import { Order } from '@/payload-types'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { AddressListing } from '@/components/addresses/address-listing'
 import { CreateAddressModal } from '@/components/addresses/create-address-modal'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function AddressesPage() {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
   const { user } = await payload.auth({ headers })
-
-  let orders: Order[] | null = null
 
   if (!user) {
     redirect(
@@ -22,40 +20,19 @@ export default async function AddressesPage() {
     )
   }
 
-  try {
-    const ordersResult = await payload.find({
-      collection: 'orders',
-      limit: 5,
-      user,
-      overrideAccess: false,
-      pagination: false,
-      where: {
-        customer: {
-          equals: user?.id,
-        },
-      },
-    })
-
-    orders = ordersResult?.docs || []
-  } catch (error) {
-    // when deploying this template on Payload Cloud, this page needs to build before the APIs are live
-    // so swallow the error here and simply render the page with fallback data where necessary
-    // in production you may want to redirect to a 404  page or at least log the error somewhere
-    // console.error(error)
-  }
-
   return (
-    <>
-      <div className="border p-8 rounded-lg bg-primary-foreground">
-        <h1 className="text-3xl font-medium mb-8">Addresses</h1>
-
-        <div className="mb-8">
-          <AddressListing />
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="space-y-1">
+          <CardTitle>Addresses</CardTitle>
+          <CardDescription>Manage your shipping and billing addresses.</CardDescription>
         </div>
-
         <CreateAddressModal />
-      </div>
-    </>
+      </CardHeader>
+      <CardContent>
+        <AddressListing />
+      </CardContent>
+    </Card>
   )
 }
 

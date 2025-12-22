@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Logo } from '@/components/logo'
-import { useForgotPassword } from '@/hooks/use-auth-mutations'
+import { useForgotPassword } from '@/hooks/use-auth'
 
 const forgotPasswordSchema = z.object({
   email: z.email('Please enter a valid email address.'),
