@@ -7,6 +7,8 @@ import { adminOrSelf } from '@/access/adminOrSelf'
 import { checkRole } from '@/access/utilities'
 
 import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
+import { render } from '@react-email/components'
+import { ForgotPasswordEmail } from '@/lib/emails/forgot-password'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -24,6 +26,33 @@ export const Users: CollectionConfig = {
   },
   auth: {
     tokenExpiration: 1209600,
+    forgotPassword: {
+      generateEmailHTML: async (args) => {
+        if (!args) return ''
+        const { token, user, req } = args
+        // Determine if the request is from the customer-facing frontend or admin panel
+        const referer = req?.headers.get('referer') || ''
+        const origin = req?.headers.get('origin') || process.env.NEXT_PUBLIC_SERVER_URL || ''
+
+        // Check if request is from admin panel
+        const isAdminRequest = referer.includes('/admin') || referer.includes('/api/users')
+
+        // Generate the appropriate reset password URL
+        const resetPasswordURL = isAdminRequest
+          ? `${origin}/admin/reset/${token}` // Admin panel reset
+          : `${origin}/reset-password?token=${token}` // Customer frontend reset
+
+        // Render the React Email template
+        const html = await render(
+          ForgotPasswordEmail({
+            userName: user?.name,
+            resetPasswordLink: resetPasswordURL,
+          }),
+        )
+
+        return html
+      },
+    },
   },
   fields: [
     {

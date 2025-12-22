@@ -136,7 +136,9 @@ export default async function ProductPage({ params }: Args) {
                   <div className="relative aspect-square h-full max-h-137.5 w-full overflow-hidden" />
                 }
               >
-                {Boolean(gallery?.length) && <Gallery gallery={gallery} />}
+                {Boolean(gallery?.length) && (
+                  <Gallery gallery={gallery} variantTypes={product.variantTypes} />
+                )}
               </Suspense>
             </div>
 
@@ -204,7 +206,7 @@ function RelatedProducts({ products }: { products: Product[] }) {
 
 const queryProductBySlug = async ({ slug }: { slug: string }) => {
   const { isEnabled: draft } = await draftMode()
-  
+
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({

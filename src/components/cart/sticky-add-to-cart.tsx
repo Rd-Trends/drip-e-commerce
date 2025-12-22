@@ -172,7 +172,7 @@ export function StickyAddToCart({ product }: Props) {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent
           side="bottom"
-          className="h-fit max-h-[85lvh] overflow-y-auto rounded-t-xl flex flex-col gap-0"
+          className="h-auto max-h-[85lvh] overflow-y-auto rounded-t-xl flex flex-col gap-0"
         >
           <SheetHeader className="border-b">
             <SheetTitle className="text-left">Please select a variation</SheetTitle>

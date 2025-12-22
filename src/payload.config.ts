@@ -14,6 +14,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import { Categories } from '@/collections/categories'
 import { Media } from '@/collections/media'
@@ -114,6 +115,7 @@ export default buildConfig({
     },
   ],
   plugins,
+  email: nodemailerAdapter(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

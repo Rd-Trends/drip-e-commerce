@@ -66,12 +66,7 @@ export function useAvailableVariants(product: Product) {
     const variants = product.variants?.docs || []
     return variants
       .filter((variant): variant is Variant => {
-        return (
-          typeof variant === 'object' &&
-          variant.inventory !== null &&
-          variant.inventory !== undefined &&
-          variant.inventory > 0
-        )
+        return typeof variant === 'object' && Boolean(variant.inventory && variant.inventory > 0)
       })
       .map((variant) => {
         // Build variant label from options

@@ -8,27 +8,34 @@ import { useQueryStates, parseAsInteger } from 'nuqs'
 import React, { useEffect, useMemo } from 'react'
 
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { DefaultDocumentIDType } from 'payload'
 
 type Props = {
   gallery: NonNullable<Product['gallery']>
+  variantTypes?: Product['variantTypes']
 }
 
-export const Gallery: React.FC<Props> = ({ gallery }) => {
-  const [params] = useQueryStates(
-    {
+export const Gallery: React.FC<Props> = ({ gallery, variantTypes }) => {
+  // Create dynamic parser config for all variant types
+  const parserConfig = useMemo(() => {
+    const config: Record<string, ReturnType<typeof parseAsInteger.withDefault>> = {
       variant: parseAsInteger.withDefault(0),
       image: parseAsInteger.withDefault(0),
-    },
-    { shallow: true },
-  )
+    }
+
+    if (variantTypes && Array.isArray(variantTypes)) {
+      variantTypes.forEach((type) => {
+        if (type && typeof type === 'object') {
+          config[type.name] = parseAsInteger.withDefault(0)
+        }
+      })
+    }
+
+    return config
+  }, [variantTypes])
+
+  const [params] = useQueryStates(parserConfig, { shallow: true })
   const [current, setCurrent] = React.useState(0)
   const [api, setApi] = React.useState<CarouselApi>()
-
-  // Get all variant option IDs from params
-  const variantOptionIds = useMemo(() => {
-    return Object.values(params).filter((value) => value !== 0)
-  }, [params])
 
   useEffect(() => {
     if (!api) {
@@ -37,24 +44,34 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
   }, [api])
 
   useEffect(() => {
-    if (variantOptionIds.length > 0 && api) {
+    if (!api || !variantTypes) return
+
+    // Get array of selected options as {key: variantTypeName, value: optionId}
+    const selectedOptions = Object.entries(params)
+
+    // Find gallery item that matches any selected option
+    if (selectedOptions.length > 0) {
       const index = gallery.findIndex((item) => {
         if (!item.variantOption) return false
 
-        let variantID: DefaultDocumentIDType
-
-        if (typeof item.variantOption === 'object') {
-          variantID = item.variantOption.id
-        } else variantID = item.variantOption
-
-        return variantOptionIds.includes(Number(variantID))
+        return selectedOptions.some(([key, value]) => {
+          if (
+            item.variantOption &&
+            typeof item.variantOption === 'object' &&
+            typeof item.variantOption.variantType === 'object'
+          ) {
+            return item.variantOption.variantType.name === key && item.variantOption.id === value
+          }
+          return false
+        })
       })
+
       if (index !== -1) {
         setCurrent(index)
         api.scrollTo(index, true)
       }
     }
-  }, [variantOptionIds, api, gallery])
+  }, [params, api, gallery])
 
   return (
     <div>

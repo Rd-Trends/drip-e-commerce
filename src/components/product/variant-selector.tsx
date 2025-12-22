@@ -68,10 +68,14 @@ function VariantOptions({
       variantTypes.length,
     )
 
-    // Update params: set the option and variant, clear image
+    // Only set variant ID if the matching variant has inventory
+    const hasInventory =
+      matchingVariant && matchingVariant.inventory && matchingVariant.inventory > 0
+
+    // Update params: set the option and variant (only if has inventory)
     const updates: Record<string, number | null> = {
       [typeName]: optionId,
-      variant: matchingVariant ? matchingVariant.id : null,
+      variant: hasInventory ? matchingVariant.id : null,
     }
 
     setParams(updates)
@@ -137,10 +141,9 @@ function VariantOptions({
                 return (
                   <Button
                     key={option.id}
-                    variant={isActive ? 'default' : 'outline'}
+                    variant={isActive && isAvailableForSale ? 'default' : 'outline'}
                     size="lg"
                     aria-disabled={!isAvailableForSale}
-                    disabled={!isAvailableForSale}
                     onClick={() => handleOptionSelect(type.name, type.id, option.id)}
                     title={`${option.label} ${!isAvailableForSale ? ' (Out of Stock)' : ''}`}
                     className={cn('min-w-16 font-medium', {
@@ -177,27 +180,22 @@ const ColorVariantButton = ({
       key={option.id}
       aria-label={`Select ${option.label}`}
       aria-disabled={!isAvailableForSale}
-      disabled={!isAvailableForSale}
-      onClick={() => {
-        if (isAvailableForSale) {
-          onSelect()
-        }
-      }}
+      onClick={onSelect}
       title={`${option.label} ${!isAvailableForSale ? ' (Out of Stock)' : ''}`}
       className={cn(
-        'group relative h-10 w-10 rounded-full transition-all ring-offset-1',
-        !isAvailableForSale ? 'cursor-not-allowed opacity-50' : 'hover:ring-2 hover:ring-primary',
+        'group relative h-10 w-10 rounded-full transition-all ring-offset-2',
+        !isAvailableForSale ? 'opacity-50' : 'hover:ring-2 hover:ring-primary',
         isActive && 'ring-2 ring-primary',
       )}
     >
       <span
-        className={cn('absolute inset-0 rounded-full border border-input')}
+        className={cn('absolute inset-0 rounded-full border')}
         style={{ backgroundColor: colorValue }}
       />
-      {/* Diagonal strike-through for disabled state */}
+      {/* Diagonal strike-through for out of stock */}
       {!isAvailableForSale && (
         <span className="absolute inset-0 flex items-center justify-center">
-          <span className="h-0.5 w-full rotate-45 bg-destructive" />
+          <span className="h-0.5 w-full rotate-45 bg-secondary-foreground" />
         </span>
       )}
     </button>

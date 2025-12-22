@@ -6,7 +6,7 @@
 [] - Implement Product Details Page
 [x] - Implement Shop Page
 [] - Implement Home Page
-[] - Implement Auth Pages (Login, Sign up, Forgot Password, Reset Password)
+[x] - Implement Auth Pages (Login, Sign up, Forgot Password, Reset Password)
 [] - Implement Customer Account Page
 [] - Setup Email Notification
    [] - Send Order confirmation email to customer

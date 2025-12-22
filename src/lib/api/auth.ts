@@ -70,7 +70,7 @@ export const authApi = {
     password: string
     passwordConfirm: string
   }): Promise<User> => {
-    const data = await fetchJSON(`${API_URL}/api/users/create`, {
+    const data = await fetchJSON(`${API_URL}/api/users`, {
       method: 'POST',
       body: JSON.stringify(userData),
     })
@@ -79,7 +79,8 @@ export const authApi = {
       throw new Error(data.errors[0].message)
     }
 
-    return data.data?.loginUser?.user
+    const user = await authApi.login({ email: userData.email, password: userData.password })
+    return user
   },
 
   /**
