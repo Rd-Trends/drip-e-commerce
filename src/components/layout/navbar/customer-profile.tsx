@@ -24,10 +24,10 @@ export function CustomerProfile() {
     return (
       <div className="hidden md:flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/auth/login">Sign in</Link>
+          <Link href="/login">Sign in</Link>
         </Button>
         <Button size="sm" asChild>
-          <Link href="/auth/signup">Sign up</Link>
+          <Link href="/signup">Sign up</Link>
         </Button>
       </div>
     )

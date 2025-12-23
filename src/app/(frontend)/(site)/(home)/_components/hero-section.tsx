@@ -1,32 +1,155 @@
+'use client'
+
+import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
+import Autoplay from 'embla-carousel-autoplay'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Section } from '@/components/layout/section'
+import Container from '@/components/layout/container'
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
+import { cn } from '@/lib/utils'
+import type { Home, Media } from '@/payload-types'
 
-export function HeroSection() {
+interface HeroSectionProps {
+  slides: Home['heroSlides']
+}
+
+export function HeroSection({ slides }: HeroSectionProps) {
+  const [api, setApi] = React.useState<CarouselApi>()
+  const [current, setCurrent] = React.useState(0)
+  const [count, setCount] = React.useState(0)
+  const plugin = React.useRef(Autoplay({ delay: 5000, stopOnInteraction: true }))
+
+  React.useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap())
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap())
+    })
+  }, [api])
+
+  const defaultSlides: Home['heroSlides'] = [
+    {
+      id: 'default',
+      title: 'Discover Your Style',
+      subtitle: 'New Arrival',
+      description:
+        'Explore the latest trends in fashion and find your perfect look with our new collection.',
+      image: {
+        id: 1,
+        url: '/media/tshirt-black-4.png',
+        alt: 'Hero Image',
+        updatedAt: '',
+        createdAt: '',
+      } as Media,
+      contentAlign: 'left',
+      theme: 'dark',
+      links: [
+        {
+          id: 'default-link',
+          link: {
+        
+            url: '/shop',
+            label: 'Shop Now',
+          },
+        },
+      ],
+    },
+  ]
+
+  const activeSlides = slides && slides.length > 0 ? slides : defaultSlides
+
   return (
-    <section className="relative h-[600px] flex items-center justify-center bg-muted text-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        {/* Placeholder for hero image */}
-        <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/5" />
-      </div>
+    <Section paddingY="sm">
+      <Carousel
+        setApi={setApi}
+        plugins={[plugin.current]}
+        className="w-full"
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
+        opts={{
+          loop: true,
+        }}
+      >
+        <CarouselContent>
+          {activeSlides?.map((slide, index) => {
+            const image = slide.image as Media
+            // We are using the static design, so we might ignore 'theme' and 'contentAlign'
+            // to strictly follow "use this same design", OR we can try to adapt it.
+            // The user said "use this same design", which implies the layout (grid, badge, h1, p, button, image).
+            // I will map the fields to this layout.
 
-      <div className="container relative z-10 px-4 md:px-6">
-        <div className="max-w-3xl mx-auto space-y-4">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl">
-            Elevate Your Style with Drip
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Discover the latest trends in fashion. Quality pieces for the modern wardrobe.
-          </p>
-          <div className="flex justify-center gap-4 pt-4">
-            <Button asChild size="lg">
-              <Link href="/shop">Shop Now</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/shop?category=new-arrivals">View New Arrivals</Link>
-            </Button>
-          </div>
+            return (
+              <CarouselItem key={index}>
+                <Container className="relative rounded-2xl bg-primary/5 p-6 md:p-12 lg:p-16">
+                  <div className="grid gap-6 md:grid-cols-2 items-center">
+                    <div className="space-y-4">
+                      {slide.subtitle && <Badge>{slide.subtitle}</Badge>}
+                      <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                        {slide.title}
+                      </h1>
+                      {slide.description && (
+                        <p className="max-w-150 text-muted-foreground md:text-xl">
+                          {slide.description}
+                        </p>
+                      )}
+
+                      {slide.links && slide.links.length > 0 && (
+                        <div className="flex flex-wrap gap-4">
+                          {slide.links.map((linkItem, i) => {
+                            const { link } = linkItem
+                            if (!link.url) return null
+                            return (
+                              <Button key={i} size="lg" className="rounded-full" asChild>
+                                <Link href={link.url}>{link.label}</Link>
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative flex justify-end">
+                      {image?.url && (
+                        <Image
+                          src={image.url}
+                          alt={image.alt || slide.title}
+                          width={500}
+                          height={500}
+                          className="w-full lg:w-100 h-auto object-cover rounded-xl"
+                          priority={index === 0}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </Container>
+              </CarouselItem>
+            )
+          })}
+        </CarouselContent>
+
+        {/* Dots Navigation */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+          {activeSlides?.map((_, index) => (
+            <button
+              key={index}
+              className={cn(
+                'h-2 w-2 rounded-full transition-all',
+                current === index ? 'bg-primary w-4' : 'bg-primary/30',
+              )}
+              onClick={() => api?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
-      </div>
-    </section>
+      </Carousel>
+    </Section>
   )
 }

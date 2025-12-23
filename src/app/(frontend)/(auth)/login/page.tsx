@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="flex flex-col gap-2 mb-6">
           <Logo />
 
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight">
             Enter your email to join us or sign in.
           </h1>
         </div>

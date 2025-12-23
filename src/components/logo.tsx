@@ -1,3 +1,7 @@
 export function Logo() {
-  return <div className="text-2xl font-bold">MyLogo</div>
+  return (
+    <div className="font-bold text-xl">
+      Drip<span className="text-primary">.</span>
+    </div>
+  )
 }

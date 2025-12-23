@@ -43,7 +43,7 @@ export const Header: GlobalConfig = {
       },
     ],
     afterChange: [
-      async ({ req }) => {
+      async () => {
         revalidateTag('global_header')
       },
     ],

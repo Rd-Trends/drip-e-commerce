@@ -125,10 +125,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    home: Home;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    home: HomeSelect<false> | HomeSelect<true>;
   };
   locale: null;
   user: User & {
@@ -286,6 +288,10 @@ export interface Product {
   };
   categories?: (number | Category)[] | null;
   /**
+   * Feature this product on the home page
+   */
+  isFeatured?: boolean | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -401,6 +407,10 @@ export interface Category {
    */
   generateSlug?: boolean | null;
   slug: string;
+  /**
+   * Category icon or image (recommended: square, min 200x200px)
+   */
+  image?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -639,6 +649,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   generateSlug?: T;
   slug?: T;
+  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -710,6 +721,7 @@ export interface ProductsSelect<T extends boolean = true> {
         description?: T;
       };
   categories?: T;
+  isFeatured?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -942,6 +954,63 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  heroSlides?:
+    | {
+        image: number | Media;
+        title: string;
+        /**
+         * Small text above the title (e.g. "New Arrival", "Promo Code: SALE20")
+         */
+        subtitle?: string | null;
+        description?: string | null;
+        links?:
+          | {
+              link: {
+                label: string;
+                url: string;
+                newTab?: boolean | null;
+              };
+              id?: string | null;
+            }[]
+          | null;
+        contentAlign?: ('left' | 'center' | 'right') | null;
+        /**
+         * Choose "Light Text" if the background image is dark.
+         */
+        theme?: ('dark' | 'light') | null;
+        id?: string | null;
+      }[]
+    | null;
+  productSections?:
+    | {
+        /**
+         * Display title for this product section (e.g., "Featured Products", "Latest Arrivals")
+         */
+        title: string;
+        /**
+         * Choose how products should be selected for this section
+         */
+        type: 'category' | 'featured' | 'latest' | 'hottest';
+        /**
+         * Select a category to display products from
+         */
+        category?: (number | null) | Category;
+        /**
+         * Display a button that links to the shop page with filters applied
+         */
+        showViewAll?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -976,6 +1045,47 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
               newTab?: T;
             };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  heroSlides?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        subtitle?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    newTab?: T;
+                  };
+              id?: T;
+            };
+        contentAlign?: T;
+        theme?: T;
+        id?: T;
+      };
+  productSections?:
+    | T
+    | {
+        title?: T;
+        type?: T;
+        category?: T;
+        showViewAll?: T;
         id?: T;
       };
   updatedAt?: T;

@@ -23,15 +23,14 @@ import { CartItemAdjuster } from './cart-item-adjuster'
 import { OpenCartButton } from './open-cart-button'
 
 export function CartModal() {
-  const { cart } = useCart()
-  const [isOpen, setIsOpen] = useState(false)
+  const { cart, isOpen, setIsOpen } = useCart()
 
   const pathname = usePathname()
 
   useEffect(() => {
     // Close the cart modal when the pathname changes.
     setIsOpen(false)
-  }, [pathname])
+  }, [pathname, setIsOpen])
 
   const totalQuantity = useMemo(() => {
     if (!cart || !cart.items || !cart.items.length) return undefined
@@ -108,7 +107,7 @@ export function CartModal() {
                   return (
                     <li className="flex w-full flex-col" key={i}>
                       <div className="relative flex w-full flex-row justify-between px-1 py-4">
-                        <div className="absolute z-40 -mt-2 ml-[55px]">
+                        <div className="absolute z-40 -mt-2 ml-13.75">
                           <DeleteItemButton item={item} />
                         </div>
                         <Link

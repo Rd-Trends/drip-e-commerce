@@ -1,24 +1,38 @@
 import { HeroSection } from './_components/hero-section'
-import { FeaturedCategories } from './_components/featured-categories'
-import { NewArrivals } from './_components/new-arrivals'
-import { TrendingProducts } from './_components/trending-products'
-import { PromoBanner } from './_components/promo-banner'
-import { Newsletter } from './_components/newsletter'
+import { CategoriesSection } from './_components/categories-section'
+import { ProductSection } from './_components/product-section'
+import { MobileNav } from './_components/mobile-nav'
+import { MobileSearch } from './_components/mobile-search'
+import { getCachedGlobal } from '@/lib/get-global.'
 
 export const metadata = {
   title: 'Drip E-Commerce | Home',
   description: 'Your one-stop shop for the latest fashion trends.',
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const home = await getCachedGlobal('home')()
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <HeroSection />
-      <FeaturedCategories />
-      <NewArrivals />
-      <PromoBanner />
-      <TrendingProducts />
-      {/* <Newsletter /> */}
+    <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0">
+      <MobileSearch />
+
+      <main className="flex-1">
+        <HeroSection slides={home.heroSlides} />
+        <CategoriesSection />
+
+        {/* Render product sections */}
+        {home.productSections?.map((section, index) => (
+          <ProductSection
+            key={index}
+            title={section.title}
+            type={section.type}
+            showViewAll={Boolean(section.showViewAll)}
+          />
+        ))}
+      </main>
+
+      <MobileNav />
     </div>
   )
 }

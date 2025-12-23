@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
           <div className="flex flex-col gap-2 mb-6">
             <Logo />
 
-            <h1 className="text-2xl font-bold tracking-tight">Invalid Reset Link</h1>
+            <h1 className="text-xl font-bold tracking-tight">Invalid Reset Link</h1>
 
             <p className="text-muted-foreground text-sm leading-relaxed">
               This password reset link is invalid or has expired. Please request a new one.
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
         <div className="flex flex-col gap-2 mb-6">
           <Logo />
 
-          <h1 className="text-2xl font-bold tracking-tight">Create a new password</h1>
+          <h1 className="text-xl font-bold tracking-tight">Create a new password</h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed">
             Enter your new password below. Make sure it's at least 6 characters long.

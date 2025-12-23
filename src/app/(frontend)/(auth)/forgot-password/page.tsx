@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           <div className="flex flex-col gap-2 mb-6">
             <Logo />
 
-            <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
+            <h1 className="text-xl font-bold tracking-tight">Check your email</h1>
 
             <p className="text-muted-foreground text-sm leading-relaxed">
               We've sent a password reset link to <strong>{form.getValues('email')}</strong>. Please
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
         <div className="flex flex-col gap-2 mb-6">
           <Logo />
 
-          <h1 className="text-2xl font-bold tracking-tight">Reset your password</h1>
+          <h1 className="text-xl font-bold tracking-tight">Reset your password</h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed">
             Enter your email address and we'll send you a link to reset your password.

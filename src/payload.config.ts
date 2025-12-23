@@ -33,6 +33,7 @@ import { initiatePaystackPaymentHandler } from './plugins/paystack/endpoints/ini
 import { confirmPaystackOrderHandler } from './plugins/paystack/endpoints/confirm-order'
 import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
+import { Home } from './globals/Home'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -55,7 +56,7 @@ export default buildConfig({
     Orders,
     Transactions,
   ],
-  globals: [Header, Footer],
+  globals: [Header, Footer, Home],
   i18n: {
     translations: {
       en: ecommerceTranslationsEN,

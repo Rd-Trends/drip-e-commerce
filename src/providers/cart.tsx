@@ -12,6 +12,8 @@ type CartContextType = {
   isLoading: boolean
   updateCartIdentifier: (params: { cartID: number; secret?: string }) => void
   clearCartStorage: () => void
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
 }
 
 const CartContext = createContext<CartContextType>({
@@ -21,6 +23,8 @@ const CartContext = createContext<CartContextType>({
   isLoading: false,
   updateCartIdentifier: () => {},
   clearCartStorage: () => {},
+  isOpen: false,
+  setIsOpen: () => {},
 })
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
@@ -30,6 +34,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cartID, setCartID] = useState<number | undefined>(undefined)
   const [cartSecret, setCartSecret] = useState<string | undefined>(undefined)
   const [isMounted, setIsMounted] = useState(false)
+
+  // State for cart drawer visibility
+  const [isOpen, setIsOpen] = useState(false)
 
   // Load cart ID and secret from localStorage on mount
   useEffect(() => {
@@ -99,6 +106,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading: isLoadingCart || !isMounted,
         updateCartIdentifier,
         clearCartStorage,
+
+        // cart drawer state
+        isOpen,
+        setIsOpen,
       }}
     >
       {children}

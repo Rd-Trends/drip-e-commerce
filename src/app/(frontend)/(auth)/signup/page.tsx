@@ -59,7 +59,7 @@ export default function SignupPage() {
         <div className="flex flex-col gap-2 mb-6">
           <Logo />
 
-          <h1 className="text-2xl font-bold tracking-tight">Become a Drip Member</h1>
+          <h1 className="text-xl font-bold tracking-tight">Become a Drip Member</h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed">
             Create your Drip Member profile, and get access to an enhanced shopping experience.

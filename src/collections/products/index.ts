@@ -218,6 +218,15 @@ export const Products: CollectionConfig = {
       hasMany: true,
       relationTo: 'categories',
     },
+    {
+      name: 'isFeatured',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Feature this product on the home page',
+      },
+    },
     slugField(),
   ],
 }

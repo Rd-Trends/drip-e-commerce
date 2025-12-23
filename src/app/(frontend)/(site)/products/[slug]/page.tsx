@@ -16,7 +16,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React, { Suspense } from 'react'
-import { GridTileImage } from '@/components/grid/tile'
+import { ProductGridItem } from '@/components/product/grid-item'
 
 type Args = {
   params: Promise<{
@@ -182,24 +182,11 @@ function RelatedProducts({ products }: { products: Product[] }) {
   return (
     <div className="py-8">
       <h2 className="mb-4 text-2xl font-bold">Related Products</h2>
-      <ul className="flex w-full gap-4 overflow-x-auto pt-1">
-        {products.map((product) => (
-          <li
-            className="aspect-square w-full flex-none min-[475px]:w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5"
-            key={product.id}
-          >
-            <Link className="relative h-full w-full" href={`/products/${product.slug}`}>
-              <GridTileImage
-                label={{
-                  amount: product.priceInNGN!,
-                  title: product.title,
-                }}
-                media={product.meta?.image as Media}
-              />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
+        {products.map((product) => {
+          return <ProductGridItem key={product.id} product={product} />
+        })}
+      </section>
     </div>
   )
 }
