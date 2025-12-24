@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
+import { BottomNavigation } from '@/components/layout/bottom-navigation'
 import { AccountNav } from '@/components/account/account-nav'
 import { Separator } from '@/components/ui/separator'
 import Section from '@/components/layout/section'
@@ -37,6 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </div>
       </Section>
       <Footer />
+      <BottomNavigation />
     </Fragment>
   )
 }

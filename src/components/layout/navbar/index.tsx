@@ -39,12 +39,12 @@ export async function Navbar() {
           ) : null}
         </div>
 
-        <div className="hidden justify-center md:flex md:w-1/3">
+        <div className="justify-center flex md:w-1/3">
           <Suspense fallback={<SearchSkeleton />}>
             <Search />
           </Suspense>
         </div>
-        <div className="flex justify-end items-center gap-3 md:w-1/3">
+        <div className="hidden md:flex justify-end items-center gap-3 md:w-1/3">
           <CustomerProfile />
           <CartModal />
         </div>

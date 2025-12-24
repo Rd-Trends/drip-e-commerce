@@ -1,7 +1,6 @@
 import { HeroSection } from './_components/hero-section'
 import { CategoriesSection } from './_components/categories-section'
 import { ProductSection } from './_components/product-section'
-import { MobileNav } from './_components/mobile-nav'
 import { getCachedGlobal } from '@/lib/get-global.'
 
 export const metadata = {
@@ -10,7 +9,7 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-  const home = await getCachedGlobal('home')()
+  const home = await getCachedGlobal('home', 1)()
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0">
@@ -24,12 +23,11 @@ export default async function HomePage() {
             key={index}
             title={section.title}
             type={section.type}
+            category={section.category ?? undefined}
             showViewAll={Boolean(section.showViewAll)}
           />
         ))}
       </main>
-
-      <MobileNav />
     </div>
   )
 }

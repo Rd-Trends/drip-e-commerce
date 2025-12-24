@@ -1,13 +1,14 @@
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
-import { Fragment } from 'react'
+import { BottomNavigation } from '@/components/layout/bottom-navigation'
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Fragment>
+    <div className="flex flex-col min-h-screen justify-between">
       <Navbar />
       {children}
       <Footer />
-    </Fragment>
+      <BottomNavigation />
+    </div>
   )
 }
