@@ -17,6 +17,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 
 const signupSchema = z
   .object({
+    name: z.string().min(2, 'Name must be at least 2 characters.'),
     email: z.email('Please enter a valid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     passwordConfirm: z.string(),
@@ -30,7 +31,7 @@ type SignupFormData = z.infer<typeof signupSchema>
 
 export default function SignupPage() {
   const router = useRouter()
-  const { mutate: createUser, isPending } = useCreateUser()
+  const createUser = useCreateUser()
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -42,7 +43,7 @@ export default function SignupPage() {
   })
 
   function onSubmit(data: SignupFormData) {
-    createUser(data, {
+    createUser.mutate(data, {
       onSuccess: () => {
         toast.success('Account created successfully!')
         router.push('/shop')
@@ -69,6 +70,25 @@ export default function SignupPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FieldGroup>
             <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="signup-name" required>
+                    Full Name
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="signup-name"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Full Name"
+                    autoComplete="name"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
               name="email"
               control={form.control}
               render={({ field, fieldState }) => (
@@ -83,8 +103,6 @@ export default function SignupPage() {
                     aria-invalid={fieldState.invalid}
                     placeholder="Email"
                     autoComplete="email"
-                    disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -105,8 +123,6 @@ export default function SignupPage() {
                     aria-invalid={fieldState.invalid}
                     placeholder="Password"
                     autoComplete="new-password"
-                    disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -127,8 +143,6 @@ export default function SignupPage() {
                     aria-invalid={fieldState.invalid}
                     placeholder="Confirm Password"
                     autoComplete="new-password"
-                    disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -150,8 +164,8 @@ export default function SignupPage() {
           </p>
 
           {/* Submit Button */}
-          <Button type="submit" className="h-11 w-full font-medium" disabled={isPending}>
-            {isPending ? 'Creating account...' : 'Join Us'}
+          <Button type="submit" className="h-11 w-full font-medium" disabled={createUser.isPending}>
+            {createUser.isPending ? 'Creating account...' : 'Join Us'}
           </Button>
         </form>
 

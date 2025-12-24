@@ -3,7 +3,7 @@ import configPromise from '@payload-config'
 import { getPayload, Where } from 'payload'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
-import { Product, Category, Home } from '@/payload-types'
+import { Category, Home } from '@/payload-types'
 import { ProductGridItem, ProductGridItemSkeleton } from '@/components/product/grid-item'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
@@ -47,7 +47,7 @@ export function ProductSection({ title, showViewAll = true, type, category }: Pr
 }
 
 async function ProductList({ type, categoryID }: { type: SectionType; categoryID?: number }) {
-  const products = await getCachedProductsByType(type, categoryID)()
+  const products = await getCachedProductsByType(type, categoryID)
 
   return (
     <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
@@ -83,16 +83,12 @@ const getViewAllLink = (type: SectionType, categorySlug?: string) => {
   }
 }
 
-const getCachedProductsByType = (type: SectionType, categoryID?: number) =>
-  unstable_cache(
-    async () => {
-      return getProductsByType(type, categoryID)
-    },
-    [type, ...(categoryID ? [String(categoryID)] : [])],
-    {
-      tags: [`products_section_${type}`],
-    },
-  )
+const getCachedProductsByType = unstable_cache(
+  (type: SectionType, categoryID?: number) => {
+    return getProductsByType(type, categoryID)
+  },
+  ['section-products'],
+)
 
 export const getProductsByType = async (type: SectionType, categoryID?: number) => {
   const payload = await getPayload({ config: configPromise })

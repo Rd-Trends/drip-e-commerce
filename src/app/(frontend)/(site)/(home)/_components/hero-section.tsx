@@ -9,7 +9,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselDots,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
 import { cn } from '@/lib/utils'
 import type { Home, Media } from '@/payload-types'
 
@@ -18,23 +24,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ slides }: HeroSectionProps) {
-  const [api, setApi] = React.useState<CarouselApi>()
-  const [current, setCurrent] = React.useState(0)
-  const [count, setCount] = React.useState(0)
   const plugin = React.useRef(Autoplay({ delay: 5000, stopOnInteraction: true }))
-
-  React.useEffect(() => {
-    if (!api) {
-      return
-    }
-
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap())
-
-    api.on('select', () => {
-      setCurrent(api.selectedScrollSnap())
-    })
-  }, [api])
 
   const defaultSlides: Home['heroSlides'] = [
     {
@@ -56,7 +46,6 @@ export function HeroSection({ slides }: HeroSectionProps) {
         {
           id: 'default-link',
           link: {
-        
             url: '/shop',
             label: 'Shop Now',
           },
@@ -70,7 +59,6 @@ export function HeroSection({ slides }: HeroSectionProps) {
   return (
     <Section paddingY="sm">
       <Carousel
-        setApi={setApi}
         plugins={[plugin.current]}
         className="w-full"
         onMouseEnter={plugin.current.stop}
@@ -136,19 +124,9 @@ export function HeroSection({ slides }: HeroSectionProps) {
         </CarouselContent>
 
         {/* Dots Navigation */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-          {activeSlides?.map((_, index) => (
-            <button
-              key={index}
-              className={cn(
-                'h-2 w-2 rounded-full transition-all',
-                current === index ? 'bg-primary w-4' : 'bg-primary/30',
-              )}
-              onClick={() => api?.scrollTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        {activeSlides.length > 1 && (
+          <CarouselDots className="absolute bottom-4 left-0 right-0 flex justify-center gap-2" />
+        )}
       </Carousel>
     </Section>
   )

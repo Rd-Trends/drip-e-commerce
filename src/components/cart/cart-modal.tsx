@@ -56,123 +56,135 @@ export function CartModal() {
             <p className="text-center text-2xl font-bold">Your cart is empty.</p>
           </div>
         ) : (
-          <div className="grow flex px-4">
-            <div className="flex flex-col justify-between w-full">
-              <ul className="grow overflow-auto py-4">
-                {cart?.items?.map((item, i) => {
-                  const product = item.product
-                  const variant = item.variant
+          <div className="flex flex-1 flex-col justify-between w-full">
+            <ul className="grow overflow-auto py-4 flex flex-col w-full gap-4 px-4">
+              {cart?.items?.map((item, i) => {
+                const product = item.product
+                const variant = item.variant
 
-                  if (typeof product !== 'object' || !item || !product || !product.slug)
-                    return <React.Fragment key={i} />
+                if (typeof product !== 'object' || !item || !product || !product.slug)
+                  return <React.Fragment key={i} />
 
-                  const metaImage =
-                    product.meta?.image && typeof product.meta?.image === 'object'
-                      ? product.meta.image
-                      : undefined
+                const metaImage =
+                  product.meta?.image && typeof product.meta?.image === 'object'
+                    ? product.meta.image
+                    : undefined
 
-                  const firstGalleryImage =
-                    typeof product.gallery?.[0]?.image === 'object'
-                      ? product.gallery?.[0]?.image
-                      : undefined
+                const firstGalleryImage =
+                  typeof product.gallery?.[0]?.image === 'object'
+                    ? product.gallery?.[0]?.image
+                    : undefined
 
-                  let image = firstGalleryImage || metaImage
-                  let price = product.priceInNGN
+                let image = firstGalleryImage || metaImage
+                let price = product.priceInNGN
 
-                  const isVariant = Boolean(variant) && typeof variant === 'object'
+                const isVariant = Boolean(variant) && typeof variant === 'object'
 
-                  if (isVariant) {
-                    price = variant?.priceInNGN
+                if (isVariant) {
+                  price = variant?.priceInNGN
 
-                    const imageVariant = product.gallery?.find((item) => {
-                      if (!item.variantOption) return false
-                      const variantOptionID =
-                        typeof item.variantOption === 'object'
-                          ? item.variantOption.id
-                          : item.variantOption
+                  const imageVariant = product.gallery?.find((item) => {
+                    if (!item.variantOption) return false
+                    const variantOptionID =
+                      typeof item.variantOption === 'object'
+                        ? item.variantOption.id
+                        : item.variantOption
 
-                      const hasMatch = variant?.options?.some((option) => {
-                        if (typeof option === 'object') return option.id === variantOptionID
-                        else return option === variantOptionID
-                      })
-
-                      return hasMatch
+                    const hasMatch = variant?.options?.some((option) => {
+                      if (typeof option === 'object') return option.id === variantOptionID
+                      else return option === variantOptionID
                     })
 
-                    if (imageVariant && typeof imageVariant.image === 'object') {
-                      image = imageVariant.image
-                    }
+                    return hasMatch
+                  })
+
+                  if (imageVariant && typeof imageVariant.image === 'object') {
+                    image = imageVariant.image
                   }
+                }
 
-                  return (
-                    <li className="flex w-full flex-col" key={i}>
-                      <div className="relative flex w-full flex-row justify-between px-1 py-4">
-                        <div className="absolute z-40 -mt-2 ml-13.75">
-                          <DeleteItemButton item={item} />
-                        </div>
-                        <Link
-                          className="z-30 flex flex-row space-x-4"
-                          href={`/products/${(item.product as Product)?.slug}`}
-                        >
-                          <div className="relative h-16 w-16 cursor-pointer overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
-                            {image?.url && (
-                              <Image
-                                alt={image?.alt || product?.title || ''}
-                                className="h-full w-full object-cover"
-                                height={94}
-                                src={image.url}
-                                width={94}
-                              />
-                            )}
-                          </div>
-
-                          <div className="flex flex-1 flex-col text-base">
-                            <span className="leading-tight">{product?.title}</span>
-                            {isVariant && variant ? (
-                              <p className="text-sm text-neutral-500 dark:text-neutral-400 capitalize">
-                                {variant.options
-                                  ?.map((option) => {
-                                    if (typeof option === 'object') return option.label
-                                    return null
-                                  })
-                                  .join(', ')}
-                              </p>
-                            ) : null}
-                          </div>
-                        </Link>
-                        <div className="flex h-16 flex-col justify-between">
-                          {typeof price === 'number' && (
-                            <Price
-                              amount={price}
-                              className="flex justify-end space-y-2 text-right text-sm"
-                            />
-                          )}
-                          <CartItemAdjuster item={item} />
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              <div className="px-4">
-                <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                  {typeof cart?.subtotal === 'number' && (
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
-                      <p>Total</p>
-                      <Price
-                        amount={cart?.subtotal}
-                        className="text-right text-base text-black dark:text-white"
-                      />
-                    </div>
-                  )}
-
-                  <Button asChild>
-                    <Link className="w-full" href="/checkout">
-                      Proceed to Checkout
+                return (
+                  <li className="flex items-start gap-4" key={i}>
+                    <Link
+                      href={`/products/${(item.product as Product)?.slug}`}
+                      className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-secondary p-2 group"
+                    >
+                      {image?.url && (
+                        <Image
+                          alt={image?.alt || product?.title || ''}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                          height={96}
+                          src={image.url}
+                          width={96}
+                        />
+                      )}
                     </Link>
-                  </Button>
-                </div>
+
+                    {/* Product Details */}
+                    <div className="flex flex-1 flex-col gap-1">
+                      <div className="pr-6">
+                        {/* Category/Brand */}
+                        {product.categories &&
+                          Array.isArray(product.categories) &&
+                          product.categories.length > 0 && (
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {typeof product.categories[0] === 'object' &&
+                              'title' in product.categories[0]
+                                ? product.categories[0].title
+                                : 'Men Category'}
+                            </p>
+                          )}
+
+                        {/* Product Title */}
+                        <Link
+                          href={`/products/${(item.product as Product)?.slug}`}
+                          className="text-sm font-semibold text-foreground underline-offset-4 hover:underline line-clamp-1"
+                        >
+                          {product?.title}
+                        </Link>
+                      </div>
+
+                      {/* Price and Variant Info */}
+                      <div className="flex items-center gap-2 text-sm">
+                        {typeof price === 'number' && (
+                          <Price amount={price} className="font-bold" as="span" />
+                        )}
+                        {isVariant && variant && <span className="text-muted-foreground">•</span>}
+                        {isVariant && variant && (
+                          <p className="text-muted-foreground capitalize text-xs">
+                            {variant.options
+                              ?.map((option) => {
+                                if (typeof option === 'object') return option.label
+                                return null
+                              })
+                              .join(', ')}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quantity Adjuster */}
+                      <div className="mt-auto flex flex-row items-center justify-between gap-4">
+                        <CartItemAdjuster item={item} />
+                        <DeleteItemButton item={item} />
+                      </div>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+
+            <div className="border-t border-border p-4">
+              <div className="text-sm">
+                {typeof cart?.subtotal === 'number' && (
+                  <div className="flex items-center justify-between pb-4">
+                    <p className="text-muted-foreground">Total</p>
+                    <Price amount={cart?.subtotal} className="text-lg font-bold text-foreground" />
+                  </div>
+                )}
+
+                <Button asChild className="w-full">
+                  <Link href="/checkout">Proceed to Checkout</Link>
+                </Button>
               </div>
             </div>
           </div>

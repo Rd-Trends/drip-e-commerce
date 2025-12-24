@@ -87,6 +87,32 @@ export const useUpdateCart = () => {
         currencyCode: currency.code,
       })
     },
+    onMutate: async (updates) => {
+      if (!cartID) return
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.cart.detail(cartID) })
+
+      // Snapshot the previous value
+      const previousCart = queryClient.getQueryData<Cart>(queryKeys.cart.detail(cartID))
+
+      // Optimistically update to the new value
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(queryKeys.cart.detail(cartID), {
+          ...previousCart,
+          ...updates,
+        })
+      }
+
+      // Return a context object with the snapshotted value
+      return { previousCart }
+    },
+    onError: (err, updates, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousCart && cartID) {
+        queryClient.setQueryData(queryKeys.cart.detail(cartID), context.previousCart)
+      }
+    },
     onSuccess: (cart) => {
       queryClient.setQueryData(queryKeys.cart.detail(cartID!), cart)
     },
@@ -231,6 +257,32 @@ export const useRemoveFromCart = () => {
         { secret: cartSecret, currencyCode: currency.code },
       )
     },
+    onMutate: async (itemID) => {
+      if (!cartID) return
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.cart.detail(cartID) })
+
+      // Snapshot the previous value
+      const previousCart = queryClient.getQueryData<Cart>(queryKeys.cart.detail(cartID))
+
+      // Optimistically update by removing the item
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(queryKeys.cart.detail(cartID), {
+          ...previousCart,
+          items: previousCart.items?.filter((cartItem) => cartItem.id !== itemID),
+        })
+      }
+
+      // Return a context object with the snapshotted value
+      return { previousCart }
+    },
+    onError: (err, itemID, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousCart && cartID) {
+        queryClient.setQueryData(queryKeys.cart.detail(cartID), context.previousCart)
+      }
+    },
     onSuccess: (cart) => {
       queryClient.setQueryData(queryKeys.cart.detail(cartID!), cart)
     },
@@ -286,6 +338,50 @@ export const useUpdateCartItemQuantity = () => {
         { items: updatedItems },
         { secret: cartSecret, currencyCode: currency.code },
       )
+    },
+    onMutate: async ({ itemID, action }) => {
+      if (!cartID) return
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.cart.detail(cartID) })
+
+      // Snapshot the previous value
+      const previousCart = queryClient.getQueryData<Cart>(queryKeys.cart.detail(cartID))
+
+      // Optimistically update the quantity
+      if (previousCart) {
+        let updatedItems: CartItem[]
+        if (action === 'increment') {
+          updatedItems =
+            previousCart.items?.map((cartItem: CartItem) =>
+              cartItem.id === itemID ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
+            ) ?? []
+        } else {
+          // For decrement, also remove item if quantity reaches 0
+          updatedItems =
+            previousCart.items
+              ?.map((cartItem: CartItem) =>
+                cartItem.id === itemID
+                  ? { ...cartItem, quantity: cartItem.quantity - 1 }
+                  : cartItem,
+              )
+              .filter((cartItem: CartItem) => cartItem.quantity > 0) ?? []
+        }
+
+        queryClient.setQueryData<Cart>(queryKeys.cart.detail(cartID), {
+          ...previousCart,
+          items: updatedItems,
+        })
+      }
+
+      // Return a context object with the snapshotted value
+      return { previousCart }
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousCart && cartID) {
+        queryClient.setQueryData(queryKeys.cart.detail(cartID), context.previousCart)
+      }
     },
     onSuccess: (cart) => {
       queryClient.setQueryData(queryKeys.cart.detail(cartID!), cart)

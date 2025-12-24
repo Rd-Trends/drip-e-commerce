@@ -2,7 +2,6 @@ import { HeroSection } from './_components/hero-section'
 import { CategoriesSection } from './_components/categories-section'
 import { ProductSection } from './_components/product-section'
 import { MobileNav } from './_components/mobile-nav'
-import { MobileSearch } from './_components/mobile-search'
 import { getCachedGlobal } from '@/lib/get-global.'
 
 export const metadata = {
@@ -15,8 +14,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0">
-      <MobileSearch />
-
       <main className="flex-1">
         <HeroSection slides={home.heroSlides} />
         <CategoriesSection />

@@ -4,6 +4,7 @@ import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
 import { AccountNav } from '@/components/account/account-nav'
 import { Separator } from '@/components/ui/separator'
 import Section from '@/components/layout/section'
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <Container className="flex-1 lg:max-w-4xl">{children}</Container>
         </div>
       </Section>
+      <Footer />
     </Fragment>
   )
 }

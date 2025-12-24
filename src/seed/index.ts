@@ -475,6 +475,76 @@ const seed = async () => {
 
     console.log('✓ 3 products with variants created')
 
+    // Configure Header Global
+    console.log('\n🔗 Configuring header navigation...')
+    await payload.updateGlobal({
+      slug: 'header',
+      data: {
+        navItems: [
+          {
+            link: {
+              label: 'Shop',
+              url: '/shop',
+            },
+          },
+          {
+            link: {
+              label: 'Men',
+              url: '/categories?category=men',
+            },
+          },
+          {
+            link: {
+              label: 'Women',
+              url: '/categories?category=women',
+            },
+          },
+          {
+            link: {
+              label: 'Accessories',
+              url: '/categories?category=accessories',
+            },
+          },
+        ],
+      },
+    })
+    console.log('✓ Header navigation configured')
+
+    // Configure Footer Global
+    console.log('\n🦶 Configuring footer navigation...')
+    await payload.updateGlobal({
+      slug: 'footer',
+      data: {
+        navItems: [
+          {
+            link: {
+              label: 'About Us',
+              url: '/about',
+            },
+          },
+          {
+            link: {
+              label: 'Contact',
+              url: '/contact',
+            },
+          },
+          {
+            link: {
+              label: 'FAQs',
+              url: '/faqs',
+            },
+          },
+          {
+            link: {
+              label: 'Shipping & Returns',
+              url: '/shipping',
+            },
+          },
+        ],
+      },
+    })
+    console.log('✓ Footer navigation configured')
+
     console.log('\n✅ Database seeding completed successfully!\n')
     console.log('📊 Summary:')
     console.log(`   - Users: 1 admin`)
@@ -485,6 +555,7 @@ const seed = async () => {
     console.log(`   - Simple Products: ${simpleProducts.length}`)
     console.log(`   - Products with Variants: 3`)
     console.log(`   - Total Variants: 11`)
+    console.log(`   - Globals: Header & Footer configured`)
     console.log('\n🔐 Login credentials:')
     console.log('   Email: admin@drip.com')
     console.log('   Password: password123')

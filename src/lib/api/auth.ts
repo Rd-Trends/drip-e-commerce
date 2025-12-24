@@ -66,6 +66,7 @@ export const authApi = {
    * Create new user account
    */
   createUser: async (userData: {
+    name: string
     email: string
     password: string
     passwordConfirm: string

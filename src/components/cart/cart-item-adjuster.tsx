@@ -3,8 +3,8 @@
 import { CartItem } from '@/components/cart'
 import { useUpdateCartItemQuantity } from '@/hooks/use-cart-queries'
 import { cn } from '@/lib/utils'
-import { MinusIcon, PlusIcon } from 'lucide-react'
-import React, { useCallback, useMemo } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
 
 export function CartItemAdjuster({ item }: { item: CartItem }) {
   const { mutate, isPending } = useUpdateCartItemQuantity()
@@ -24,16 +24,16 @@ export function CartItemAdjuster({ item }: { item: CartItem }) {
   )
 
   return (
-    <div className="ml-auto flex h-9 flex-row items-center rounded-lg border">
+    <div className="flex h-8 p-1 w-22 flex-row items-center bg-secondary rounded-full">
       <EditItemQuantityButton
         item={item}
         type="minus"
         isUpdating={isPending}
         handleEdit={decrementItem}
       />
-      <p className="w-6 text-center">
-        <span className="w-full text-sm">{item.quantity}</span>
-      </p>
+      <div className="flex-1 text-center">
+        <span className="text-sm font-medium">{item.quantity}</span>
+      </div>
       <EditItemQuantityButton
         item={item}
         type="plus"
@@ -84,11 +84,7 @@ function EditItemQuantityButton({
       disabled={disabled || isUpdating}
       aria-label={type === 'plus' ? 'Increase item quantity' : 'Reduce item quantity'}
       className={cn(
-        'ease hover:cursor-pointer flex h-full min-w-9 max-w-9 flex-none items-center justify-center rounded-full px-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80',
-        {
-          'cursor-not-allowed': disabled || isUpdating,
-          'ml-auto': type === 'minus',
-        },
+        'flex h-full aspect-square items-center justify-center rounded-full transition-colors bg-background hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-50',
       )}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -99,11 +95,7 @@ function EditItemQuantityButton({
       }}
       type="button"
     >
-      {type === 'plus' ? (
-        <PlusIcon className="h-4 w-4 dark:text-neutral-500 hover:text-blue-300" />
-      ) : (
-        <MinusIcon className="h-4 w-4 dark:text-neutral-500 hover:text-blue-300" />
-      )}
+      {type === 'plus' ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
     </button>
   )
 }
