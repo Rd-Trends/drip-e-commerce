@@ -13,8 +13,10 @@ export const Categories: CollectionConfig = {
   },
   hooks: {
     afterChange: [
-      async () => {
-        revalidateTag('categories')
+      async ({ context }) => {
+        if (!context.disableRevalidation) {
+          revalidateTag('categories')
+        }
       },
     ],
   },
@@ -27,14 +29,5 @@ export const Categories: CollectionConfig = {
     slugField({
       position: undefined,
     }),
-    {
-      name: 'image',
-      type: 'upload',
-      relationTo: 'media',
-      required: false,
-      admin: {
-        description: 'Category icon or image (recommended: square, min 200x200px)',
-      },
-    },
   ],
 }

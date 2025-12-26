@@ -7,7 +7,7 @@ import { Container } from '@/components/layout/container'
 
 export default function Checkout() {
   return (
-    <Section>
+    <Section paddingY="xs" className="pb-20">
       <Container>
         <h1 className="sr-only">Checkout</h1>
 

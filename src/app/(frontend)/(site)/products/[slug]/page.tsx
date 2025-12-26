@@ -154,7 +154,7 @@ export default async function ProductPage({ params }: Args) {
         <Container>
           <div className="grid gap-6 lg:grid-cols-2">
             <ShippingTimeline />
-            <SizeGuide />
+            <SizeGuide product={product} />
           </div>
         </Container>
       </Section>

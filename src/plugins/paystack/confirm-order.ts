@@ -67,11 +67,15 @@ export const confirmOrder: NonNullable<PaymentAdapter>['confirmOrder'] = async (
     }
 
     // Create the order in the database
+    // @ts-ignore – Type issue with create method (don't have a draft field)
     const order = await payload.create({
       collection: ordersSlug as CollectionSlug,
       data: {
-        amount: paymentIntent.data.amount,
         currency: paymentIntent.data.currency as 'NGN',
+        grandTotal: paymentIntent.data.amount,
+        tax: paymentMetadata?.taxAmount || 0,
+        shippingFee: paymentMetadata?.shippingAmount || 0,
+        subtotal: paymentMetadata?.subtotalAmount || paymentIntent.data.amount,
         ...(req.user ? { customer: req.user.id } : { customerEmail }),
         items: cartItemsSnapshot,
         shippingAddress,

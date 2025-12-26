@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertTitle } from '@/components/ui/alert'
-import { Container } from '@/components/layout/container'
-import { Section } from '@/components/layout/section'
 import { useAuth } from '@/providers/auth'
 import { useCart } from '@/providers/cart'
 import { useDeleteCart } from '@/hooks/use-cart-queries'
 import { useConfirmOrder, useInitiatePayment } from '@/hooks/use-payment'
+import { useShippingConfig } from '@/hooks/use-shipping-config'
 import { Address } from '@/payload-types'
-import { useAddresses } from '@payloadcms/plugin-ecommerce/client/react'
+import { calculateShippingFee } from '@/utils/calculate-shipping'
+import { calculateTax } from '@/utils/calculate-tax'
 import { AlertCircleIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -20,15 +20,18 @@ import { CheckoutSkeleton } from './checkout-skeleton'
 import { ContactInformation } from './contact-information'
 import { OrderSummary } from './order-summary'
 import { ShippingInformation } from './shipping-information'
+import { Price } from '@/components/price'
+import { useAddresses } from '@/hooks/use-address'
 
 export const CheckoutPage: React.FC = () => {
   const { user } = useAuth()
   const router = useRouter()
   const { cart, isLoading } = useCart()
-  const { addresses } = useAddresses()
+  const { data: addresses } = useAddresses()
   const { mutate: clearCart } = useDeleteCart()
   const initiatePayment = useInitiatePayment()
   const confirmOrder = useConfirmOrder()
+  const { data: shippingConfig, isLoading: shippingConfigLoading } = useShippingConfig()
 
   const [error, setError] = useState<null | string>(null)
   const [email, setEmail] = useState('')
@@ -43,6 +46,28 @@ export const CheckoutPage: React.FC = () => {
     (email || user) && billingAddress && (billingAddressSameAsShipping || shippingAddress),
   )
 
+  // Calculate shipping and tax
+  const shippingState = billingAddressSameAsShipping
+    ? billingAddress?.state
+    : shippingAddress?.state
+
+  const shippingCalculation = React.useMemo(() => {
+    if (!shippingConfig || !cart?.subtotal || !shippingState) return null
+
+    return calculateShippingFee(shippingState, cart.subtotal, shippingConfig)
+  }, [shippingConfig, shippingState, cart?.subtotal])
+
+  const taxAmount = React.useMemo(() => {
+    if (!shippingConfig || !cart?.subtotal) return 0
+    return calculateTax(cart.subtotal, shippingConfig.taxRate || 7.5)
+  }, [shippingConfig, cart?.subtotal])
+
+  const totalAmount = React.useMemo(() => {
+    const subtotal = cart?.subtotal || 0
+    const shipping = shippingCalculation?.fee || 0
+    return subtotal + shipping + taxAmount
+  }, [cart?.subtotal, shippingCalculation?.fee, taxAmount])
+
   // On initial load wait for addresses to be loaded and check to see if we can prefill a default one
   useEffect(() => {
     if (!shippingAddress) {
@@ -53,7 +78,7 @@ export const CheckoutPage: React.FC = () => {
         }
       }
     }
-  }, [addresses])
+  }, [addresses, shippingAddress])
 
   useEffect(() => {
     return () => {
@@ -152,8 +177,8 @@ export const CheckoutPage: React.FC = () => {
     ],
   )
 
-  // Show loading skeleton while cart is loading
-  if (isLoading) {
+  // Show loading skeleton while cart or shipping config is loading
+  if (isLoading || shippingConfigLoading) {
     return <CheckoutSkeleton />
   }
 
@@ -172,9 +197,9 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full grid lg:grid-cols-5 gap-8">
+    <div className="w-full grid lg:grid-cols-2 gap-8">
       {/* Left Column - Forms */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="lg:col-span-1 space-y-6">
         <ContactInformation
           user={user}
           email={email}
@@ -196,20 +221,6 @@ export const CheckoutPage: React.FC = () => {
           onShippingAddressChange={setShippingAddress}
           onBillingAddressSameAsShippingChange={setBillingAddressSameAsShipping}
         />
-
-        {!paymentData && (
-          <Button
-            className="w-full"
-            size="lg"
-            disabled={!canGoToPayment || initiatePayment.isPending}
-            onClick={(e) => {
-              e.preventDefault()
-              void initiatePaymentIntent('paystack')
-            }}
-          >
-            {initiatePayment.isPending ? 'Processing...' : 'Continue to Payment'}
-          </Button>
-        )}
 
         {error && (
           <Card className="border-destructive">
@@ -234,8 +245,49 @@ export const CheckoutPage: React.FC = () => {
       </div>
 
       {/* Right Column - Order Summary */}
-      <div className="lg:col-span-2">
-        <OrderSummary cart={cart} />
+      <div className="lg:col-span-1">
+        <OrderSummary
+          cart={cart}
+          shippingFee={shippingCalculation?.fee}
+          shippingIsFree={shippingCalculation?.isFree}
+          taxAmount={taxAmount}
+          totalAmount={totalAmount}
+        >
+          {!paymentData && (
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={initiatePayment.isPending}
+              onClick={(e) => {
+                e.preventDefault()
+                if (!canGoToPayment) {
+                  let errorMessage = 'Please complete all required information to continue.'
+
+                  if (!email && !user) {
+                    errorMessage = 'Please add an email address to continue.'
+                  } else if (!shippingAddress) {
+                    errorMessage = 'Please add shipping address details to continue.'
+                  } else if (!billingAddress) {
+                    errorMessage = 'Please add billing address details to continue.'
+                  }
+
+                  toast.error(errorMessage)
+                  return
+                }
+
+                void initiatePaymentIntent('paystack')
+              }}
+            >
+              {initiatePayment.isPending ? (
+                'Processing...'
+              ) : (
+                <>
+                  Pay <Price as="span" amount={totalAmount} />
+                </>
+              )}
+            </Button>
+          )}
+        </OrderSummary>
       </div>
     </div>
   )

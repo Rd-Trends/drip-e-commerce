@@ -2,6 +2,8 @@ import { Address } from '@/payload-types'
 import { PaymentAdapter } from '@payloadcms/plugin-ecommerce/types'
 import Paystack from '@paystack/paystack-sdk'
 import { CollectionSlug } from 'payload'
+import { calculateShippingFee } from '@/utils/calculate-shipping'
+import { calculateTax } from '@/utils/calculate-tax'
 
 export type PaystackTransactionMetadata = {
   cartId: number
@@ -12,6 +14,9 @@ export type PaystackTransactionMetadata = {
   }>
   shippingAddress?: Address
   billingAddress?: Address
+  taxAmount: number
+  shippingAmount: number
+  subtotalAmount: number
 }
 
 export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = async ({
@@ -26,7 +31,7 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
   const customerEmail = data.customerEmail
   const currency = data.currency
   const cart = data.cart
-  const amount = cart.subtotal
+  const subtotal = cart.subtotal || 0
   const billingAddress = data.billingAddress
   const shippingAddress = data.shippingAddress
 
@@ -46,9 +51,32 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
     throw new Error('A valid customer email is required to make a purchase.')
   }
 
-  if (!amount || typeof amount !== 'number' || amount <= 0) {
-    throw new Error('A valid amount is required to initiate a payment.')
+  if (!subtotal || typeof subtotal !== 'number' || subtotal <= 0) {
+    throw new Error('A valid cart subtotal is required to initiate a payment.')
   }
+
+  // Fetch shipping configuration for tax and shipping calculations
+  const shippingConfig = await payload.findGlobal({
+    slug: 'shipping-config',
+  })
+
+  if (!shippingConfig) {
+    throw new Error('Shipping configuration not found.')
+  }
+
+  // Calculate shipping fee based on shipping address state
+  const shippingState = shippingAddress?.state
+  const shippingCalculation = calculateShippingFee(shippingState, subtotal, shippingConfig)
+  const shippingFee = shippingCalculation.fee
+
+  // Calculate tax on subtotal (before shipping)
+  const taxRate = (shippingConfig.taxRate as number) || 7.5
+  const taxAmount = calculateTax(subtotal, taxRate)
+
+  // Calculate grand total: subtotal + shipping + tax - discount
+  // Note: discount will be handled later if/when coupon system is implemented
+  const discount = 0
+  const grandTotal = subtotal + shippingFee + taxAmount - discount
 
   const paystack = new Paystack(secretKey)
 
@@ -79,7 +107,7 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
 
     const transactionResponse = await paystack.transaction.initialize({
       email: customerEmail,
-      amount: cart.subtotal || 0, // Value in kobo
+      amount: grandTotal, // Grand total in kobo (subtotal + shipping + tax - discount)
       currency: currency,
       reference: reference,
       callback_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/checkout/confirm`,
@@ -88,6 +116,9 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
         billingAddress,
         shippingAddress,
         cartItemsSnapshot: flattenedCart,
+        subtotalAmount: subtotal,
+        shippingAmount: shippingFee,
+        taxAmount: taxAmount,
       } as PaystackTransactionMetadata),
     })
 
@@ -96,7 +127,7 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
       collection: transactionsSlug as CollectionSlug,
       data: {
         ...(req.user ? { customer: req.user.id } : { customerEmail }),
-        amount: cart.subtotal || 0,
+        amount: grandTotal,
         billingAddress: billingAddress,
         cart: cart.id,
         currency: currency as 'NGN',
@@ -117,6 +148,13 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
       authorizationUrl: transactionResponse.data?.authorization_url,
       accessCode: transactionResponse.data?.access_code,
       transactionID: transaction.id,
+      breakdown: {
+        subtotal,
+        shippingFee,
+        taxAmount,
+        discount,
+        grandTotal,
+      },
     }
 
     return returnData

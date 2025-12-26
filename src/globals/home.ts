@@ -9,8 +9,25 @@ export const Home: GlobalConfig = {
   },
   hooks: {
     afterChange: [
-      async () => {
-        revalidateTag('global_home')
+      async ({ context }) => {
+        if (!context.disableRevalidation) {
+          revalidateTag('global_home')
+        }
+      },
+    ],
+    beforeChange: [
+      async ({ data }) => {
+        // Clear category field for non-category types
+        if (data?.productSections) {
+          data.productSections = data.productSections.map((section: any) => {
+            if (section.type !== 'category' && section.category) {
+              const { category, ...rest } = section
+              return rest
+            }
+            return section
+          })
+        }
+        return data
       },
     ],
   },
@@ -36,11 +53,11 @@ export const Home: GlobalConfig = {
           required: true,
         },
         {
-          name: 'subtitle',
+          name: 'badge',
           type: 'text',
-          label: 'Subtitle / Badge',
+          label: 'Badge',
           admin: {
-            description: 'Small text above the title (e.g. "New Arrival", "Promo Code: SALE20")',
+            description: 'Small text above the title in a badge (e.g. "New Arrival")',
           },
         },
         {
@@ -55,37 +72,6 @@ export const Home: GlobalConfig = {
             link({
               appearances: false,
             }),
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
-            {
-              name: 'contentAlign',
-              type: 'select',
-              defaultValue: 'left',
-              options: [
-                { label: 'Left', value: 'left' },
-                { label: 'Center', value: 'center' },
-                { label: 'Right', value: 'right' },
-              ],
-              admin: {
-                width: '50%',
-              },
-            },
-            {
-              name: 'theme',
-              type: 'select',
-              defaultValue: 'dark',
-              options: [
-                { label: 'Dark Text', value: 'dark' },
-                { label: 'Light Text', value: 'light' },
-              ],
-              admin: {
-                width: '50%',
-                description: 'Choose "Light Text" if the background image is dark.',
-              },
-            },
           ],
         },
       ],

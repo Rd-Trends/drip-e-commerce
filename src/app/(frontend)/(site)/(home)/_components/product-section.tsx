@@ -109,7 +109,7 @@ export const getProductsByType = async (type: SectionType, categoryID?: number) 
 
   switch (type) {
     case 'featured': {
-      query.featured = { equals: true }
+      query.isFeatured = { equals: true }
       break
     }
     case 'latest': {

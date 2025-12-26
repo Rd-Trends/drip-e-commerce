@@ -23,4 +23,8 @@ export const queryKeys = {
     list: () => [...queryKeys.orders.all, 'list'] as const,
     detail: (orderID: string | number) => [...queryKeys.orders.all, 'detail', orderID] as const,
   },
+  shippingConfig: {
+    all: ['shippingConfig'] as const,
+    detail: () => [...queryKeys.shippingConfig.all, 'detail'] as const,
+  },
 } as const

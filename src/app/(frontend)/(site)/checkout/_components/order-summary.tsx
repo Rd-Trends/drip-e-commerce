@@ -2,6 +2,7 @@
 
 import { Media } from '@/components/media'
 import { Price } from '@/components/price'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Cart } from '@/payload-types'
@@ -9,9 +10,21 @@ import React from 'react'
 
 interface OrderSummaryProps {
   cart: Cart
+  shippingFee?: number
+  shippingIsFree?: boolean
+  taxAmount?: number
+  totalAmount?: number
+  children?: React.ReactNode
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ cart }) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({
+  cart,
+  shippingFee,
+  shippingIsFree,
+  taxAmount,
+  totalAmount,
+  children,
+}) => {
   return (
     <Card className="sticky top-8">
       <CardHeader>
@@ -100,11 +113,22 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ cart }) => {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
-            <span>Calculated at next step</span>
+            {typeof shippingFee === 'number' ? (
+              <span className="flex items-center gap-2">
+                {shippingIsFree && <Badge>Free</Badge>}
+                <Price amount={shippingFee} />
+              </span>
+            ) : (
+              <span>-</span>
+            )}
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Estimated taxes</span>
-            <span>Calculated at next step</span>
+            <span className="text-muted-foreground">Tax (VAT)</span>
+            {typeof taxAmount === 'number' ? (
+              <Price amount={taxAmount} as="span" />
+            ) : (
+              <span>-</span>
+            )}
           </div>
         </div>
 
@@ -112,8 +136,13 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ cart }) => {
 
         <div className="flex justify-between items-center">
           <span className="text-lg font-semibold">Total</span>
-          <Price className="text-2xl font-bold" amount={cart.subtotal || 0} />
+          <Price
+            className="text-xl font-bold"
+            amount={typeof totalAmount === 'number' ? totalAmount : cart.subtotal || 0}
+          />
         </div>
+
+        {children}
       </CardContent>
     </Card>
   )

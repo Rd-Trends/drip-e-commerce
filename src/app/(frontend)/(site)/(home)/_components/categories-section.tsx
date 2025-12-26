@@ -1,10 +1,8 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Tag } from 'lucide-react'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
-import { Category, Media } from '@/payload-types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
@@ -33,43 +31,21 @@ async function CategoriesList() {
 
   return (
     <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
-      <div className="flex w-max space-x-4 p-1">
+      <div className="flex w-max min-w-full space-x-4 p-1">
         {categories.map((category) => {
-          const categoryImage = typeof category.image === 'object' ? category.image : null
-
           return (
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className="flex flex-col items-center gap-2 group"
+              className="xl:flex-1 flex flex-col items-center gap-2 group xl:border rounded-xl p-4"
             >
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors overflow-hidden">
-                {categoryImage?.url ? (
-                  <Image
-                    src={categoryImage.url}
-                    alt={categoryImage.alt || category.title}
-                    width={64}
-                    height={64}
-                    className="object-cover w-full h-full group-hover:scale-110 transition-transform"
-                  />
-                ) : (
-                  <Tag className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
-                )}
+              <div className="size-16 xl:size-24 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors overflow-hidden">
+                <Tag className="size-6 xl:size-8 text-muted-foreground group-hover:text-primary" />
               </div>
-              <span className="text-xs font-medium">{category.title}</span>
+              <span className="text-xs xl:text-base font-medium">{category.title}</span>
             </Link>
           )
         })}
-        {/* Fallback if no categories */}
-        {categories.length === 0 &&
-          ['Shirts', 'Pants', 'Dresses', 'Jackets', 'Shoes'].map((cat) => (
-            <div key={cat} className="flex flex-col items-center gap-2">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                <Tag className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <span className="text-xs font-medium">{cat}</span>
-            </div>
-          ))}
       </div>
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
@@ -79,11 +55,14 @@ async function CategoriesList() {
 function CategoriesListSkeleton() {
   return (
     <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
-      <div className="flex w-max space-x-4 p-1">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex flex-col items-center gap-2">
-            <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
-            <div className="h-3 w-12 bg-muted rounded animate-pulse" />
+      <div className="flex w-max min-w-full space-x-4 p-1">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div
+            key={i}
+            className="xl:flex-1 flex flex-col items-center gap-2 xl:border rounded-xl p-4"
+          >
+            <div className="size-16 xl:size-24 rounded-full bg-muted animate-pulse" />
+            <div className="h-3 xl:h-4 w-12 xl:w-16 bg-muted rounded animate-pulse" />
           </div>
         ))}
       </div>
@@ -100,7 +79,6 @@ const getCachedCategories = () =>
       const { docs: categories = [] } = await payload.find({
         collection: 'categories',
         sort: 'title',
-        depth: 1, // Populate the image relationship
         limit: 8,
       })
 

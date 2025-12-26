@@ -31,9 +31,10 @@ import { Transactions } from './collections/transaction'
 import { ecommerceTranslationsEN } from './translations/en'
 import { initiatePaystackPaymentHandler } from './plugins/paystack/endpoints/initiate'
 import { confirmPaystackOrderHandler } from './plugins/paystack/endpoints/confirm-order'
-import { Header } from './globals/Header'
-import { Footer } from './globals/Footer'
-import { Home } from './globals/Home'
+import { Header } from './globals/header'
+import { Footer } from './globals/footer'
+import { Home } from './globals/home'
+import { ShippingConfig } from './globals/shipping-config'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -56,7 +57,7 @@ export default buildConfig({
     Orders,
     Transactions,
   ],
-  globals: [Header, Footer, Home],
+  globals: [Header, Footer, Home, ShippingConfig],
   i18n: {
     translations: {
       en: ecommerceTranslationsEN,

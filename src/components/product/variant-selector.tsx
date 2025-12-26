@@ -88,14 +88,41 @@ function VariantOptions({
           return <React.Fragment key="empty" />
         }
 
-        const options = type.options?.docs
+        const allOptions = type.options?.docs
 
-        if (!options || !Array.isArray(options) || !options.length) {
+        if (!allOptions || !Array.isArray(allOptions) || !allOptions.length) {
           return <React.Fragment key={type.id} />
         }
 
         const isColorType = type.name.toLowerCase().includes('color')
         const isSizeType = type.name.toLowerCase().includes('size')
+
+        // For colors, only show options that are actually used in the product's variants
+        let options = allOptions
+        // if (isColorType) {
+        const optionIdsInVariants = new Set<number>()
+        product.variants?.docs?.forEach((variant) => {
+          if (variant && typeof variant === 'object' && variant.options) {
+            variant.options.forEach((variantOption) => {
+              if (
+                variantOption &&
+                typeof variantOption === 'object' &&
+                variantOption.variantType === type.id
+              ) {
+                optionIdsInVariants.add(variantOption.id)
+              }
+            })
+          }
+        })
+
+        options = allOptions.filter((option) =>
+          optionIdsInVariants.has(typeof option === 'number' ? option : option.id),
+        )
+        // }
+
+        if (!options.length) {
+          return <React.Fragment key={type.id} />
+        }
 
         return (
           <div key={type.id} className="space-y-3">

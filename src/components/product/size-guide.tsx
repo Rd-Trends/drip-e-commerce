@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Category, Product } from '@/payload-types'
 import { Ruler } from 'lucide-react'
 import React from 'react'
 
@@ -31,7 +32,66 @@ const shoeSizes = [
   { us: '12', uk: '11', eu: '45', cm: '28' },
 ]
 
-export function SizeGuide() {
+const accessoriesSizes = [
+  { size: 'One Size', description: 'Adjustable or universal fit' },
+  { size: 'S/M', description: 'Suitable for smaller builds' },
+  { size: 'M/L', description: 'Suitable for medium to larger builds' },
+]
+
+const bagSizes = [
+  { size: 'Small', dimensions: '20 x 15 x 10 cm', capacity: '5-10L' },
+  { size: 'Medium', dimensions: '30 x 25 x 15 cm', capacity: '15-20L' },
+  { size: 'Large', dimensions: '40 x 35 x 20 cm', capacity: '25-35L' },
+]
+
+type SizeGuideProps = {
+  product?: Product
+  categories?: (Category | number)[]
+}
+
+export function SizeGuide({ product, categories }: SizeGuideProps) {
+  // Determine which tabs to show based on product categories
+  const categoryNames = React.useMemo(() => {
+    const cats = categories || product?.categories || []
+    return cats
+      .map((cat) => {
+        if (typeof cat === 'object' && 'title' in cat) {
+          return cat.title.toLowerCase()
+        }
+        return ''
+      })
+      .filter(Boolean)
+  }, [categories, product])
+
+  const isShoes = categoryNames.some((name) => name.includes('shoe') || name.includes('footwear'))
+  const isBag = categoryNames.some((name) => name.includes('bag') || name.includes('backpack'))
+  const isAccessory = categoryNames.some((name) => name.includes('accessor'))
+
+  // Determine default tab and available tabs
+  let defaultTab = 'clothing'
+  const availableTabs: Array<{ value: string; label: string }> = []
+
+  if (isShoes) {
+    defaultTab = 'shoes'
+    availableTabs.push({ value: 'shoes', label: 'Shoes' })
+  } else if (isBag) {
+    defaultTab = 'bags'
+    availableTabs.push({ value: 'bags', label: 'Bags' })
+  } else if (isAccessory) {
+    defaultTab = 'accessories'
+    availableTabs.push({ value: 'accessories', label: 'Accessories' })
+  } else {
+    availableTabs.push({ value: 'clothing', label: 'Clothing' })
+  }
+
+  // Always add other common tabs if not the default
+  if (!isShoes) {
+    availableTabs.push({ value: 'shoes', label: 'Shoes' })
+  }
+  if (!isBag && !isAccessory) {
+    availableTabs.push({ value: 'accessories', label: 'Accessories' })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -41,11 +101,15 @@ export function SizeGuide() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="clothing" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="clothing">Clothing</TabsTrigger>
-            <TabsTrigger value="shoes">Shoes</TabsTrigger>
+        <Tabs defaultValue={defaultTab} className="w-full">
+          <TabsList className={`grid w-full grid-cols-${availableTabs.length}`}>
+            {availableTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
+
           <TabsContent value="clothing" className="mt-4">
             <div className="rounded-lg border">
               <Table>
@@ -76,6 +140,7 @@ export function SizeGuide() {
               </p>
             </div>
           </TabsContent>
+
           <TabsContent value="shoes" className="mt-4">
             <div className="rounded-lg border">
               <Table>
@@ -103,6 +168,62 @@ export function SizeGuide() {
               <p className="text-sm text-muted-foreground">
                 <strong>Tip:</strong> If you're between sizes, we recommend sizing up for a more
                 comfortable fit.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="accessories" className="mt-4">
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Size</TableHead>
+                    <TableHead className="font-semibold">Description</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {accessoriesSizes.map((row) => (
+                    <TableRow key={row.size}>
+                      <TableCell className="font-medium">{row.size}</TableCell>
+                      <TableCell>{row.description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-4 rounded-lg bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Note:</strong> Most accessories are designed to be adjustable or have
+                flexible sizing to fit most customers.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="bags" className="mt-4">
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Size</TableHead>
+                    <TableHead className="font-semibold">Dimensions</TableHead>
+                    <TableHead className="font-semibold">Capacity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bagSizes.map((row) => (
+                    <TableRow key={row.size}>
+                      <TableCell className="font-medium">{row.size}</TableCell>
+                      <TableCell>{row.dimensions}</TableCell>
+                      <TableCell>{row.capacity}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-4 rounded-lg bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Capacity guide:</strong> Dimensions are approximate (L x H x W). Actual
+                capacity may vary based on contents and packing method.
               </p>
             </div>
           </TabsContent>

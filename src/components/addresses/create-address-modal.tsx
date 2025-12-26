@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 
 type Props = {
   addressID?: DefaultDocumentIDType
-  initialData?: Partial<Omit<Address, 'country'>> & { country?: string }
+  initialData?: Partial<Address>
   buttonText?: string
   modalTitle?: string
   callback?: (address: Partial<Address>) => void

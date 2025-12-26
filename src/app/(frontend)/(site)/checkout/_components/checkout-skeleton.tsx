@@ -6,9 +6,9 @@ import React from 'react'
 
 export const CheckoutSkeleton: React.FC = () => {
   return (
-    <div className="w-full grid lg:grid-cols-5 gap-8">
+    <div className="w-full grid lg:grid-cols-2 gap-8">
       {/* Left Column - Forms Skeleton */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="lg:col-span-1 space-y-6">
         {/* Contact Information Skeleton */}
         <Card>
           <CardHeader>
@@ -32,13 +32,10 @@ export const CheckoutSkeleton: React.FC = () => {
             <Skeleton className="h-10 w-full" />
           </CardContent>
         </Card>
-
-        {/* Payment Button Skeleton */}
-        <Skeleton className="h-12 w-full" />
       </div>
 
       {/* Right Column - Order Summary Skeleton */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-1">
         <Card className="sticky top-8">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
@@ -83,6 +80,9 @@ export const CheckoutSkeleton: React.FC = () => {
               <Skeleton className="h-6 w-16" />
               <Skeleton className="h-8 w-32" />
             </div>
+
+            {/* Payment Button Skeleton */}
+            <Skeleton className="h-10 w-full rounded-full" />
           </CardContent>
         </Card>
       </div>

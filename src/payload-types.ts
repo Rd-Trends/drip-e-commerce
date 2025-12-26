@@ -126,11 +126,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     home: Home;
+    'shipping-config': ShippingConfig;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     home: HomeSelect<false> | HomeSelect<true>;
+    'shipping-config': ShippingConfigSelect<false> | ShippingConfigSelect<true>;
   };
   locale: null;
   user: User & {
@@ -214,7 +216,7 @@ export interface Order {
         id?: string | null;
       }[]
     | null;
-  shippingAddress?: {
+  shippingAddress: {
     title?: string | null;
     firstName?: string | null;
     lastName?: string | null;
@@ -222,7 +224,44 @@ export interface Order {
     addressLine1?: string | null;
     addressLine2?: string | null;
     city?: string | null;
-    state?: string | null;
+    state:
+      | 'abia'
+      | 'adamawa'
+      | 'akwa-ibom'
+      | 'anambra'
+      | 'bauchi'
+      | 'bayelsa'
+      | 'benue'
+      | 'borno'
+      | 'cross-river'
+      | 'delta'
+      | 'ebonyi'
+      | 'edo'
+      | 'ekiti'
+      | 'enugu'
+      | 'fct'
+      | 'gombe'
+      | 'imo'
+      | 'jigawa'
+      | 'kaduna'
+      | 'kano'
+      | 'katsina'
+      | 'kebbi'
+      | 'kogi'
+      | 'kwara'
+      | 'lagos'
+      | 'nasarawa'
+      | 'niger'
+      | 'ogun'
+      | 'ondo'
+      | 'osun'
+      | 'oyo'
+      | 'plateau'
+      | 'rivers'
+      | 'sokoto'
+      | 'taraba'
+      | 'yobe'
+      | 'zamfara';
     postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
@@ -231,8 +270,27 @@ export interface Order {
   customerEmail?: string | null;
   transactions?: (number | Transaction)[] | null;
   status?: OrderStatus;
-  amount?: number | null;
   currency?: 'NGN' | null;
+  /**
+   * Order subtotal before shipping
+   */
+  subtotal?: number | null;
+  /**
+   * Shipping fee for this order
+   */
+  shippingFee?: number | null;
+  /**
+   * Tax amount for this order
+   */
+  tax?: number | null;
+  /**
+   * Discount amount for this order
+   */
+  discount?: number | null;
+  /**
+   * Final total amount (subtotal + shipping + tax - discount) for this order
+   */
+  grandTotal?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -407,10 +465,6 @@ export interface Category {
    */
   generateSlug?: boolean | null;
   slug: string;
-  /**
-   * Category icon or image (recommended: square, min 200x200px)
-   */
-  image?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -433,7 +487,7 @@ export interface Transaction {
     customerId?: number | null;
     reference?: string | null;
   };
-  billingAddress?: {
+  billingAddress: {
     title?: string | null;
     firstName?: string | null;
     lastName?: string | null;
@@ -441,7 +495,44 @@ export interface Transaction {
     addressLine1?: string | null;
     addressLine2?: string | null;
     city?: string | null;
-    state?: string | null;
+    state:
+      | 'abia'
+      | 'adamawa'
+      | 'akwa-ibom'
+      | 'anambra'
+      | 'bauchi'
+      | 'bayelsa'
+      | 'benue'
+      | 'borno'
+      | 'cross-river'
+      | 'delta'
+      | 'ebonyi'
+      | 'edo'
+      | 'ekiti'
+      | 'enugu'
+      | 'fct'
+      | 'gombe'
+      | 'imo'
+      | 'jigawa'
+      | 'kaduna'
+      | 'kano'
+      | 'katsina'
+      | 'kebbi'
+      | 'kogi'
+      | 'kwara'
+      | 'lagos'
+      | 'nasarawa'
+      | 'niger'
+      | 'ogun'
+      | 'ondo'
+      | 'osun'
+      | 'oyo'
+      | 'plateau'
+      | 'rivers'
+      | 'sokoto'
+      | 'taraba'
+      | 'yobe'
+      | 'zamfara';
     postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
@@ -497,7 +588,44 @@ export interface Address {
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
-  state?: string | null;
+  state:
+    | 'abia'
+    | 'adamawa'
+    | 'akwa-ibom'
+    | 'anambra'
+    | 'bauchi'
+    | 'bayelsa'
+    | 'benue'
+    | 'borno'
+    | 'cross-river'
+    | 'delta'
+    | 'ebonyi'
+    | 'edo'
+    | 'ekiti'
+    | 'enugu'
+    | 'fct'
+    | 'gombe'
+    | 'imo'
+    | 'jigawa'
+    | 'kaduna'
+    | 'kano'
+    | 'katsina'
+    | 'kebbi'
+    | 'kogi'
+    | 'kwara'
+    | 'lagos'
+    | 'nasarawa'
+    | 'niger'
+    | 'ogun'
+    | 'ondo'
+    | 'osun'
+    | 'oyo'
+    | 'plateau'
+    | 'rivers'
+    | 'sokoto'
+    | 'taraba'
+    | 'yobe'
+    | 'zamfara';
   postalCode?: string | null;
   country: 'NG';
   phone?: string | null;
@@ -649,7 +777,6 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   generateSlug?: T;
   slug?: T;
-  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -824,8 +951,12 @@ export interface OrdersSelect<T extends boolean = true> {
   customerEmail?: T;
   transactions?: T;
   status?: T;
-  amount?: T;
   currency?: T;
+  subtotal?: T;
+  shippingFee?: T;
+  tax?: T;
+  discount?: T;
+  grandTotal?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -963,9 +1094,9 @@ export interface Home {
         image: number | Media;
         title: string;
         /**
-         * Small text above the title (e.g. "New Arrival", "Promo Code: SALE20")
+         * Small text above the title in a badge (e.g. "New Arrival")
          */
-        subtitle?: string | null;
+        badge?: string | null;
         description?: string | null;
         links?:
           | {
@@ -977,11 +1108,6 @@ export interface Home {
               id?: string | null;
             }[]
           | null;
-        contentAlign?: ('left' | 'center' | 'right') | null;
-        /**
-         * Choose "Light Text" if the background image is dark.
-         */
-        theme?: ('dark' | 'light') | null;
         id?: string | null;
       }[]
     | null;
@@ -1006,6 +1132,82 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shipping-config".
+ */
+export interface ShippingConfig {
+  id: number;
+  /**
+   * Default shipping fee when state is not found or disabled.
+   */
+  defaultFee: number;
+  /**
+   * Configure shipping fees for each Nigerian state
+   */
+  states: {
+    /**
+     * Select a Nigerian state
+     */
+    state:
+      | 'abia'
+      | 'adamawa'
+      | 'akwa-ibom'
+      | 'anambra'
+      | 'bauchi'
+      | 'bayelsa'
+      | 'benue'
+      | 'borno'
+      | 'cross-river'
+      | 'delta'
+      | 'ebonyi'
+      | 'edo'
+      | 'ekiti'
+      | 'enugu'
+      | 'fct'
+      | 'gombe'
+      | 'imo'
+      | 'jigawa'
+      | 'kaduna'
+      | 'kano'
+      | 'katsina'
+      | 'kebbi'
+      | 'kogi'
+      | 'kwara'
+      | 'lagos'
+      | 'nasarawa'
+      | 'niger'
+      | 'ogun'
+      | 'ondo'
+      | 'osun'
+      | 'oyo'
+      | 'plateau'
+      | 'rivers'
+      | 'sokoto'
+      | 'taraba'
+      | 'yobe'
+      | 'zamfara';
+    /**
+     * Shipping fee for this state
+     */
+    fee?: number | null;
+    /**
+     * Enable or disable shipping to this state
+     */
+    enabled?: boolean | null;
+    id?: string | null;
+  }[];
+  /**
+   * Order subtotal amount in Naira above which shipping is free. Leave empty to disable free shipping.
+   */
+  freeShippingThreshold?: number | null;
+  /**
+   * VAT/Tax rate as a percentage (e.g., 7.5 for 7.5%). Default is 7.5% for Nigerian VAT.
+   */
+  taxRate: number;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1061,7 +1263,7 @@ export interface HomeSelect<T extends boolean = true> {
     | {
         image?: T;
         title?: T;
-        subtitle?: T;
+        badge?: T;
         description?: T;
         links?:
           | T
@@ -1075,8 +1277,6 @@ export interface HomeSelect<T extends boolean = true> {
                   };
               id?: T;
             };
-        contentAlign?: T;
-        theme?: T;
         id?: T;
       };
   productSections?:
@@ -1088,6 +1288,26 @@ export interface HomeSelect<T extends boolean = true> {
         showViewAll?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shipping-config_select".
+ */
+export interface ShippingConfigSelect<T extends boolean = true> {
+  defaultFee?: T;
+  states?:
+    | T
+    | {
+        state?: T;
+        fee?: T;
+        enabled?: T;
+        id?: T;
+      };
+  freeShippingThreshold?: T;
+  taxRate?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

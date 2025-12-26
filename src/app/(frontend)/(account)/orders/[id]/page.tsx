@@ -70,7 +70,11 @@ export default async function Order({ params, searchParams }: PageProps) {
         ],
       },
       select: {
-        amount: true,
+        grandTotal: true,
+        subtotal: true,
+        shippingFee: true,
+        tax: true,
+        discount: true,
         currency: true,
         items: true,
         customerEmail: true,
@@ -163,7 +167,7 @@ export default async function Order({ params, searchParams }: PageProps) {
               <Separator />
               <div className="flex items-center justify-between font-medium">
                 <span>Total</span>
-                {order.amount && <Price amount={order.amount} />}
+                {order.grandTotal && <Price amount={order.grandTotal} />}
               </div>
             </div>
           </CardContent>

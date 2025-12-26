@@ -5,7 +5,7 @@ import type { Address } from '@/payload-types'
 import { CreateAddressModal } from '@/components/addresses/create-address-modal'
 
 type Props = {
-  address: Partial<Omit<Address, 'country'>> & { country?: string } // Allow address to be partial and entirely optional as this is entirely for display purposes
+  address: Partial<Address> // Allow address to be partial and entirely optional as this is entirely for display purposes
   /**
    * Completely override the default actions
    */
@@ -36,26 +36,24 @@ export const AddressItem: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex items-center">
-      <div className="grow">
-        <p className="font-medium">
-          {address.title && <span>{address.title} </span>}
+    <div className="flex items-start justify-between gap-4">
+      <div className="space-y-1 text-sm">
+        <p className="font-semibold leading-none">
+          {address.title && <span>{address.title} - </span>}
           {address.firstName} {address.lastName}
         </p>
-        <p>{address.company && <span>{address.company} </span>}</p>
-        <p>{address.phone && <span>{address.phone}</span>}</p>
-        <p>
-          {address.addressLine1}
-          {address.addressLine2 && <>, {address.addressLine2}</>}
-        </p>
-        <p>
+        {address.company && <p className="text-muted-foreground">{address.company}</p>}
+        {address.phone && <p className="text-muted-foreground">{address.phone}</p>}
+        <p className="font-mono">{address.addressLine1}</p>
+        {address.addressLine2 && <p className="font-mono">{address.addressLine2}</p>}
+        <p className="font-mono">
           {address.city}, {address.state} {address.postalCode}
         </p>
-        <p>{address.country}</p>
+        <p className="font-mono">{address.country}</p>
       </div>
 
       {!hideActions && address.id && (
-        <div className="shrink flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           {actions ? (
             actions
           ) : (
