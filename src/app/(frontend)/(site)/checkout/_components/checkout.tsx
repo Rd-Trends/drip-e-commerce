@@ -23,6 +23,14 @@ import { ShippingInformation } from './shipping-information'
 import { Price } from '@/components/price'
 import { useAddresses } from '@/hooks/use-address'
 
+type AppliedCoupon = {
+  id: number
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  discount: number
+}
+
 export const CheckoutPage: React.FC = () => {
   const { user } = useAuth()
   const router = useRouter()
@@ -40,6 +48,7 @@ export const CheckoutPage: React.FC = () => {
   const [shippingAddress, setShippingAddress] = useState<Partial<Address>>()
   const [billingAddress, setBillingAddress] = useState<Partial<Address>>()
   const [billingAddressSameAsShipping, setBillingAddressSameAsShipping] = useState(true)
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
 
   const cartIsEmpty = !cart || !cart.items || !cart.items.length
   const canGoToPayment = Boolean(
@@ -57,16 +66,20 @@ export const CheckoutPage: React.FC = () => {
     return calculateShippingFee(shippingState, cart.subtotal, shippingConfig)
   }, [shippingConfig, shippingState, cart?.subtotal])
 
+  const discountedAmount = React.useMemo(() => {
+    if (!cart?.subtotal) return 0
+    return cart.subtotal - (appliedCoupon ? appliedCoupon.discount : 0)
+  }, [cart?.subtotal, appliedCoupon?.discount])
+
   const taxAmount = React.useMemo(() => {
-    if (!shippingConfig || !cart?.subtotal) return 0
-    return calculateTax(cart.subtotal, shippingConfig.taxRate || 7.5)
-  }, [shippingConfig, cart?.subtotal])
+    if (!shippingConfig) return 0
+    return calculateTax(discountedAmount, shippingConfig.taxRate || 7.5)
+  }, [shippingConfig, discountedAmount])
 
   const totalAmount = React.useMemo(() => {
-    const subtotal = cart?.subtotal || 0
     const shipping = shippingCalculation?.fee || 0
-    return subtotal + shipping + taxAmount
-  }, [cart?.subtotal, shippingCalculation?.fee, taxAmount])
+    return discountedAmount + shipping + taxAmount
+  }, [discountedAmount, shippingCalculation?.fee, taxAmount])
 
   // On initial load wait for addresses to be loaded and check to see if we can prefill a default one
   useEffect(() => {
@@ -87,6 +100,7 @@ export const CheckoutPage: React.FC = () => {
       setBillingAddressSameAsShipping(true)
       setEmail('')
       setEmailEditable(true)
+      setAppliedCoupon(null)
     }
   }, [])
 
@@ -132,6 +146,7 @@ export const CheckoutPage: React.FC = () => {
             ...(email ? { customerEmail: email } : {}),
             billingAddress,
             shippingAddress: billingAddressSameAsShipping ? billingAddress : shippingAddress,
+            ...(appliedCoupon && { couponId: appliedCoupon.id }),
           },
         },
         {
@@ -172,6 +187,7 @@ export const CheckoutPage: React.FC = () => {
       billingAddressSameAsShipping,
       shippingAddress,
       email,
+      appliedCoupon,
       handlePaymentSuccess,
       initiatePayment.mutate,
     ],
@@ -224,7 +240,7 @@ export const CheckoutPage: React.FC = () => {
 
         {error && (
           <Card className="border-destructive">
-            <CardContent className="pt-6">
+            <CardContent>
               <Alert variant="destructive">
                 <AlertCircleIcon className="h-4 w-4" />
                 <AlertTitle>{error}</AlertTitle>
@@ -252,6 +268,10 @@ export const CheckoutPage: React.FC = () => {
           shippingIsFree={shippingCalculation?.isFree}
           taxAmount={taxAmount}
           totalAmount={totalAmount}
+          appliedCoupon={appliedCoupon}
+          onCouponApplied={setAppliedCoupon}
+          onCouponRemoved={() => setAppliedCoupon(null)}
+          disabled={Boolean(paymentData)}
         >
           {!paymentData && (
             <Button

@@ -17,6 +17,7 @@ import sharp from 'sharp'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import { Categories } from '@/collections/categories'
+import { Coupons } from '@/collections/coupons'
 import { Media } from '@/collections/media'
 import { Users } from '@/collections/users'
 import { plugins } from './plugins'
@@ -29,12 +30,13 @@ import { Carts } from './collections/cart'
 import { Orders } from './collections/oder'
 import { Transactions } from './collections/transaction'
 import { ecommerceTranslationsEN } from './translations/en'
-import { initiatePaystackPaymentHandler } from './plugins/paystack/endpoints/initiate'
-import { confirmPaystackOrderHandler } from './plugins/paystack/endpoints/confirm-order'
+import { initiatePaystackPaymentHandler } from './endpoints/paystack/initiate'
+import { confirmPaystackOrderHandler } from './endpoints/paystack/confirm'
 import { Header } from './globals/header'
 import { Footer } from './globals/footer'
 import { Home } from './globals/home'
 import { ShippingConfig } from './globals/shipping-config'
+import { Banner } from './globals/banner'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -47,6 +49,7 @@ export default buildConfig({
   collections: [
     Users,
     Categories,
+    Coupons,
     Media,
     Addresses,
     Products,
@@ -57,7 +60,7 @@ export default buildConfig({
     Orders,
     Transactions,
   ],
-  globals: [Header, Footer, Home, ShippingConfig],
+  globals: [Header, Footer, Home, ShippingConfig, Banner],
   i18n: {
     translations: {
       en: ecommerceTranslationsEN,

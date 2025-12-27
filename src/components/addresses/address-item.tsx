@@ -3,6 +3,7 @@
 import React from 'react'
 import type { Address } from '@/payload-types'
 import { CreateAddressModal } from '@/components/addresses/create-address-modal'
+import { getStateLabel } from '@/lib/nigerian-states'
 
 type Props = {
   address: Partial<Address> // Allow address to be partial and entirely optional as this is entirely for display purposes
@@ -47,7 +48,8 @@ export const AddressItem: React.FC<Props> = ({
         <p className="font-mono">{address.addressLine1}</p>
         {address.addressLine2 && <p className="font-mono">{address.addressLine2}</p>}
         <p className="font-mono">
-          {address.city}, {address.state} {address.postalCode}
+          {address.city}, {address.state ? getStateLabel(address.state) || address.state : ''}{' '}
+          {address.postalCode}
         </p>
         <p className="font-mono">{address.country}</p>
       </div>

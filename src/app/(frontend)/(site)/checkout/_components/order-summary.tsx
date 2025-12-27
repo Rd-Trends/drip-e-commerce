@@ -7,6 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Cart } from '@/payload-types'
 import React from 'react'
+import { CouponInput } from '@/components/cart/coupon-input'
+
+type AppliedCoupon = {
+  id: number
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  discount: number
+}
 
 interface OrderSummaryProps {
   cart: Cart
@@ -14,6 +23,10 @@ interface OrderSummaryProps {
   shippingIsFree?: boolean
   taxAmount?: number
   totalAmount?: number
+  appliedCoupon?: AppliedCoupon | null
+  onCouponApplied?: (coupon: AppliedCoupon) => void
+  onCouponRemoved?: () => void
+  disabled?: boolean
   children?: React.ReactNode
 }
 
@@ -23,6 +36,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   shippingIsFree,
   taxAmount,
   totalAmount,
+  appliedCoupon,
+  onCouponApplied,
+  onCouponRemoved,
+  disabled = false,
   children,
 }) => {
   return (
@@ -130,9 +147,28 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <span>-</span>
             )}
           </div>
+          {appliedCoupon && (
+            <div className="flex justify-between text-sm text-green-600 dark:text-green-500">
+              <span>Discount ({appliedCoupon.code})</span>
+              <Price amount={-appliedCoupon.discount} as="span" />
+            </div>
+          )}
         </div>
 
         <Separator />
+
+        {onCouponApplied && onCouponRemoved && (
+          <>
+            <CouponInput
+              cartId={cart.id}
+              onCouponApplied={onCouponApplied}
+              onCouponRemoved={onCouponRemoved}
+              appliedCoupon={appliedCoupon || null}
+              disabled={disabled}
+            />
+            <Separator />
+          </>
+        )}
 
         <div className="flex justify-between items-center">
           <span className="text-lg font-semibold">Total</span>

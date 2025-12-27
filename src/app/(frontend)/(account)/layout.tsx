@@ -10,6 +10,7 @@ import { AccountNav } from '@/components/account/account-nav'
 import { Separator } from '@/components/ui/separator'
 import Section from '@/components/layout/section'
 import Container from '@/components/layout/container'
+import { TopBanner } from '@/components/layout/top-banner'
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const headers = await getHeaders()
@@ -18,6 +19,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <Fragment>
+      <TopBanner />
       <Navbar />
       <Section paddingY="xs">
         <Container className="space-y-0.5">

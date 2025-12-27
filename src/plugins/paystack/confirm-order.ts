@@ -1,7 +1,8 @@
 import { PaymentAdapter } from '@payloadcms/plugin-ecommerce/types'
 import Paystack from '@paystack/paystack-sdk'
-import { CollectionSlug } from 'payload'
+import { BasePayload, CollectionSlug } from 'payload'
 import { PaystackTransactionMetadata } from './initiate-payment'
+import { Coupon, User } from '@/payload-types'
 
 type Props = {
   secretKey: string
@@ -76,6 +77,7 @@ export const confirmOrder: NonNullable<PaymentAdapter>['confirmOrder'] = async (
         tax: paymentMetadata?.taxAmount || 0,
         shippingFee: paymentMetadata?.shippingAmount || 0,
         subtotal: paymentMetadata?.subtotalAmount || paymentIntent.data.amount,
+        discount: paymentMetadata?.discountAmount || 0,
         ...(req.user ? { customer: req.user.id } : { customerEmail }),
         items: cartItemsSnapshot,
         shippingAddress,
@@ -105,6 +107,11 @@ export const confirmOrder: NonNullable<PaymentAdapter>['confirmOrder'] = async (
       },
     })
 
+    // Track coupon usage if coupon was applied
+    if (paymentMetadata?.couponId) {
+      await trackCouponUsage(payload, paymentMetadata.couponId, req.user?.id || null)
+    }
+
     return {
       message: 'Payment initiated successfully',
       orderID: order.id,
@@ -114,5 +121,51 @@ export const confirmOrder: NonNullable<PaymentAdapter>['confirmOrder'] = async (
     payload.logger.error(error, 'Error confirming payment with Paystack')
 
     throw new Error(error instanceof Error ? error.message : 'Unknown error confirming payment')
+  }
+}
+
+/**
+ * Track coupon usage after successful order
+ * This should be called from the payment confirmation flow
+ * @param payload - Payload instance
+ * @param couponId - ID of the coupon used
+ * @param userId - ID of the user who used the coupon (optional)
+ */
+export async function trackCouponUsage(
+  payload: BasePayload,
+  couponId: number,
+  userId?: number | null,
+): Promise<void> {
+  try {
+    const coupon = await payload.findByID({
+      collection: 'coupons',
+      id: couponId,
+    })
+
+    if (!coupon) return
+
+    // Increment usage count
+    const updateData: Partial<Coupon> = {
+      usageCount: (coupon.usageCount || 0) + 1,
+    }
+
+    // Add user to usedBy list if userId provided
+    if (userId) {
+      const usedBy = coupon.usedBy || []
+      const usedByIds = usedBy.map((user: User | number) =>
+        typeof user === 'object' ? user.id : user,
+      )
+
+      // Add user if not already in the list (for tracking multiple uses)
+      updateData.usedBy = [...usedByIds, userId]
+    }
+
+    await payload.update({
+      collection: 'coupons',
+      id: couponId,
+      data: updateData,
+    })
+  } catch (error) {
+    payload.logger.error(error, 'Error tracking coupon usage')
   }
 }

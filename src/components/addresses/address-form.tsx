@@ -16,6 +16,7 @@ import { deepMergeSimple } from 'payload/shared'
 import React, { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { supportedCountries } from '@/lib/constants'
+import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 
 const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Mx.', 'Other']
 
@@ -279,17 +280,28 @@ export const AddressForm: React.FC<Props> = ({
               <Controller
                 name="state"
                 control={form.control}
+                rules={{ required: 'State is required.' }}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="state">State / Province</FieldLabel>
-                    <Input
-                      {...field}
-                      id="state"
-                      autoComplete="address-level1"
-                      placeholder="State or province"
-                      aria-invalid={fieldState.invalid}
-                      value={field.value || ''}
-                    />
+                    <FieldLabel htmlFor="state">State*</FieldLabel>
+                    <Select value={field.value || ''} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="state"
+                        className="w-full"
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <ScrollArea className="h-[200px]">
+                          {NIGERIAN_STATES.map((state) => (
+                            <SelectItem key={state.value} value={state.value}>
+                              {state.label}
+                            </SelectItem>
+                          ))}
+                        </ScrollArea>
+                      </SelectContent>
+                    </Select>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}

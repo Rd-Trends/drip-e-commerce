@@ -74,6 +74,7 @@ export interface Config {
   collections: {
     users: User;
     categories: Category;
+    coupons: Coupon;
     media: Media;
     addresses: Address;
     products: Product;
@@ -104,6 +105,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    coupons: CouponsSelect<false> | CouponsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
@@ -127,12 +129,14 @@ export interface Config {
     footer: Footer;
     home: Home;
     'shipping-config': ShippingConfig;
+    banner: Banner;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     home: HomeSelect<false> | HomeSelect<true>;
     'shipping-config': ShippingConfigSelect<false> | ShippingConfigSelect<true>;
+    banner: BannerSelect<false> | BannerSelect<true>;
   };
   locale: null;
   user: User & {
@@ -634,6 +638,76 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons".
+ */
+export interface Coupon {
+  id: number;
+  /**
+   * Unique coupon code (e.g., SAVE20, NEWYEAR2025). Will be converted to uppercase.
+   */
+  code: string;
+  /**
+   * Type of discount to apply
+   */
+  type: 'percentage' | 'fixed';
+  /**
+   * Discount value (percentage: 1-100, fixed: amount in Naira)
+   */
+  value?: number | null;
+  /**
+   * Fixed discount amount in Naira
+   */
+  fixedAmount?: number | null;
+  /**
+   * Minimum cart subtotal required to use this coupon
+   */
+  minPurchaseAmount?: number | null;
+  /**
+   * Maximum discount amount (for percentage coupons)
+   */
+  maxDiscountAmount?: number | null;
+  /**
+   * Date and time when coupon becomes valid
+   */
+  validFrom: string;
+  /**
+   * Date and time when coupon expires
+   */
+  validUntil: string;
+  /**
+   * Enable or disable this coupon
+   */
+  active?: boolean | null;
+  /**
+   * Total number of times this coupon can be used (leave empty for unlimited)
+   */
+  usageLimit?: number | null;
+  /**
+   * Maximum times a single user can use this coupon
+   */
+  maxUsesPerUser?: number | null;
+  /**
+   * Total number of times this coupon has been used
+   */
+  usageCount?: number | null;
+  usedBy?: (number | User)[] | null;
+  /**
+   * Restrict coupon to specific categories (leave empty for all products)
+   */
+  applicableCategories?: (number | Category)[] | null;
+  /**
+   * Restrict coupon to specific products (leave empty for all products)
+   */
+  applicableProducts?: (number | Product)[] | null;
+  /**
+   * Internal notes or public description for this coupon
+   */
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -663,6 +737,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'coupons';
+        value: number | Coupon;
       } | null)
     | ({
         relationTo: 'media';
@@ -777,6 +855,30 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons_select".
+ */
+export interface CouponsSelect<T extends boolean = true> {
+  code?: T;
+  type?: T;
+  value?: T;
+  fixedAmount?: T;
+  minPurchaseAmount?: T;
+  maxDiscountAmount?: T;
+  validFrom?: T;
+  validUntil?: T;
+  active?: T;
+  usageLimit?: T;
+  maxUsesPerUser?: T;
+  usageCount?: T;
+  usedBy?: T;
+  applicableCategories?: T;
+  applicableProducts?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1094,7 +1196,7 @@ export interface Home {
         image: number | Media;
         title: string;
         /**
-         * Small text above the title in a badge (e.g. "New Arrival")
+         * Small text above the title in a badge (e.g. "New Arrival", "Use code: SAVE20")
          */
         badge?: string | null;
         description?: string | null;
@@ -1213,6 +1315,37 @@ export interface ShippingConfig {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "banner".
+ */
+export interface Banner {
+  id: number;
+  /**
+   * Toggle to show or hide the banner across the site
+   */
+  isEnabled?: boolean | null;
+  /**
+   * The message to display in the banner
+   */
+  text?: string | null;
+  /**
+   * Choose the color scheme for the banner
+   */
+  variant?: ('info' | 'success' | 'warning' | 'promo') | null;
+  /**
+   * If enabled, users can close the banner. It will stay hidden until the banner content changes.
+   */
+  isDismissible?: boolean | null;
+  showLink?: boolean | null;
+  link?: {
+    label: string;
+    url: string;
+    newTab?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1308,6 +1441,27 @@ export interface ShippingConfigSelect<T extends boolean = true> {
       };
   freeShippingThreshold?: T;
   taxRate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "banner_select".
+ */
+export interface BannerSelect<T extends boolean = true> {
+  isEnabled?: T;
+  text?: T;
+  variant?: T;
+  isDismissible?: T;
+  showLink?: T;
+  link?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        newTab?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

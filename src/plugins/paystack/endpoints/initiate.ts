@@ -2,7 +2,7 @@ import { currenciesConfig } from '@/lib/constants'
 import { DefaultDocumentIDType, Endpoint } from 'payload'
 import { initiatePayment } from '../initiate-payment'
 import { ProductsValidation } from '@payloadcms/plugin-ecommerce/types'
-import { Product } from '@/payload-types'
+import { Cart, Product } from '@/payload-types'
 
 export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) => {
   const data = await req.json?.()
@@ -11,7 +11,7 @@ export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) =
 
   let currency: string = currenciesConfig.defaultCurrency
   let cartID: DefaultDocumentIDType = data?.cartID
-  let cart = undefined
+  let cart: Cart | undefined = undefined
   const billingAddress = data?.billingAddress
   const shippingAddress = data?.shippingAddress
 
@@ -236,6 +236,7 @@ export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) =
         currency,
         customerEmail,
         shippingAddress,
+        couponId: data?.couponId,
       },
       req,
       transactionsSlug: 'transactions',

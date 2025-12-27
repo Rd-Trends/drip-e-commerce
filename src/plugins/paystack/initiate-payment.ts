@@ -1,9 +1,10 @@
-import { Address } from '@/payload-types'
+import { Address, Coupon } from '@/payload-types'
 import { PaymentAdapter } from '@payloadcms/plugin-ecommerce/types'
 import Paystack from '@paystack/paystack-sdk'
 import { CollectionSlug } from 'payload'
 import { calculateShippingFee } from '@/utils/calculate-shipping'
 import { calculateTax } from '@/utils/calculate-tax'
+import { validateCoupon, calculateDiscount } from '@/utils/coupon-helpers'
 
 export type PaystackTransactionMetadata = {
   cartId: number
@@ -17,6 +18,8 @@ export type PaystackTransactionMetadata = {
   taxAmount: number
   shippingAmount: number
   subtotalAmount: number
+  discountAmount?: number
+  couponId?: number
 }
 
 export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = async ({
@@ -69,14 +72,45 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
   const shippingCalculation = calculateShippingFee(shippingState, subtotal, shippingConfig)
   const shippingFee = shippingCalculation.fee
 
+  // Handle coupon discount if provided
+  let discount = 0
+  let couponId: number | undefined
+  // @ts-ignore couponId can be string or number
+  const couponIdParam = data?.couponId
+
+  if (couponIdParam) {
+    try {
+      // Fetch and validate coupon
+      const coupon = await payload.findByID({
+        collection: 'coupons',
+        id: couponIdParam,
+        depth: 2,
+      })
+
+      if (coupon) {
+        const userId = req.user?.id || null
+        const validationResult = validateCoupon(coupon, cart as any, userId)
+
+        if (validationResult.valid && validationResult.discount) {
+          discount = validationResult.discount
+          couponId = couponIdParam
+        } else {
+          payload.logger.warn(`Coupon validation failed: ${validationResult.error}`)
+        }
+      }
+    } catch (error) {
+      payload.logger.error(`Error validating coupon during payment initiation: ${error}`)
+    }
+  }
+
+  const adjustedFee = subtotal - discount
+
   // Calculate tax on subtotal (before shipping)
   const taxRate = (shippingConfig.taxRate as number) || 7.5
-  const taxAmount = calculateTax(subtotal, taxRate)
+  const taxAmount = calculateTax(adjustedFee, taxRate)
 
   // Calculate grand total: subtotal + shipping + tax - discount
-  // Note: discount will be handled later if/when coupon system is implemented
-  const discount = 0
-  const grandTotal = subtotal + shippingFee + taxAmount - discount
+  const grandTotal = adjustedFee + shippingFee + taxAmount
 
   const paystack = new Paystack(secretKey)
 
@@ -119,6 +153,8 @@ export const initiatePayment: NonNullable<PaymentAdapter>['initiatePayment'] = a
         subtotalAmount: subtotal,
         shippingAmount: shippingFee,
         taxAmount: taxAmount,
+        discountAmount: discount,
+        couponId: couponId,
       } as PaystackTransactionMetadata),
     })
 

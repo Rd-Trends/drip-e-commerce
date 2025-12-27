@@ -57,7 +57,8 @@ export const Home: GlobalConfig = {
           type: 'text',
           label: 'Badge',
           admin: {
-            description: 'Small text above the title in a badge (e.g. "New Arrival")',
+            description:
+              'Small text above the title in a badge (e.g. "New Arrival", "Use code: SAVE20")',
           },
         },
         {
