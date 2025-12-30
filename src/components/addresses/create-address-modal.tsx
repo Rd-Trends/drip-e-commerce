@@ -52,8 +52,8 @@ export const CreateAddressModal: React.FC<Props> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild disabled={disabled}>
-        <Button variant={'outline'}>{buttonText}</Button>
+      <DialogTrigger render={<Button variant={'outline'} />} disabled={disabled}>
+        {buttonText}
       </DialogTrigger>
       <DialogContent className="p-0">
         <ScrollArea className="h-[80lvh] p-4 md:p-10">

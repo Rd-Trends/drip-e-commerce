@@ -12,14 +12,15 @@ import { calculateFees, initializePaystackTransaction } from './helpers'
 export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) => {
   try {
     const data = await req.json?.()
-    const payload = req.payload
     const user = req.user
 
     // Extract and validate customer email
     const customerEmail = getCustomerEmail(user, data?.customerEmail)
 
     // Get cart ID from user or data
-    let { cartID, cart } = getCartID(user, data?.cartID)
+    const cartData = getCartID(user, data?.cartID)
+    const cartID = cartData.cartID
+    let cart = cartData.cart
 
     // Fetch cart if not already available
     if (!cart) {
@@ -70,7 +71,9 @@ export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) =
 
     return Response.json({
       message: 'Payment initiated successfully',
-      ...paymentResponse,
+      reference: paymentResponse.reference,
+      accessCode: paymentResponse.accessCode,
+      breakdown: paymentResponse.breakdown,
     })
   } catch (error) {
     req.payload.logger.error(error, 'Error initiating payment.')

@@ -1,8 +1,7 @@
-import { isAdmin } from '@/access/isAdmin'
+import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { createTransactionsCollection } from '@payloadcms/plugin-ecommerce'
 import { addressFields } from './address/fields'
-import { paystackAdapter } from '@/plugins/paystack'
 
 export const Transactions = createTransactionsCollection({
   access: { isAdmin },
@@ -14,5 +13,34 @@ export const Transactions = createTransactionsCollection({
   customersSlug: 'users',
   cartsSlug: 'carts',
   ordersSlug: 'orders',
-  paymentMethods: [paystackAdapter({ secretKey: process.env.PAYSTACK_SECRET_KEY || '' })],
+  paymentMethods: [
+    // @ts-ignore
+    {
+      name: 'paystack',
+      label: 'Paystack',
+      group: {
+        name: 'paystack',
+        type: 'group',
+        admin: {
+          condition: (data) => {
+            const path = 'paymentMethod'
+
+            return data?.[path] === 'paystack'
+          },
+        },
+        fields: [
+          {
+            name: 'customerId',
+            type: 'number',
+            label: 'Paystack Customer ID',
+          },
+          {
+            name: 'reference',
+            type: 'text',
+            label: 'Paystack Payment Reference',
+          },
+        ],
+      },
+    },
+  ],
 })

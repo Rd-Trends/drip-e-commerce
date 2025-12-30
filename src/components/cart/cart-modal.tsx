@@ -14,9 +14,9 @@ import { ShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/button'
 import { Product } from '@/payload-types'
 import { DeleteItemButton } from './delete-item-button'
 import { CartItemAdjuster } from './cart-item-adjuster'
@@ -39,9 +39,7 @@ export function CartModal() {
 
   return (
     <Sheet onOpenChange={setIsOpen} open={isOpen}>
-      <SheetTrigger asChild>
-        <OpenCartButton quantity={totalQuantity} />
-      </SheetTrigger>
+      <SheetTrigger render={<OpenCartButton quantity={totalQuantity} />} />
 
       <SheetContent className="flex flex-col">
         <SheetHeader>
@@ -182,9 +180,9 @@ export function CartModal() {
                   </div>
                 )}
 
-                <Button asChild className="w-full">
-                  <Link href="/checkout">Proceed to Checkout</Link>
-                </Button>
+                <LinkButton href="/checkout" className="w-full">
+                  Proceed to Checkout
+                </LinkButton>
               </div>
             </div>
           </div>

@@ -2,11 +2,10 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import Autoplay from 'embla-carousel-autoplay'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/button'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
 import { Carousel, CarouselContent, CarouselDots, CarouselItem } from '@/components/ui/carousel'
@@ -47,9 +46,14 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
                             const { link } = linkItem
                             if (!link.url) return null
                             return (
-                              <Button key={i} size="lg" className="rounded-full" asChild>
-                                <Link href={link.url}>{link.label}</Link>
-                              </Button>
+                              <LinkButton
+                                key={i}
+                                size="lg"
+                                className="rounded-full"
+                                href={link.url}
+                              >
+                                {link.label}
+                              </LinkButton>
                             )
                           })}
                         </div>

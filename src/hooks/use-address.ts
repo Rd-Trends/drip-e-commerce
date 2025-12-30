@@ -1,6 +1,5 @@
 'use client'
 
-import type { Address } from '@/payload-types'
 import type { DefaultDocumentIDType } from 'payload'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'

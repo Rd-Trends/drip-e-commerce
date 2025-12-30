@@ -1,11 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { LinkButton, Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User } from '@/payload-types'
-import Link from 'next/link'
 import React from 'react'
 
 interface ContactInformationProps {
@@ -39,13 +38,17 @@ export const ContactInformation: React.FC<ContactInformationProps> = ({
         {!user && (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm">
             <span className="text-muted-foreground">Already have an account?</span>
-            <Button asChild variant="link" className="h-auto p-0 text-foreground">
-              <Link href="/login">Log in</Link>
-            </Button>
+            <LinkButton href="/login" variant="link" className="h-auto p-0 text-foreground">
+              Log in
+            </LinkButton>
             <span className="text-muted-foreground">or</span>
-            <Button asChild variant="link" className="h-auto p-0 text-foreground">
-              <Link href="/create-account">create an account</Link>
-            </Button>
+            <LinkButton
+              href="/create-account"
+              variant="link"
+              className="h-auto p-0 text-foreground"
+            >
+              create an account
+            </LinkButton>
           </div>
         )}
 
@@ -56,9 +59,9 @@ export const ContactInformation: React.FC<ContactInformationProps> = ({
                 <Label className="text-sm text-muted-foreground">Email</Label>
                 <p className="font-medium">{user.email}</p>
               </div>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/logout">Log out</Link>
-              </Button>
+              <LinkButton href="/logout" variant="outline" size="sm">
+                Log out
+              </LinkButton>
             </div>
           </div>
         ) : (

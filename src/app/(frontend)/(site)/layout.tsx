@@ -6,9 +6,11 @@ import { TopBanner } from '@/components/layout/top-banner'
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen justify-between">
-      <TopBanner />
-      <Navbar />
-      {children}
+      <div>
+        <TopBanner />
+        <Navbar />
+        {children}
+      </div>
       <Footer />
       <BottomNavigation />
     </div>

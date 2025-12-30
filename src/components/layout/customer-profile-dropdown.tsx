@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -50,7 +49,7 @@ export function UserProfileDropdownMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      {children}
       <DropdownMenuContent
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
         align="end"
@@ -70,24 +69,30 @@ export function UserProfileDropdownMenu({
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/account" className="flex items-center">
-            <UserIcon className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/orders" className="flex items-center">
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            <span>Orders</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/account/settings" className="flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
+        <DropdownMenuItem
+          render={
+            <Link href="/account" className="flex items-center">
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
+          }
+        />
+        <DropdownMenuItem
+          render={
+            <Link href="/orders" className="flex items-center">
+              <ShoppingBag className="mr-2 h-4 w-4" />
+              <span>Orders</span>
+            </Link>
+          }
+        />
+        <DropdownMenuItem
+          render={
+            <Link href="/account/settings" className="flex items-center">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          }
+        />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

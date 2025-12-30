@@ -1,5 +1,7 @@
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { Plugin } from 'payload'
 import { Product } from '@/payload-types'
 import { s3Storage } from '@payloadcms/storage-s3'
@@ -21,6 +23,40 @@ export const plugins: Plugin[] = [
   seoPlugin({
     generateTitle,
     generateURL,
+  }),
+  formBuilderPlugin({
+    fields: {
+      payment: false,
+    },
+    formSubmissionOverrides: {
+      admin: {
+        group: 'Content',
+      },
+    },
+    formOverrides: {
+      admin: {
+        group: 'Content',
+      },
+      fields: ({ defaultFields }) => {
+        return defaultFields.map((field) => {
+          if ('name' in field && field.name === 'confirmationMessage') {
+            return {
+              ...field,
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    FixedToolbarFeature(),
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                  ]
+                },
+              }),
+            }
+          }
+          return field
+        })
+      },
+    },
   }),
   ...(isLocal
     ? []

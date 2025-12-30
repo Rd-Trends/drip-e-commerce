@@ -41,14 +41,16 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn('md:hidden')}>
-          <MenuIcon className="size-5" />
-          <span className="sr-only">
-            Open mobile <menu></menu>
-          </span>
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger
+        render={
+          <Button variant="ghost" size="icon" className={cn('md:hidden')}>
+            <MenuIcon className="size-5" />
+            <span className="sr-only">
+              Open mobile <menu></menu>
+            </span>
+          </Button>
+        }
+      />
       <SheetContent
         side="left"
         className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"

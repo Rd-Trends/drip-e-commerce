@@ -30,20 +30,27 @@ import { Carts } from './collections/cart'
 import { Orders } from './collections/oder'
 import { Transactions } from './collections/transaction'
 import { ecommerceTranslationsEN } from './translations/en'
-import { initiatePaystackPaymentHandler } from './endpoints/paystack/initiate'
-import { confirmPaystackOrderHandler } from './endpoints/paystack/confirm'
 import { Header } from './globals/header'
 import { Footer } from './globals/footer'
 import { Home } from './globals/home'
 import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
+import { endpoints } from './endpoints'
+import { Pages } from './collections/Pages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    components: {},
+    components: {
+      views: {
+        analytics: {
+          Component: '/src/views/analytics/index',
+          path: '/analytics',
+        },
+      },
+    },
     user: Users.slug,
   },
   collections: [
@@ -59,6 +66,7 @@ export default buildConfig({
     Carts,
     Orders,
     Transactions,
+    Pages
   ],
   globals: [Header, Footer, Home, ShippingConfig, Banner],
   i18n: {
@@ -106,19 +114,7 @@ export default buildConfig({
       ]
     },
   }),
-  //email: nodemailerAdapter(),
-  endpoints: [
-    {
-      path: '/payments/paystack/initiate',
-      method: 'post',
-      handler: initiatePaystackPaymentHandler,
-    },
-    {
-      path: '/payments/paystack/confirm-order',
-      method: 'post',
-      handler: confirmPaystackOrderHandler,
-    },
-  ],
+  endpoints,
   plugins,
   email: nodemailerAdapter(),
   secret: process.env.PAYLOAD_SECRET || '',

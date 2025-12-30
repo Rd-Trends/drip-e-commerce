@@ -1,3 +1,4 @@
+import { InitializePaystackTransactionResult } from '@/endpoints/paystack/initiate/helpers'
 import type { DefaultDocumentIDType } from 'payload'
 
 /**
@@ -58,6 +59,11 @@ export type ConfirmOrderOptions = {
   additionalData?: Record<string, unknown>
 }
 
+type InitiatePaymentResponse = Pick<
+  InitializePaystackTransactionResult,
+  'reference' | 'accessCode' | 'transactionID' | 'breakdown'
+>
+
 export const paymentApi = {
   /**
    * Initiate payment for a cart
@@ -65,7 +71,7 @@ export const paymentApi = {
   initiatePayment: async (
     paymentMethodID: string,
     options: InitiatePaymentOptions,
-  ): Promise<Record<string, unknown>> => {
+  ): Promise<InitiatePaymentResponse> => {
     const { cartID, cartSecret, currencyCode, additionalData } = options
 
     if (!cartID) {
@@ -88,7 +94,7 @@ export const paymentApi = {
       throw new Error(data.error)
     }
 
-    return data
+    return data as InitiatePaymentResponse
   },
 
   /**
@@ -97,7 +103,7 @@ export const paymentApi = {
   confirmOrder: async (
     paymentMethodID: string,
     options: ConfirmOrderOptions,
-  ): Promise<Record<string, unknown>> => {
+  ): Promise<{ orderID: number; message: string }> => {
     const { cartID, cartSecret, currencyCode, additionalData } = options
 
     if (!cartID) {
@@ -120,6 +126,6 @@ export const paymentApi = {
       throw new Error(data.error)
     }
 
-    return data
+    return data as { orderID: number; message: string }
   },
 }

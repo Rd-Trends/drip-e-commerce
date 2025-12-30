@@ -2,6 +2,7 @@ import { ProductGridItem } from '@/components/product/grid-item'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Fragment } from 'react'
+import { NoProductFound } from './_components/no-product-found'
 
 export const metadata = {
   description: 'Search for products in the store.',
@@ -92,17 +93,15 @@ export default async function ShopPage({ searchParams }: Props) {
 
   return (
     <Fragment>
-      {searchValue ? (
+      {!!searchValue && !!products.docs?.length && (
         <p className="mb-4">
-          {products.docs?.length === 0
-            ? 'There are no products that match '
-            : `Showing ${products.docs.length} ${resultsText} for `}
+          {`Showing ${products.docs.length} ${resultsText} for `}
           <span className="font-bold">&quot;{searchValue}&quot;</span>
         </p>
-      ) : null}
+      )}
 
       {!searchValue && products.docs?.length === 0 && (
-        <p className="mb-4">No products found. Please try different filters.</p>
+        <NoProductFound searchQuery={searchValue as string} categories={categoryIds} />
       )}
 
       {products?.docs.length > 0 ? (

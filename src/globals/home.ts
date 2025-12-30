@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 import { link } from '@/fields/link'
 import { revalidateTag } from 'next/cache'
+import { Home as THome } from '@/payload-types'
 
 export const Home: GlobalConfig = {
   slug: 'home',
@@ -16,12 +17,12 @@ export const Home: GlobalConfig = {
       },
     ],
     beforeChange: [
-      async ({ data }) => {
+      async ({ data }: { data: THome }) => {
         // Clear category field for non-category types
         if (data?.productSections) {
-          data.productSections = data.productSections.map((section: any) => {
+          data.productSections = data.productSections.map((section) => {
             if (section.type !== 'category' && section.category) {
-              const { category, ...rest } = section
+              const { category: _, ...rest } = section
               return rest
             }
             return section

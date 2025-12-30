@@ -1,4 +1,4 @@
-import { Cart } from '@/payload-types'
+import { Address, Cart } from '@/payload-types'
 import { PayloadRequest } from 'payload'
 import Paystack from '@paystack/paystack-sdk'
 import { calculateShippingFee } from '@/utils/calculate-shipping'
@@ -91,12 +91,12 @@ type InitializePaystackTransactionParams = {
   currency: string
   cart: Cart
   fees: Awaited<ReturnType<typeof calculateFees>>
-  billingAddress?: any
-  shippingAddress?: any
+  billingAddress?: Address
+  shippingAddress?: Address
   req: PayloadRequest
 }
 
-type InitializePaystackTransactionResult = {
+export type InitializePaystackTransactionResult = {
   reference: string
   authorizationUrl?: string
   accessCode?: string
@@ -190,6 +190,7 @@ export async function initializePaystackTransaction({
   })
 
   // Create transaction record in database
+  // @ts-ignore – Type issue with create method (don't have a draft field)
   const transaction = await payload.create({
     collection: 'transactions',
     data: {

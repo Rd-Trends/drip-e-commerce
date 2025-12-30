@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -42,32 +43,37 @@ export default function FilterDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant={'outline'} className="flex-1 text-left justify-start">
-          {active || placeholder}
-        </Button>
+      <DropdownMenuTrigger
+        render={<Button variant={'outline'} className="flex-1 text-left justify-start" />}
+      >
+        {active || placeholder}
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-        {!!title && (
-          <>
-            <DropdownMenuLabel>{title}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        {list.map((item) => (
-          <DropdownMenuItem key={item.title} asChild>
-            <Link
-              href={createUrl({
-                pathname,
-                listItem: item,
-                searchParams: new URLSearchParams(searchParams.toString()),
-                queryKey,
-              })}
-            >
-              {item.title}
-            </Link>
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent>
+        <DropdownMenuGroup>
+          {!!title && (
+            <>
+              <DropdownMenuLabel>{title}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {list.map((item) => (
+            <DropdownMenuItem
+              key={item.title}
+              render={
+                <Link
+                  href={createUrl({
+                    pathname,
+                    listItem: item,
+                    searchParams: new URLSearchParams(searchParams.toString()),
+                    queryKey,
+                  })}
+                >
+                  {item.title}
+                </Link>
+              }
+            />
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

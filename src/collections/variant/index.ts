@@ -1,5 +1,5 @@
-import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
-import { isAdmin } from '@/access/isAdmin'
+import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
+import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { createVariantsCollection } from '@payloadcms/plugin-ecommerce'
 import { CollectionConfig } from 'payload'

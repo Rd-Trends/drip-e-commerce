@@ -8,13 +8,14 @@ import { useQueryStates, parseAsInteger } from 'nuqs'
 import React, { useEffect, useMemo } from 'react'
 
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { Skeleton } from '../ui/skeleton'
 
 type Props = {
   gallery: NonNullable<Product['gallery']>
   variantTypes?: Product['variantTypes']
 }
 
-export const Gallery: React.FC<Props> = ({ gallery, variantTypes }) => {
+const Gallery: React.FC<Props> = ({ gallery, variantTypes }) => {
   // Create dynamic parser config for all variant types
   const parserConfig = useMemo(() => {
     const config: Record<string, ReturnType<typeof parseAsInteger.withDefault>> = {
@@ -44,7 +45,7 @@ export const Gallery: React.FC<Props> = ({ gallery, variantTypes }) => {
   }, [api])
 
   useEffect(() => {
-    if (!api || !variantTypes) return
+    if (!api) return
 
     // Get array of selected options as {key: variantTypeName, value: optionId}
     const selectedOptions = Object.entries(params)
@@ -103,3 +104,21 @@ export const Gallery: React.FC<Props> = ({ gallery, variantTypes }) => {
     </div>
   )
 }
+
+const GallerySkeleton = () => {
+  return (
+    <div>
+      <div className="relative w-full overflow-hidden mb-8">
+        <Skeleton className="w-full aspect-square rounded-lg" />
+      </div>
+
+      <div className="flex gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="flex-1 aspect-square rounded-lg" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export { Gallery, GallerySkeleton }

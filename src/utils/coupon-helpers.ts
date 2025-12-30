@@ -1,4 +1,4 @@
-import { Cart, Coupon, Product, User } from '@/payload-types'
+import { Cart, Coupon, Product } from '@/payload-types'
 
 /**
  * Validation result for coupon check
@@ -181,5 +181,3 @@ export function validateCoupon(
     coupon,
   }
 }
-
-

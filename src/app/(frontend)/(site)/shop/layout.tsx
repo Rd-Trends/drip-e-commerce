@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { FilterDropdowns } from './_components/dropdowns'
 import { CategoryList, SortingList } from './_components/lists'
 import Section from '@/components/layout/section'

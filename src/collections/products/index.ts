@@ -1,9 +1,9 @@
-import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
-import { isAdmin } from '@/access/isAdmin'
+import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
+import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
+import { revalidateProduct } from '@/utils/revalidate-product'
 import { createProductsCollection } from '@payloadcms/plugin-ecommerce'
-import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -19,6 +19,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import { CollectionConfig, DefaultDocumentIDType, slugField, Where } from 'payload'
+import type { Product as TProduct } from '@/payload-types'
 
 const defaultCollection = createProductsCollection({
   access: { isAdmin, adminOrPublishedStatus },
@@ -36,6 +37,29 @@ export const Products: CollectionConfig = {
   labels: {
     singular: 'Product',
     plural: 'Products',
+  },
+
+  hooks: {
+    afterChange: [
+      ({ doc, operation, context }) => {
+        // Revalidate cache when product is updated or published
+        if (
+          doc.slug &&
+          (operation === 'update' || operation === 'create') &&
+          !context.disableRevalidation
+        ) {
+          revalidateProduct(doc.slug)
+        }
+      },
+    ],
+    afterDelete: [
+      ({ doc, context }) => {
+        // Revalidate cache when product is deleted
+        if (doc.slug && !context.disableRevalidation) {
+          revalidateProduct(doc.slug)
+        }
+      },
+    ],
   },
 
   admin: {
@@ -114,9 +138,9 @@ export const Products: CollectionConfig = {
                       return data?.enableVariants === true && data?.variantTypes?.length > 0
                     },
                   },
-                  filterOptions: ({ data }) => {
+                  filterOptions: ({ data }: { data: TProduct }) => {
                     if (data?.enableVariants && data?.variantTypes?.length) {
-                      const variantTypeIDs = data.variantTypes.map((item: any) => {
+                      const variantTypeIDs = data.variantTypes.map((item) => {
                         if (typeof item === 'object' && item?.id) {
                           return item.id
                         }
@@ -217,6 +241,13 @@ export const Products: CollectionConfig = {
       },
       hasMany: true,
       relationTo: 'categories',
+      required: true,
+      validate: (categories) => {
+        if (!categories || (Array.isArray(categories) && categories.length === 0)) {
+          return 'At least one category is required.'
+        }
+        return true
+      },
     },
     {
       name: 'isFeatured',

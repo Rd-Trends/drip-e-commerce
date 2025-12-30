@@ -1,8 +1,6 @@
 import * as React from 'react'
-import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
 
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -53,9 +51,9 @@ export async function RecentOrders({ user }: { user: User }) {
         )}
       </CardContent>
       <CardFooter>
-        <Button asChild variant="outline">
-          <Link href="/orders">View all orders</Link>
-        </Button>
+        <LinkButton href="/orders" variant="outline">
+          View all orders
+        </LinkButton>
       </CardFooter>
     </Card>
   )
@@ -98,9 +96,9 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => {
       </CardHeader>
       <CardContent>{children}</CardContent>
       <CardFooter>
-        <Button asChild variant="outline">
-          <Link href="/orders">View all orders</Link>
-        </Button>
+        <LinkButton href="/orders" variant="outline">
+          View all orders
+        </LinkButton>
       </CardFooter>
     </Card>
   )

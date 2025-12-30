@@ -1,7 +1,9 @@
+import Link from 'next/link'
+
 export function Logo() {
   return (
-    <div className="font-bold text-xl">
+    <Link href="/" className="font-bold text-xl no-underline select-none">
       Drip<span className="text-primary">.</span>
-    </div>
+    </Link>
   )
 }

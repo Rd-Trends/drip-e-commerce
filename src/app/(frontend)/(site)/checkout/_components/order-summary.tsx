@@ -53,7 +53,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             if (typeof item.product === 'object' && item.product) {
               const {
                 product,
-                product: { id, meta, title, gallery },
+                product: {  meta, title, gallery },
                 quantity,
                 variant,
               } = item

@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { UserProfileDropdownMenu } from '../customer-profile-dropdown'
 import { useAuth } from '@/providers/auth'
 import { getUserInitials } from '@/utils/get-user-initials'
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export function CustomerProfile() {
   const { user, isLoading } = useAuth()
@@ -23,25 +23,29 @@ export function CustomerProfile() {
   if (!user) {
     return (
       <div className="hidden md:flex items-center gap-2">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/login">Sign in</Link>
-        </Button>
-        <Button size="sm" asChild>
-          <Link href="/signup">Sign up</Link>
-        </Button>
+        <LinkButton href="/login" variant="ghost" size="sm">
+          Sign in
+        </LinkButton>
+        <LinkButton href="/signup" size="sm">
+          Sign up
+        </LinkButton>
       </div>
     )
   }
 
   return (
     <UserProfileDropdownMenu user={user}>
-      <Button variant="ghost" className="relative h-8 w-8 rounded-full hidden md:inline-flex">
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full hidden md:inline-flex" />
+        }
+      >
         <Avatar className="h-8 w-8">
           <AvatarFallback className="bg-primary text-primary-foreground">
             {getUserInitials(user.name)}
           </AvatarFallback>
         </Avatar>
-      </Button>
+      </DropdownMenuTrigger>
     </UserProfileDropdownMenu>
   )
 }

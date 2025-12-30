@@ -1,6 +1,6 @@
 import { OrderStatus } from './order-status'
 import { Price } from '@/components/price'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/button'
 import { Order } from '@/payload-types'
 import { formatDateTime } from '@/utils/format-date-time'
 import Link from 'next/link'
@@ -44,9 +44,13 @@ export const OrderItem: React.FC<Props> = ({ order }) => {
         </p>
       </div>
 
-      <Button variant="outline" asChild className="self-start sm:self-auto">
-        <Link href={`/orders/${order.id}`}>View Order</Link>
-      </Button>
+      <LinkButton
+        variant="outline"
+        href={`/orders/${order.id}`}
+        className="self-start sm:self-auto"
+      >
+        View Order
+      </LinkButton>
     </div>
   )
 }

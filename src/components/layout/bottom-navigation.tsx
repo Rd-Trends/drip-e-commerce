@@ -12,7 +12,7 @@ export function BottomNavigation() {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (pathname.startsWith('/product/')) {
+    if (pathname.startsWith('/products/')) {
       setShowBottomNav(false)
     } else {
       setShowBottomNav(true)

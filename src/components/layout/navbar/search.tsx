@@ -1,6 +1,5 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
 import { SearchIcon } from 'lucide-react'
 import Form from 'next/form'
 import {
@@ -70,14 +69,15 @@ export function SearchSkeleton() {
 function MobileSearchDialog() {
   const [open, onOpenChange] = useState(false)
 
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <SearchIcon className="size-5" />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <SearchIcon className="size-5" />
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Search Products</DialogTitle>

@@ -6,14 +6,18 @@ import { variantsSeedData } from './variants'
 import { shippingConfigSeedData } from './shipping-config'
 
 const collections: CollectionSlug[] = [
-  'users',
   'categories',
   'media',
   'addresses',
   'products',
   'variants',
+  'coupons',
+  'pages',
+  'forms',
+  'form-submissions',
   'variantOptions',
   'variantTypes',
+  'variants',
   'carts',
   'transactions',
   'orders',
@@ -92,7 +96,7 @@ async function main() {
       loadLocalImage('public/media/tshirt-black.png'),
       loadLocalImage('public/media/tshirt-white.png'),
     ])
-    const [uploadedBlackImage, uploadedWhiteImage] = await Promise.all([
+    const [uploadedBlackImage] = await Promise.all([
       payload.create({
         collection: 'media',
         data: { alt: 'Black T-Shirt' },
@@ -124,25 +128,25 @@ async function main() {
   process.exit(0)
 }
 
-async function fetchFileByURL(url: string): Promise<File> {
-  const res = await fetch(url, {
-    credentials: 'include',
-    method: 'GET',
-  })
+// async function fetchFileByURL(url: string): Promise<File> {
+//   const res = await fetch(url, {
+//     credentials: 'include',
+//     method: 'GET',
+//   })
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch file from ${url}, status: ${res.status}`)
-  }
+//   if (!res.ok) {
+//     throw new Error(`Failed to fetch file from ${url}, status: ${res.status}`)
+//   }
 
-  const data = await res.arrayBuffer()
+//   const data = await res.arrayBuffer()
 
-  return {
-    name: url.split('/').pop() || `file-${Date.now()}`,
-    data: Buffer.from(data),
-    mimetype: `image/${url.split('.').pop()}`,
-    size: data.byteLength,
-  }
-}
+//   return {
+//     name: url.split('/').pop() || `file-${Date.now()}`,
+//     data: Buffer.from(data),
+//     mimetype: `image/${url.split('.').pop()}`,
+//     size: data.byteLength,
+//   }
+// }
 
 async function loadLocalImage(filePath: string): Promise<File> {
   const fs = await import('fs/promises')

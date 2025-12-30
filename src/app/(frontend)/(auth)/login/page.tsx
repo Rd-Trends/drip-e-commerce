@@ -75,7 +75,6 @@ export default function LoginPage() {
                     placeholder="Email"
                     autoComplete="email"
                     disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -105,7 +104,6 @@ export default function LoginPage() {
                     placeholder="Password"
                     autoComplete="current-password"
                     disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -115,7 +113,7 @@ export default function LoginPage() {
 
           {/* Privacy Policy */}
           <p className="text-muted-foreground text-center text-xs leading-relaxed">
-            By continuing, I agree to Drip's{' '}
+            By continuing, I agree to Drip&apos;s{' '}
             <Link href="/privacy-policy" className="underline hover:text-foreground">
               Privacy Policy
             </Link>{' '}

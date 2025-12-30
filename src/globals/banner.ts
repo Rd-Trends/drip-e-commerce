@@ -1,7 +1,8 @@
 import type { GlobalConfig } from 'payload'
 import { revalidateTag } from 'next/cache'
-import { adminOnly } from '@/access/adminOnly'
+import { adminOnly } from '@/access/admin-only'
 import { link } from '@/fields/link'
+import { Banner as TBanner } from '@/payload-types'
 
 export const Banner: GlobalConfig = {
   slug: 'banner',
@@ -49,7 +50,7 @@ export const Banner: GlobalConfig = {
           value: 'warning',
         },
         {
-          label: 'Promo (Purple)',
+          label: 'Promo (Primary Color)',
           value: 'promo',
         },
       ],
@@ -82,7 +83,7 @@ export const Banner: GlobalConfig = {
       appearances: false,
       overrides: {
         admin: {
-          condition: (data: any) => data.isEnabled && data.showLink,
+          condition: (data: TBanner) => data.isEnabled && data.showLink,
         },
       },
     }),

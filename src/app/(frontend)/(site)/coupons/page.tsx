@@ -2,7 +2,7 @@ import { Section } from '@/components/layout/section'
 import { Container } from '@/components/layout/container'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { Tag, Clock, ShoppingBag } from 'lucide-react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -19,7 +19,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -103,9 +102,9 @@ async function CouponList() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/shop">Browse Products</Link>
-          </Button>
+          <LinkButton href="/shop" variant="outline" size="sm">
+            Browse Products
+          </LinkButton>
         </EmptyContent>
       </Empty>
     )

@@ -1,7 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { revalidateTag } from 'next/cache'
-import { adminOnly } from '@/access/adminOnly'
+import { adminOnly } from '@/access/admin-only'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 import { currenciesConfig } from '@/lib/constants'
 import { amountField } from '@payloadcms/plugin-ecommerce'

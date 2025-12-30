@@ -1,5 +1,5 @@
-import { isAdmin } from '@/access/isAdmin'
-import { isDocumentOwner } from '@/access/isDocumentOwner'
+import { isAdmin } from '@/access/is-admin'
+import { isDocumentOwner } from '@/access/is-document-owner'
 import { currenciesConfig } from '@/lib/constants'
 import { createCartsCollection } from '@payloadcms/plugin-ecommerce'
 import { CollectionConfig } from 'payload'

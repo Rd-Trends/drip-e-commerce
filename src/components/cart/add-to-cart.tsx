@@ -7,7 +7,7 @@ import type { Product } from '@/payload-types'
 
 import { useCart } from '@/providers/cart'
 import clsx from 'clsx'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 type Props = {
   product: Product

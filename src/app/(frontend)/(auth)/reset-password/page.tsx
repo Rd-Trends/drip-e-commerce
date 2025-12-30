@@ -104,7 +104,7 @@ export default function ResetPasswordPage() {
           <h1 className="text-xl font-bold tracking-tight">Create a new password</h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Enter your new password below. Make sure it's at least 6 characters long.
+            Enter your new password below. Make sure it&apos;s at least 6 characters long.
           </p>
         </div>
 
@@ -126,7 +126,6 @@ export default function ResetPasswordPage() {
                     placeholder="New Password"
                     autoComplete="new-password"
                     disabled={isPending}
-                    className="h-11"
                   />
                   <FieldDescription>Must be at least 6 characters long.</FieldDescription>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -149,7 +148,6 @@ export default function ResetPasswordPage() {
                     placeholder="Confirm New Password"
                     autoComplete="new-password"
                     disabled={isPending}
-                    className="h-11"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

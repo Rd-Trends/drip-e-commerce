@@ -107,7 +107,7 @@ type VerifyTransactionData = {
     international_format_phone: unknown
   }
   plan: unknown
-  split: {}
+  split: Record<string, unknown>
   order_id: unknown
   paidAt: string
   createdAt: string
@@ -117,8 +117,8 @@ type VerifyTransactionData = {
   fees_breakdown: unknown
   connect: unknown
   transaction_date: string
-  plan_object: {}
-  subaccount: {}
+  plan_object: Record<string, unknown>
+  subaccount: Record<string, unknown>
 }
 
 type CreateCustomerPayload = {

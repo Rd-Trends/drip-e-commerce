@@ -152,7 +152,7 @@ export default function SignupPage() {
 
           {/* Privacy Policy */}
           <p className="text-muted-foreground text-center text-xs leading-relaxed">
-            By creating an account, you agree to Drip's{' '}
+            By creating an account, you agree to Drip&apos;s{' '}
             <Link href="/privacy-policy" className="underline hover:text-foreground">
               Privacy Policy
             </Link>{' '}

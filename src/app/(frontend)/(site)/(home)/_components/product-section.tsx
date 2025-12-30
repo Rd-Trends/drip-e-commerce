@@ -1,11 +1,11 @@
-import Link from 'next/link'
+
 import configPromise from '@payload-config'
 import { getPayload, Where } from 'payload'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
 import { Category, Home } from '@/payload-types'
 import { ProductGridItem, ProductGridItemSkeleton } from '@/components/product/grid-item'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
@@ -29,12 +29,15 @@ export function ProductSection({ title, showViewAll = true, type, category }: Pr
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
           {showViewAll && (
-            <Button variant="ghost" size="sm" asChild className="group">
-              <Link href={getViewAllLink(type, categorySlug)}>
-                View All
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
+            <LinkButton
+              href={getViewAllLink(type, categorySlug)}
+              variant="ghost"
+              size="sm"
+              className="group"
+            >
+              View All
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </LinkButton>
           )}
         </div>
 

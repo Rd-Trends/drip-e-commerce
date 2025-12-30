@@ -7,11 +7,11 @@ import { Price } from '@/components/price'
 import React, { Suspense } from 'react'
 
 import { VariantSelector } from './variant-selector'
-;('@/providers/currency')
 import { StockIndicator } from '@/components/product/stockInd-indicator'
 import { useCurrency } from '@/providers/currency'
+import { Skeleton } from '../ui/skeleton'
 
-export function ProductDescription({ product }: { product: Product }) {
+function ProductDescription({ product }: { product: Product }) {
   const { currency } = useCurrency()
   let amount = 0,
     lowestAmount = 0,
@@ -91,6 +91,49 @@ export function ProductDescription({ product }: { product: Product }) {
       <Suspense fallback={null}>
         <AddToCart product={product} />
       </Suspense>
+    </div>
+  )
+}
+
+export { ProductDescription }
+
+export const ProductDescriptionSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Title and Price */}
+      <div className="flex items-start justify-between gap-4">
+        <Skeleton className="h-9 rounded w-3/4" />
+        <Skeleton className="h-9 rounded w-24" />
+      </div>
+      {/* Description */}
+      <div className="space-y-2">
+        <Skeleton className="h-8 rounded w-5/6" />
+        <Skeleton className="h-12 rounded w-full" />
+        <Skeleton className="h-8 rounded w-4/5" />
+      </div>
+      {/* Variant Selector */}
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <Skeleton className="h-4 rounded w-28" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 rounded-full" />
+            <Skeleton className="h-10 rounded-full" />
+            <Skeleton className="h-10 rounded-full" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Skeleton className="h-4 rounded w-28" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-20 rounded-full" />
+            <Skeleton className="h-10 w-20 rounded-full" />
+            <Skeleton className="h-10 w-20 rounded-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Add to Cart */}
+      <Skeleton className="h-12 rounded-full w-full" />
     </div>
   )
 }

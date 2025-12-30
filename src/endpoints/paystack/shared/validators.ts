@@ -1,6 +1,6 @@
 import { currenciesConfig } from '@/lib/constants'
 import { Cart, Product } from '@/payload-types'
-import { CurrenciesConfig, ProductsValidation } from '@payloadcms/plugin-ecommerce/types'
+import { ProductsValidation } from '@payloadcms/plugin-ecommerce/types'
 import { DefaultDocumentIDType, PayloadRequest } from 'payload'
 
 /**

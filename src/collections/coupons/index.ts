@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { amountField } from '@payloadcms/plugin-ecommerce'
 
-import { adminOnly } from '@/access/adminOnly'
-import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
-import { publicAccess } from '@/access/publicAccess'
+import { adminOnly } from '@/access/admin-only'
+import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
+import { publicAccess } from '@/access/public-access'
 import { currenciesConfig } from '@/lib/constants'
+import type { Coupon } from '@/payload-types'
 
 export const Coupons: CollectionConfig = {
   slug: 'coupons',
@@ -61,7 +62,7 @@ export const Coupons: CollectionConfig = {
         description: 'Discount value (percentage: 1-100, fixed: amount in Naira)',
         condition: (data) => data.type === 'percentage',
       },
-      validate: (value: any, { data }: any) => {
+      validate: (value: unknown, { data }: { data: Partial<Coupon> }) => {
         if (typeof value !== 'number') return true
         if (data.type === 'percentage' && (value < 0 || value > 100)) {
           return 'Percentage value must be between 0 and 100'

@@ -52,8 +52,8 @@ export default function ForgotPasswordPage() {
             <h1 className="text-xl font-bold tracking-tight">Check your email</h1>
 
             <p className="text-muted-foreground text-sm leading-relaxed">
-              We've sent a password reset link to <strong>{form.getValues('email')}</strong>. Please
-              check your inbox and follow the instructions to reset your password.
+              We&apos;ve sent a password reset link to <strong>{form.getValues('email')}</strong>.
+              Please check your inbox and follow the instructions to reset your password.
             </p>
           </div>
 
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
           {/* Resend Link */}
           <div className="mt-6">
             <p className="text-muted-foreground text-sm">
-              Didn't receive the email?{' '}
+              Didn&apos;t receive the email?{' '}
               <button
                 type="button"
                 onClick={() => setEmailSent(false)}
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-xl font-bold tracking-tight">Reset your password</h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         </div>
 
@@ -113,10 +113,9 @@ export default function ForgotPasswordPage() {
                     placeholder="Email"
                     autoComplete="email"
                     disabled={isPending}
-                    className="h-11"
                   />
                   <FieldDescription>
-                    We'll send a password reset link to this email address.
+                    We&apos;ll send a password reset link to this email address.
                   </FieldDescription>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

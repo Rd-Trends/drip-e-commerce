@@ -14,13 +14,7 @@ type Props = {
   currencyCode?: string
 }
 
-export const ProductItem: React.FC<Props> = ({
-  product,
-  style = 'default',
-  quantity,
-  variant,
-  currencyCode,
-}) => {
+export const ProductItem: React.FC<Props> = ({ product, quantity, variant, currencyCode }) => {
   const { title } = product
 
   const metaImage =

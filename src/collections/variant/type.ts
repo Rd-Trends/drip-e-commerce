@@ -1,4 +1,4 @@
-import { isAdmin } from '@/access/isAdmin'
+import { isAdmin } from '@/access/is-admin'
 import { createVariantTypesCollection } from '@payloadcms/plugin-ecommerce'
 import { CollectionConfig } from 'payload'
 

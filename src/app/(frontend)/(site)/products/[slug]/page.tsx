@@ -1,22 +1,21 @@
 import type { Media, Product } from '@/payload-types'
-
 import { Gallery } from '@/components/product/gallery'
 import { ProductDescription } from '@/components/product/product-description'
 import { ShippingTimeline } from '@/components/product/shipping-timeline'
-import { SizeGuide } from '@/components/product/size-guide'
-import { Button } from '@/components/ui/button'
+import { SizeGuide } from '@/components/size-guide'
+import { LinkButton } from '@/components/ui/button'
 import { Section } from '@/components/layout/section'
 import { Container } from '@/components/layout/container'
 import { StickyAddToCart } from '@/components/cart/sticky-add-to-cart'
-import configPromise from '@payload-config'
 import { ChevronLeftIcon } from 'lucide-react'
-import { Metadata } from 'next'
-import { draftMode } from 'next/headers'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { getPayload } from 'payload'
 import React, { Suspense } from 'react'
 import { ProductGridItem } from '@/components/product/grid-item'
+import configPromise from '@payload-config'
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
+import { getPayload } from 'payload'
+import { draftMode } from 'next/headers'
 
 type Args = {
   params: Promise<{
@@ -123,12 +122,10 @@ export default async function ProductPage({ params }: Args) {
       />
       <Section paddingY="xs">
         <Container>
-          <Button asChild variant="ghost" className="mb-4">
-            <Link href="/shop">
-              <ChevronLeftIcon />
-              All products
-            </Link>
-          </Button>
+          <LinkButton href="/shop" variant="ghost" className="mb-4">
+            <ChevronLeftIcon />
+            All products
+          </LinkButton>
           <div className="flex flex-col gap-12 lg:flex-row lg:gap-8">
             <div className="h-full w-full basis-full lg:basis-1/2 lg:sticky lg:top-14">
               <Suspense
@@ -192,16 +189,33 @@ function RelatedProducts({ products }: { products: Product[] }) {
 }
 
 const queryProductBySlug = async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode()
+  const { isEnabled: isPreview } = await draftMode()
 
+  if (isPreview) {
+    return getProduct(slug, true)
+  }
+  // Cache published products only
+  const getCachedProduct = unstable_cache(
+    async (productSlug: string) => getProduct(productSlug, false),
+    [`product-${slug}`],
+    {
+      tags: [`product-${slug}`, 'products'],
+      revalidate: 3600, // 1 hour
+    },
+  )
+
+  return getCachedProduct(slug)
+}
+
+const getProduct = async (slug: string, isPreview: boolean) => {
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({
     collection: 'products',
     depth: 3,
-    draft,
+    draft: isPreview,
     limit: 1,
-    overrideAccess: draft,
+    overrideAccess: isPreview,
     pagination: false,
     where: {
       and: [
@@ -210,7 +224,15 @@ const queryProductBySlug = async ({ slug }: { slug: string }) => {
             equals: slug,
           },
         },
-        ...(draft ? [] : [{ _status: { equals: 'published' } }]),
+        ...(isPreview
+          ? []
+          : [
+              {
+                _status: {
+                  equals: 'published',
+                },
+              },
+            ]),
       ],
     },
     populate: {

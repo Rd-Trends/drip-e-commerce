@@ -2,14 +2,14 @@
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox'
 import { Address, Config } from '@/payload-types'
 import { useCreateAddress, useUpdateAddress } from '@/hooks/use-address'
 import { deepMergeSimple } from 'payload/shared'
@@ -106,22 +106,30 @@ export const AddressForm: React.FC<Props> = ({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="title">Title</FieldLabel>
-                    <Select value={field.value || ''} onValueChange={field.onChange}>
-                      <SelectTrigger
+
+                    <Combobox
+                      items={titles}
+                      onValueChange={field.onChange}
+                      value={field.value || ''}
+                    >
+                      <ComboboxInput
                         id="title"
+                        placeholder="Select your title"
+                        required
                         className="w-full"
                         aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {titles.map((title) => (
-                          <SelectItem key={title} value={title}>
-                            {title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No titles found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item) => (
+                            <ComboboxItem key={item} value={item}>
+                              {item}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -284,24 +292,29 @@ export const AddressForm: React.FC<Props> = ({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="state">State*</FieldLabel>
-                    <Select value={field.value || ''} onValueChange={field.onChange}>
-                      <SelectTrigger
+                    <Combobox
+                      items={NIGERIAN_STATES}
+                      onValueChange={field.onChange}
+                      value={field.value || ''}
+                    >
+                      <ComboboxInput
                         id="state"
+                        placeholder="Select your state"
+                        required
                         className="w-full"
                         aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <ScrollArea className="h-[200px]">
-                          {NIGERIAN_STATES.map((state) => (
-                            <SelectItem key={state.value} value={state.value}>
-                              {state.label}
-                            </SelectItem>
-                          ))}
-                        </ScrollArea>
-                      </SelectContent>
-                    </Select>
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No states found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item: (typeof NIGERIAN_STATES)[number]) => (
+                            <ComboboxItem key={item.value} value={item.value}>
+                              {item.label}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -335,32 +348,30 @@ export const AddressForm: React.FC<Props> = ({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="country">Country*</FieldLabel>
-                    <Select value={field.value || ''} onValueChange={field.onChange}>
-                      <SelectTrigger
+
+                    <Combobox
+                      items={supportedCountries}
+                      onValueChange={field.onChange}
+                      value={field.value || ''}
+                    >
+                      <ComboboxInput
                         id="country"
+                        placeholder="Select your country"
+                        required
                         className="w-full"
                         aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {supportedCountries.map((country) => {
-                          const value = typeof country === 'string' ? country : country.value
-                          const label =
-                            typeof country === 'string'
-                              ? country
-                              : typeof country.label === 'string'
-                                ? country.label
-                                : value
-
-                          return (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No countries found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item: (typeof supportedCountries)[number]) => (
+                            <ComboboxItem key={item.value} value={item.value}>
+                              {item.label}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
