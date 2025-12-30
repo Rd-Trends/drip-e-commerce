@@ -68,7 +68,7 @@ export default async function AuthOrderPage({ params }: PageProps) {
     if (orderResult) {
       order = orderResult
     }
-  } catch (error) {
+  } catch (_) {
     // console.error(error)
   }
 
@@ -76,7 +76,7 @@ export default async function AuthOrderPage({ params }: PageProps) {
     notFound()
   }
 
-  return <OrderDetails order={order} backHref="/orders" />
+  return <OrderDetails order={order} backHref="/account/orders" />
 }
 
 export const metadata: Metadata = {

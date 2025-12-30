@@ -14,7 +14,7 @@ export const Transactions = createTransactionsCollection({
   cartsSlug: 'carts',
   ordersSlug: 'orders',
   paymentMethods: [
-    // @ts-ignore
+    // @ts-expect-error Paystack fields
     {
       name: 'paystack',
       label: 'Paystack',

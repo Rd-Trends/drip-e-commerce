@@ -1,4 +1,3 @@
-
 import configPromise from '@payload-config'
 import { getPayload, Where } from 'payload'
 import { Section } from '@/components/layout/section'
@@ -9,6 +8,7 @@ import { LinkButton } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
+import { queryKeys } from '@/lib/query-keys'
 
 type SectionType = NonNullable<Home['productSections']>[number]['type']
 
@@ -94,10 +94,8 @@ const getCachedProductsByType = (type: SectionType, categoryID?: number) =>
     [type, ...(categoryID ? [String(categoryID)] : [])],
     {
       tags: [
-        'products_section',
-        ...(!!categoryID
-          ? [`products_section_${type}_${categoryID}`]
-          : [`products_section_${type}`]),
+        queryKeys.revalidation.homeProductSections,
+        queryKeys.revalidation.homeProductSection(type, categoryID),
       ],
     },
   )

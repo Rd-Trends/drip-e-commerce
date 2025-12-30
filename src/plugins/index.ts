@@ -17,8 +17,6 @@ const generateURL: GenerateURL<Product> = ({ doc }) => {
   return doc?.slug ? `${url}/${doc.slug}` : url
 }
 
-const isLocal = process.env.IS_LOCAL === 'true'
-
 export const plugins: Plugin[] = [
   seoPlugin({
     generateTitle,
@@ -72,5 +70,5 @@ export const plugins: Plugin[] = [
       region: process.env.S3_REGION!,
       endpoint: process.env.S3_ENDPOINT!,
     },
-  })
+  }),
 ]

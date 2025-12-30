@@ -1,6 +1,6 @@
-import { revalidateTag } from 'next/cache'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -12,13 +12,8 @@ export const Categories: CollectionConfig = {
     group: 'Content',
   },
   hooks: {
-    afterChange: [
-      async ({ context }) => {
-        if (!context.disableRevalidation) {
-          revalidateTag('categories')
-        }
-      },
-    ],
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateDelete],
   },
   fields: [
     {

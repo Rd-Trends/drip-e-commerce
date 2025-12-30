@@ -3,7 +3,6 @@ import { Price } from '@/components/price'
 import { LinkButton } from '@/components/ui/button'
 import { Order } from '@/payload-types'
 import { formatDateTime } from '@/utils/format-date-time'
-import Link from 'next/link'
 
 type Props = {
   order: Order

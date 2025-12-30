@@ -79,7 +79,7 @@ export function UserProfileDropdownMenu({
         />
         <DropdownMenuItem
           render={
-            <Link href="/orders" className="flex items-center">
+            <Link href="/account/orders" className="flex items-center">
               <ShoppingBag className="mr-2 h-4 w-4" />
               <span>Orders</span>
             </Link>

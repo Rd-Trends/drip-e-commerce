@@ -1,7 +1,11 @@
+import { Config, Home } from '@/payload-types'
 /**
  * Centralized query key management for React Query
  * This ensures consistent query invalidation and caching across the app
  */
+
+type HomeProductSectionType = NonNullable<Home['productSections']>[number]['type']
+type Global = keyof Config['globals']
 
 export const queryKeys = {
   auth: {
@@ -26,5 +30,19 @@ export const queryKeys = {
   shippingConfig: {
     all: ['shippingConfig'] as const,
     detail: () => [...queryKeys.shippingConfig.all, 'detail'] as const,
+  },
+
+  // revalidation tags
+  revalidation: {
+    products: 'products' as const,
+    product: (slug: string) => `product-${slug}` as const,
+    categories: 'categories' as const,
+    category: (slug: string) => `category-${slug}` as const,
+    homeProductSections: 'home-product-sections' as const,
+    homeProductSection: (type: HomeProductSectionType, categoryID?: number) =>
+      categoryID
+        ? `home-product-section-${type}-${categoryID}`
+        : (`home-product-section-${type}` as const),
+    global: (slug: Global) => `global_${slug}` as const,
   },
 } as const

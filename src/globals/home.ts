@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 import { link } from '@/fields/link'
 import { revalidateTag } from 'next/cache'
 import { Home as THome } from '@/payload-types'
+import { queryKeys } from '@/lib/query-keys'
 
 export const Home: GlobalConfig = {
   slug: 'home',
@@ -12,7 +13,7 @@ export const Home: GlobalConfig = {
     afterChange: [
       async ({ context }) => {
         if (!context.disableRevalidation) {
-          revalidateTag('global_home')
+          revalidateTag(queryKeys.revalidation.global('home'))
         }
       },
     ],

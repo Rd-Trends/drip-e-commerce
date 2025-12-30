@@ -37,7 +37,7 @@ export default async function Orders() {
     })
 
     orders = ordersResult?.docs || []
-  } catch (error) {}
+  } catch (_) {}
 
   return (
     <Card>

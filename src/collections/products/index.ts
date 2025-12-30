@@ -2,7 +2,6 @@ import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
 import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
-import { revalidateProduct } from '@/utils/revalidate-product'
 import { createProductsCollection } from '@payloadcms/plugin-ecommerce'
 import {
   MetaDescriptionField,
@@ -20,6 +19,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { CollectionConfig, DefaultDocumentIDType, slugField, Where } from 'payload'
 import type { Product as TProduct } from '@/payload-types'
+import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
 
 const defaultCollection = createProductsCollection({
   access: { isAdmin, adminOrPublishedStatus },
@@ -40,26 +40,8 @@ export const Products: CollectionConfig = {
   },
 
   hooks: {
-    afterChange: [
-      ({ doc, operation, context }) => {
-        // Revalidate cache when product is updated or published
-        if (
-          doc.slug &&
-          (operation === 'update' || operation === 'create') &&
-          !context.disableRevalidation
-        ) {
-          revalidateProduct(doc.slug)
-        }
-      },
-    ],
-    afterDelete: [
-      ({ doc, context }) => {
-        // Revalidate cache when product is deleted
-        if (doc.slug && !context.disableRevalidation) {
-          revalidateProduct(doc.slug)
-        }
-      },
-    ],
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateDelete],
   },
 
   admin: {

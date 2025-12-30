@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { adminOnly } from '@/access/admin-only'
 import { link } from '@/fields/link'
 import { Banner as TBanner } from '@/payload-types'
+import { queryKeys } from '@/lib/query-keys'
 
 export const Banner: GlobalConfig = {
   slug: 'banner',
@@ -91,7 +92,7 @@ export const Banner: GlobalConfig = {
   hooks: {
     afterChange: [
       async () => {
-        revalidateTag('global_banner')
+        revalidateTag(queryKeys.revalidation.global('banner'))
       },
     ],
   },

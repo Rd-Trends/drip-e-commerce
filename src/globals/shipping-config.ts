@@ -5,6 +5,7 @@ import { adminOnly } from '@/access/admin-only'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 import { currenciesConfig } from '@/lib/constants'
 import { amountField } from '@payloadcms/plugin-ecommerce'
+import { queryKeys } from '@/lib/query-keys'
 
 export const ShippingConfig: GlobalConfig = {
   slug: 'shipping-config',
@@ -113,7 +114,7 @@ export const ShippingConfig: GlobalConfig = {
     afterChange: [
       async ({ context }) => {
         if (!context.disableRevalidation) {
-          revalidateTag('global_shipping_config')
+          revalidateTag(queryKeys.revalidation.global('shipping-config'))
         }
       },
     ],

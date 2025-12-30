@@ -7,6 +7,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
+import { queryKeys } from '@/lib/query-keys'
 
 export function CategoriesSection() {
   return (
@@ -86,6 +87,6 @@ const getCachedCategories = () =>
     },
     ['categories_section'],
     {
-      tags: ['categories'],
+      tags: [queryKeys.revalidation.categories],
     },
   )

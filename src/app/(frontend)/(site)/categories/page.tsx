@@ -4,6 +4,7 @@ import { Section } from '@/components/layout/section'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
+import { queryKeys } from '@/lib/query-keys'
 
 export const metadata = {
   title: 'Shop by Category',
@@ -57,7 +58,7 @@ const getCachedCategories = unstable_cache(
     const { docs: categories = [] } = await payload.find({
       collection: 'categories',
       sort: 'title',
-      limit: 1000, // Get all categories
+      pagination: false,
     })
 
     // Fetch product counts for each category
@@ -93,7 +94,6 @@ const getCachedCategories = unstable_cache(
   },
   ['all_categories_page'],
   {
-    tags: ['categories'],
-    revalidate: 3600, // Revalidate every hour
+    tags: [queryKeys.revalidation.categories],
   },
 )

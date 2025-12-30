@@ -17,6 +17,7 @@ import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
 import { LivePreviewListener } from '@/components/live-preview-listener'
+import { queryKeys } from '@/lib/query-keys'
 
 type Args = {
   params: Promise<{
@@ -201,8 +202,7 @@ const queryProductBySlug = async ({ slug }: { slug: string }) => {
     async (productSlug: string) => getProduct(productSlug, false),
     [`product-${slug}`],
     {
-      tags: [`product-${slug}`, 'products'],
-      revalidate: 3600, // 1 hour
+      tags: [queryKeys.revalidation.products, queryKeys.revalidation.product(slug)],
     },
   )
 
