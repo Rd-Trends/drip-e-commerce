@@ -36,7 +36,7 @@ import { Home } from './globals/home'
 import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
-import { Pages } from './collections/Pages'
+import { Pages } from './collections/pages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -50,6 +50,10 @@ export default buildConfig({
           path: '/analytics',
         },
       },
+
+      // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
+      // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
+      beforeDashboard: ['@/components/before-dashboard#BeforeDashboard'],
     },
     user: Users.slug,
   },
@@ -66,7 +70,7 @@ export default buildConfig({
     Carts,
     Orders,
     Transactions,
-    Pages
+    Pages,
   ],
   globals: [Header, Footer, Home, ShippingConfig, Banner],
   i18n: {

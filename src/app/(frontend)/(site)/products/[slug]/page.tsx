@@ -16,6 +16,7 @@ import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
+import { LivePreviewListener } from '@/components/live-preview-listener'
 
 type Args = {
   params: Promise<{
@@ -120,6 +121,7 @@ export default async function ProductPage({ params }: Args) {
         }}
         type="application/ld+json"
       />
+      <LivePreviewListener />
       <Section paddingY="xs">
         <Container>
           <LinkButton href="/shop" variant="ghost" className="mb-4">

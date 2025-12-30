@@ -9,7 +9,7 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
-import { revalidatePage, revalidateDelete } from './hooks/revalidatePage'
+import { revalidatePage, revalidateDelete } from './hooks/revalidate-page'
 import { adminOnly } from '@/access/admin-only'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { Content } from '@/blocks/content/config'

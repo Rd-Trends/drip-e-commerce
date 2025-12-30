@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 
+import { LivePreviewListener } from '@/components/live-preview-listener'
 import { RenderBlocks } from '@/blocks/render-block'
 // import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utils/generate-meta'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
-import React from 'react'
+import React, { Fragment } from 'react'
 
 import type { Page } from '@/payload-types'
 import { notFound } from 'next/navigation'
@@ -55,9 +56,12 @@ export default async function Page({ params }: Args) {
   const { content } = page
 
   return (
-    <article className="pt-16 pb-24">
-      <RenderBlocks blocks={content} />
-    </article>
+    <Fragment>
+      <LivePreviewListener />
+      <article className="pt-16 pb-24">
+        <RenderBlocks blocks={content} />
+      </article>
+    </Fragment>
   )
 }
 

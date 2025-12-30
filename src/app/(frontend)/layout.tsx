@@ -1,7 +1,6 @@
 import React from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
-import { LivePreviewListener } from '@/components/live-preview-listener'
 import { Providers } from '@/providers'
 import { Metadata } from 'next'
 
@@ -18,7 +17,6 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body>
         <Providers>
-          <LivePreviewListener />
           <main>{children}</main>
         </Providers>
         <Toaster />
