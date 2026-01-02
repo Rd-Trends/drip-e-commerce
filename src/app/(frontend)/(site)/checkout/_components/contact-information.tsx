@@ -38,12 +38,16 @@ export const ContactInformation: React.FC<ContactInformationProps> = ({
         {!user && (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm">
             <span className="text-muted-foreground">Already have an account?</span>
-            <LinkButton href="/login" variant="link" className="h-auto p-0 text-foreground">
+            <LinkButton
+              href="/login?redirect=/checkout"
+              variant="link"
+              className="h-auto p-0 text-foreground"
+            >
               Log in
             </LinkButton>
             <span className="text-muted-foreground">or</span>
             <LinkButton
-              href="/create-account"
+              href="/signup?redirect=/checkout"
               variant="link"
               className="h-auto p-0 text-foreground"
             >

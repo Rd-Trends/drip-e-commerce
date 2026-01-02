@@ -81,7 +81,12 @@ export default async function AuthOrderPage({ params }: PageProps) {
 
 export const metadata: Metadata = {
   title: 'Order Details',
-  description: 'View your order details.',
+  description:
+    'View complete details of your order including items, shipping information, and payment status.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: mergeOpenGraph({
     title: 'Order Details',
     url: '/orders/[id]',

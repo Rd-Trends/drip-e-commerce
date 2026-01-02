@@ -18,10 +18,15 @@ export default function Checkout() {
 }
 
 export const metadata: Metadata = {
-  description: 'Checkout.',
+  title: 'Checkout',
+  description:
+    'Complete your purchase securely with Paystack payment. Review your order, enter shipping details, and get your fashion items delivered across Nigeria.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: mergeOpenGraph({
     title: 'Checkout',
     url: '/checkout',
   }),
-  title: 'Checkout',
 }

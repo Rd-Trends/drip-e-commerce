@@ -75,6 +75,7 @@ function CheckoutForm({
   cart,
   shippingConfig,
   addresses,
+  onConfirmingOrder,
 }: {
   cart?: Cart
   shippingConfig?: ShippingConfig
@@ -124,6 +125,7 @@ function CheckoutForm({
   const handlePaymentSuccess = useCallback(
     (reference: string) => {
       setShowIsConfirmingOrder(true)
+      onConfirmingOrder()
       confirmOrder(
         {
           paymentMethodID: 'paystack',
@@ -156,6 +158,7 @@ function CheckoutForm({
           additionalData: {
             ...(email ? { customerEmail: email } : {}),
             shippingAddress,
+            billingAddress: shippingAddress,
             ...(appliedCoupon && { couponId: appliedCoupon.id }),
           },
         },
@@ -164,15 +167,20 @@ function CheckoutForm({
             if (paymentData.accessCode) {
               const Paystack = (await import('@paystack/inline-js')).default
               const popup = new Paystack()
-              popup.resumeTransaction(paymentData.accessCode as string, {
-                onSuccess: () => handlePaymentSuccess(paymentData.reference as string),
-                onError: () => {
-                  toast.error('Payment was not completed. Please try again.')
-                },
-                onCancel: () => {
-                  toast.error('Payment was cancelled.')
-                },
-              })
+              try {
+                popup.resumeTransaction(paymentData.accessCode as string, {
+                  onSuccess: () => handlePaymentSuccess(paymentData.reference as string),
+                  onError: () => {
+                    toast.error('Payment was not completed. Please try again.')
+                  },
+                  onCancel: () => {
+                    toast.error('Payment was cancelled.')
+                  },
+                })
+              } catch (error) {
+                console.error(error)
+                toast.error('An error occurred while processing your payment. Please try again.')
+              }
               setPaymentData(paymentData)
             }
           },

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -51,59 +52,61 @@ export function UserProfileDropdownMenu({
     <DropdownMenu>
       {children}
       <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        className="w-(--anchor-width) min-w-56 rounded-lg"
         align="end"
         sideOffset={4}
       >
-        <DropdownMenuLabel className="p-0 font-normal">
-          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {getUserInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              {user?.name && <span className="truncate font-medium">{user.name}</span>}
-              <span className="truncate text-xs">{user.email}</span>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="p-0 font-normal">
+            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {getUserInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                {user?.name && <span className="truncate font-medium">{user.name}</span>}
+                <span className="truncate text-xs">{user.email}</span>
+              </div>
             </div>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          render={
-            <Link href="/account" className="flex items-center">
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </Link>
-          }
-        />
-        <DropdownMenuItem
-          render={
-            <Link href="/account/orders" className="flex items-center">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              <span>Orders</span>
-            </Link>
-          }
-        />
-        <DropdownMenuItem
-          render={
-            <Link href="/account/settings" className="flex items-center">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </Link>
-          }
-        />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={(e) => {
-            e.preventDefault()
-            handleLogout()
-          }}
-        >
-          <LogOutIcon className="mr-2 h-4 w-4 " />
-          {isPending ? 'Logging out...' : 'Log out'}
-        </DropdownMenuItem>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            render={
+              <Link href="/account" className="flex items-center">
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            }
+          />
+          <DropdownMenuItem
+            render={
+              <Link href="/account/orders" className="flex items-center">
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                <span>Orders</span>
+              </Link>
+            }
+          />
+          <DropdownMenuItem
+            render={
+              <Link href="/account/settings" className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            }
+          />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={(e) => {
+              e.preventDefault()
+              handleLogout()
+            }}
+          >
+            <LogOutIcon className="mr-2 h-4 w-4 " />
+            {isPending ? 'Logging out...' : 'Log out'}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

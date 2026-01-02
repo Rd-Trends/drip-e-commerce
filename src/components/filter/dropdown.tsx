@@ -48,7 +48,7 @@ export default function FilterDropdown({
       >
         {active || placeholder}
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className="min-w-(--anchor-width)">
         <DropdownMenuGroup>
           {!!title && (
             <>

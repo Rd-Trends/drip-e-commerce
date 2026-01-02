@@ -23,12 +23,16 @@ import {
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  description: 'View all available coupon codes and special offers.',
+  title: 'Available Coupons & Deals',
+  description:
+    'Save on your fashion purchases with our active coupon codes and special offers. Browse all available discounts and promotions at Drip Nigeria.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/coupons`,
+  },
   openGraph: mergeOpenGraph({
-    title: 'Available Coupons',
+    title: 'Available Coupons & Deals',
     url: '/coupons',
   }),
-  title: 'Available Coupons',
 }
 
 async function getCoupons() {

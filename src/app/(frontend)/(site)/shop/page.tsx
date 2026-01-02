@@ -3,10 +3,19 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Fragment } from 'react'
 import { NoProductFound } from './_components/no-product-found'
+import type { Metadata } from 'next'
 
-export const metadata = {
-  description: 'Search for products in the store.',
-  title: 'Shop',
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+  return {
+    title: 'Shop All Products',
+    description:
+      'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.',
+    alternates: {
+      canonical: `${baseUrl}/shop`,
+    },
+  }
 }
 
 type SearchParams = { [key: string]: string | string[] | undefined }

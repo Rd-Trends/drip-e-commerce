@@ -64,7 +64,7 @@ export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) =
       currency,
       cart,
       fees,
-      billingAddress: data?.billingAddress,
+      billingAddress: data?.shippingAddress,
       shippingAddress: data?.shippingAddress,
       req,
     })

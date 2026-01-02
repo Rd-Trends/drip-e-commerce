@@ -131,10 +131,14 @@ function ProvideOrderTrackingDetails({ id, email }: { id?: string; email?: strin
 }
 
 export const metadata: Metadata = {
-  title: 'Order Lookup',
-  description: 'Track your order status.',
+  title: 'Track Your Order',
+  description:
+    'Track your order status and delivery information. Enter your order ID and email to view real-time shipping updates.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/track-order`,
+  },
   openGraph: mergeOpenGraph({
-    title: 'Order Lookup',
-    url: '/order-lookup',
+    title: 'Track Your Order',
+    url: '/track-order',
   }),
 }

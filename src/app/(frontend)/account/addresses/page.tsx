@@ -16,7 +16,7 @@ export default async function AddressesPage() {
 
   if (!user) {
     redirect(
-      `/login?warning=${encodeURIComponent('Please login to access your account settings.')}`,
+      `/login?redirect=${encodeURIComponent('/account/addresses')}&warning=${encodeURIComponent('Please login to access your account settings.')}`,
     )
   }
 
@@ -37,10 +37,15 @@ export default async function AddressesPage() {
 }
 
 export const metadata: Metadata = {
-  description: 'Manage your addresses.',
+  title: 'Manage Addresses',
+  description:
+    'Manage your shipping and billing addresses for faster checkout. Add, edit, or remove delivery locations.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: mergeOpenGraph({
-    title: 'Addresses',
+    title: 'Manage Addresses',
     url: '/account/addresses',
   }),
-  title: 'Addresses',
 }

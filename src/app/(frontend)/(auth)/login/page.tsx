@@ -1,151 +1,45 @@
-'use client'
-
-import * as React from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import * as z from 'zod'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-
-import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { LoginForm } from '../_components/login-form'
+import { headers as getHeaders } from 'next/headers'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
+import { redirect } from 'next/navigation'
 import { Logo } from '@/components/logo'
-import { useLogin } from '@/hooks/use-auth'
-import { PasswordInput } from '@/components/ui/password-input'
+import { QueryToastListener } from '@/components/query-toast-listener'
+import { Metadata } from 'next'
 
-const loginSchema = z.object({
-  email: z.email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
-})
+export const metadata: Metadata = {
+  title: 'Login',
+  description: 'Login to your account',
+  openGraph: {
+    title: 'Login',
+    url: '/login',
+  },
+}
 
-type LoginFormData = z.infer<typeof loginSchema>
+export default async function LoginPage() {
+  const headers = await getHeaders()
+  const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers })
 
-export default function LoginPage() {
-  const router = useRouter()
-  const { mutate: login, isPending } = useLogin()
-
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  })
-
-  function onSubmit(data: LoginFormData) {
-    login(data, {
-      onSuccess: () => {
-        toast.success('Welcome back!')
-        router.push('/shop')
-      },
-      onError: (error) => {
-        toast.error(error.message || 'Failed to login. Please try again.')
-      },
-    })
+  if (user) {
+    redirect(`/account?warning=${encodeURIComponent('You are already logged in.')}`)
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <QueryToastListener />
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-2 mb-6">
           <Logo />
 
-          <h1 className="text-xl font-bold tracking-tight">
-            Enter your email to join us or sign in.
-          </h1>
-        </div>
+          <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FieldGroup>
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="login-email" required>
-                    Email
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="login-email"
-                    type="email"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Email"
-                    autoComplete="email"
-                    disabled={isPending}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <div className="flex items-center justify-between">
-                    <FieldLabel htmlFor="login-password" required>
-                      Password
-                    </FieldLabel>
-                    <Link
-                      href="/forgot-password"
-                      className="text-muted-foreground hover:text-foreground text-xs underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <PasswordInput
-                    {...field}
-                    id="login-password"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Password"
-                    autoComplete="current-password"
-                    disabled={isPending}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-
-          {/* Privacy Policy */}
-          <p className="text-muted-foreground text-center text-xs leading-relaxed">
-            By continuing, I agree to Drip&apos;s{' '}
-            <Link href="/privacy-policy" className="underline hover:text-foreground">
-              Privacy Policy
-            </Link>{' '}
-            and{' '}
-            <Link href="/terms-of-use" className="underline hover:text-foreground">
-              Terms of Use
-            </Link>
-            .
-          </p>
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="h-11 w-full rounded-full font-medium"
-            disabled={isPending}
-          >
-            {isPending ? 'Signing in...' : 'Continue'}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-muted-foreground text-sm">
-            Not a member?{' '}
-            <Link
-              href="/signup"
-              className="text-foreground font-medium underline hover:text-foreground/80"
-            >
-              Join Us
-            </Link>
-            .
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Please enter your details to sign in.
           </p>
         </div>
+
+        <LoginForm />
       </div>
     </div>
   )

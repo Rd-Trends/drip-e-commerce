@@ -18,7 +18,9 @@ export default async function Orders() {
   let orders: Order[] | null = null
 
   if (!user) {
-    redirect(`/login?warning=${encodeURIComponent('Please login to access your orders.')}`)
+    redirect(
+      `/login?redirect=${encodeURIComponent('/account/orders')}&warning=${encodeURIComponent('Please login to access your orders.')}`,
+    )
   }
 
   try {
@@ -63,10 +65,15 @@ export default async function Orders() {
 }
 
 export const metadata: Metadata = {
-  description: 'Your orders.',
+  title: 'My Orders',
+  description:
+    'View your order history and track shipments. Check order status, view details, and manage returns.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: mergeOpenGraph({
-    title: 'Orders',
-    url: '/orders',
+    title: 'My Orders',
+    url: '/account/orders',
   }),
-  title: 'Orders',
 }

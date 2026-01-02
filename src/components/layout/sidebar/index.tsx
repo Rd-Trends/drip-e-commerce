@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { MenuIcon, X } from 'lucide-react'
 import { Header } from '@/payload-types'
 
-export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItems']> }) {
+function MobileMenu({ menu }: { menu: NonNullable<Header['navItems']> }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
@@ -52,7 +52,7 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
         }
       />
       <SheetContent
-        side="left"
+        side="right"
         className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
         style={
           {
@@ -79,20 +79,19 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
               <Search />
             </Suspense>
           </div>
-          {menu.length ? (
-            <ul className="flex w-full flex-col flex-1">
-              {menu.map((item) => (
-                <li
-                  className="py-2 text-base text-black transition-colors hover:text-neutral-500 dark:text-white"
-                  key={item.id}
-                >
-                  <Link href={`${item.link.url}`} prefetch={true} onClick={closeMobileMenu}>
-                    {item.link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+
+          <ul className="flex w-full flex-col flex-1">
+            {menu.map((item) => (
+              <li
+                className="py-2 text-base text-black transition-colors hover:text-neutral-500 dark:text-white"
+                key={item.id}
+              >
+                <Link href={`${item.link.url}`} prefetch={true} onClick={closeMobileMenu}>
+                  {item.link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
           <MobileUserMenu onMenuClose={closeMobileMenu} />
         </div>
@@ -100,3 +99,14 @@ export default function MobileMenu({ menu }: { menu: NonNullable<Header['navItem
     </Sheet>
   )
 }
+
+const MobileMenuFallback = () => (
+  <Button variant="ghost" size="icon" className={cn('md:hidden')}>
+    <MenuIcon className="size-5" />
+    <span className="sr-only">
+      Open mobile <menu></menu>
+    </span>
+  </Button>
+)
+
+export { MobileMenu, MobileMenuFallback }

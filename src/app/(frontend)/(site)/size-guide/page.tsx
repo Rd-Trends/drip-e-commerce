@@ -10,6 +10,13 @@ import {
 } from '@/components/size-guide'
 import Section from '@/components/layout/section'
 import Container from '@/components/layout/container'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Size Guide - Clothing & Accessories',
+  description:
+    'Find your perfect fit with our comprehensive sizing charts for clothing, shoes, accessories, and more. Detailed measurements for all product categories.',
+}
 
 export default function SizeGuidePage() {
   return (

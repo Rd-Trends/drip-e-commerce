@@ -18,6 +18,7 @@ import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
 import { LivePreviewListener } from '@/components/live-preview-listener'
 import { queryKeys } from '@/lib/query-keys'
+import { mergeOpenGraph } from '@/utils/merge-open-graph'
 
 type Args = {
   params: Promise<{
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
 
   if (!product) return notFound()
 
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
   const gallery = product.gallery?.filter((item) => typeof item.image === 'object') || []
 
   const metaImage = typeof product.meta?.image === 'object' ? product.meta?.image : undefined
@@ -40,18 +42,24 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
 
   return {
     description: product.meta?.description || '',
-    openGraph: seoImage?.url
-      ? {
-          images: [
+    alternates: {
+      canonical: `${baseUrl}/products/${product.slug}`,
+    },
+    openGraph: mergeOpenGraph({
+      title: product.meta?.title || product.title,
+      description: product.meta?.description || '',
+      url: `/products/${product.slug}`,
+      images: seoImage?.url
+        ? [
             {
               alt: seoImage?.alt,
               height: seoImage.height!,
               url: seoImage?.url,
               width: seoImage.width!,
             },
-          ],
-        }
-      : null,
+          ]
+        : [],
+    }),
     robots: {
       follow: canIndex,
       googleBot: {
@@ -97,30 +105,59 @@ export default async function ProductPage({ params }: Args) {
     }, price)
   }
 
-  const productJsonLd = {
-    name: product.title,
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    description: product.description,
-    image: metaImage?.url,
-    offers: {
-      '@type': 'AggregateOffer',
-      availability: hasStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      price: price,
-      priceCurrency: 'NGN',
-    },
-  }
-
   const relatedProducts =
     product.relatedProducts?.filter((relatedProduct) => typeof relatedProduct === 'object') ?? []
+
+  // Generate product schema for SEO
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const mainImage = gallery.length > 0 ? gallery[0]?.image : undefined
+  const imageUrl = mainImage?.url ? `${baseUrl}${mainImage.url}` : undefined
+
+  let schemaPrice = product.priceInNGN
+  let availability = 'InStock'
+
+  if (product.enableVariants && product.variants?.docs && product.variants.docs.length > 0) {
+    const prices = product.variants.docs
+      .map((v) => (typeof v === 'object' ? v.priceInNGN : null))
+      .filter((p): p is number => p !== null)
+    schemaPrice = prices.length > 0 ? Math.min(...prices) : product.priceInNGN
+    availability = hasStock ? 'InStock' : 'OutOfStock'
+  } else {
+    availability = (product.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'
+  }
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.meta?.description || product.title,
+    image: imageUrl,
+    sku: product.id,
+    brand: {
+      '@type': 'Brand',
+      name: 'Drip',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `${baseUrl}/products/${product.slug}`,
+      priceCurrency: 'NGN',
+      price: schemaPrice || 0,
+      availability: `https://schema.org/${availability}`,
+      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+        .toISOString()
+        .split('T')[0],
+      seller: {
+        '@type': 'Organization',
+        name: 'Drip',
+      },
+    },
+  }
 
   return (
     <React.Fragment>
       <script
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productJsonLd),
-        }}
         type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
       <LivePreviewListener />
       <Section paddingY="xs">

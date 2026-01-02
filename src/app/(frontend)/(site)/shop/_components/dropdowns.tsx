@@ -31,10 +31,10 @@ export const FilterDropdowns = () => {
         'border-b h-fit sticky top-16 bg-background/95 backdrop-blur-md z-50 '
       }
     >
-      <Suspense fallback={<Skeleton className="flex-1 h-9 rounded-md" />}>
+      <Suspense fallback={<Skeleton className="flex-1 h-9 rounded-full" />}>
         <CategoryDropdown />
       </Suspense>
-      <Suspense fallback={<Skeleton className="flex-1 h-9 rounded-md" />}>
+      <Suspense fallback={<Skeleton className="flex-1 h-9 rounded-full" />}>
         <FilterDropdown list={sorting} title="Sort by" placeholder="Sort by" />
       </Suspense>
     </div>

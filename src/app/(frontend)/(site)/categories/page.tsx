@@ -6,9 +6,15 @@ import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import { queryKeys } from '@/lib/query-keys'
 
-export const metadata = {
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
   title: 'Shop by Category',
-  description: 'Browse all product categories and find what you are looking for.',
+  description:
+    'Explore all fashion categories at Drip. Browse clothing, accessories, footwear, and more. Find your perfect style organized by product type.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/categories`,
+  },
 }
 
 export default async function CategoriesPage() {
