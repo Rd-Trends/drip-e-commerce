@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Tag } from 'lucide-react'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
@@ -8,6 +7,7 @@ import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
 import { queryKeys } from '@/lib/query-keys'
+import { CategoryCard, CategoryCardSkeleton } from '@/components/grid/category-card'
 
 export function CategoriesSection() {
   return (
@@ -31,20 +31,13 @@ async function CategoriesList() {
   const categories = await getCachedCategories()()
 
   return (
-    <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
-      <div className="flex w-max min-w-full space-x-4 p-1">
+    <ScrollArea className="w-full whitespace-nowrap">
+      <div className="flex w-max space-x-4 pb-4">
         {categories.map((category) => {
           return (
-            <Link
-              key={category.id}
-              href={`/shop?category=${category.slug}`}
-              className="xl:flex-1 flex flex-col items-center gap-2 group xl:border rounded-xl p-4"
-            >
-              <div className="size-16 xl:size-24 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors overflow-hidden">
-                <Tag className="size-6 xl:size-8 text-muted-foreground group-hover:text-primary" />
-              </div>
-              <span className="text-xs xl:text-base font-medium">{category.title}</span>
-            </Link>
+            <div key={category.id} className="w-38">
+              <CategoryCard category={category} />
+            </div>
           )
         })}
       </div>
@@ -55,15 +48,11 @@ async function CategoriesList() {
 
 function CategoriesListSkeleton() {
   return (
-    <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
-      <div className="flex w-max min-w-full space-x-4 p-1">
+    <ScrollArea className="w-full whitespace-nowrap">
+      <div className="flex w-max space-x-4 pb-4">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div
-            key={i}
-            className="xl:flex-1 flex flex-col items-center gap-2 xl:border rounded-xl p-4"
-          >
-            <div className="size-16 xl:size-24 rounded-full bg-muted animate-pulse" />
-            <div className="h-3 xl:h-4 w-12 xl:w-16 bg-muted rounded animate-pulse" />
+          <div key={i} className="w-38">
+            <CategoryCardSkeleton />
           </div>
         ))}
       </div>
@@ -83,7 +72,36 @@ const getCachedCategories = () =>
         limit: 8,
       })
 
-      return categories
+      // Fetch product counts for each category
+      const categoriesWithCounts = await Promise.all(
+        categories.map(async (category) => {
+          const { totalDocs } = await payload.find({
+            collection: 'products',
+            where: {
+              and: [
+                {
+                  _status: {
+                    equals: 'published',
+                  },
+                },
+                {
+                  categories: {
+                    contains: category.id,
+                  },
+                },
+              ],
+            },
+            limit: 0, // We only need the count
+          })
+
+          return {
+            ...category,
+            productCount: totalDocs,
+          }
+        }),
+      )
+
+      return categoriesWithCounts
     },
     ['categories_section'],
     {

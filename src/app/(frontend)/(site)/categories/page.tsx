@@ -1,12 +1,22 @@
-import Link from 'next/link'
 import Container from '@/components/layout/container'
 import { Section } from '@/components/layout/section'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import { queryKeys } from '@/lib/query-keys'
+import { CategoryCard, CategoryCardSkeleton } from '@/components/grid/category-card'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import { FolderOpen } from 'lucide-react'
 
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Shop by Category',
@@ -17,11 +27,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function CategoriesPage() {
-  const categories = await getCachedCategories()
-
+export default function CategoriesPage() {
   return (
-    <Section paddingY="xs">
+    <Section paddingY="xs" className="pb-20">
       <Container>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Shop by Category</h1>
@@ -30,29 +38,37 @@ export default async function CategoriesPage() {
           </p>
         </div>
 
-        {categories.length === 0 ? (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-2">No categories available</h2>
-            <p className="text-muted-foreground">Check back later for updates</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
-            {categories.map((category) => {
-              return (
-                <Link
-                  key={category.id}
-                  href={`/shop?category=${category.slug}`}
-                  className="text-sm md:text-base hover:underline underline-offset-4"
-                >
-                  {category.title}{' '}
-                  {category.productCount !== undefined && `(${category.productCount})`}
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        <Suspense fallback={<CategoryListSkeleton />}>
+          <CategoryList />
+        </Suspense>
       </Container>
     </Section>
+  )
+}
+
+async function CategoryList() {
+  const categories = await getCachedCategories()
+
+  if (!categories || categories.length === 0) {
+    return (
+      <Empty className="my-16">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FolderOpen className="h-12 w-12" />
+          </EmptyMedia>
+          <EmptyTitle>No categories found</EmptyTitle>
+          <EmptyDescription>There are no categories available at the moment.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6 lg:gap-6">
+      {categories.map((category) => {
+        return <CategoryCard key={category.id} category={category} />
+      })}
+    </div>
   )
 }
 
@@ -103,3 +119,13 @@ const getCachedCategories = unstable_cache(
     tags: [queryKeys.revalidation.categories],
   },
 )
+
+function CategoryListSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6 lg:gap-6">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <CategoryCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}

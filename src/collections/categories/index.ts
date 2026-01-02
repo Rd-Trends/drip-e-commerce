@@ -21,6 +21,14 @@ export const Categories: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      filterOptions: {
+        mimeType: { contains: 'image' },
+      },
+    },
     slugField({
       position: undefined,
     }),
