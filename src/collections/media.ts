@@ -7,6 +7,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { canManageContent } from '@/access/can-manage-content'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -17,7 +18,10 @@ export const Media: CollectionConfig = {
   },
   slug: 'media',
   access: {
+    create: canManageContent,
     read: () => true,
+    update: canManageContent,
+    delete: canManageContent,
   },
   fields: [
     {

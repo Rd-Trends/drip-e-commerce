@@ -5,6 +5,7 @@ import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { publicAccess } from '@/access/public-access'
 import { adminOrSelf } from '@/access/adminor-self'
 import { checkRole } from '@/access/utilities'
+import { USER_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/constants/roles'
 
 import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
 import { render } from '@react-email/components'
@@ -67,21 +68,32 @@ export const Users: CollectionConfig = {
         read: adminOnlyFieldAccess,
         update: adminOnlyFieldAccess,
       },
-      defaultValue: ['customer'],
+      defaultValue: [USER_ROLES.CUSTOMER],
       hasMany: true,
       hooks: {
         beforeChange: [ensureFirstUserIsAdmin],
       },
       options: [
         {
-          label: 'admin',
-          value: 'admin',
+          label: ROLE_LABELS[USER_ROLES.ADMIN],
+          value: USER_ROLES.ADMIN,
         },
         {
-          label: 'customer',
-          value: 'customer',
+          label: ROLE_LABELS[USER_ROLES.CUSTOMER],
+          value: USER_ROLES.CUSTOMER,
+        },
+        {
+          label: ROLE_LABELS[USER_ROLES.STAFF],
+          value: USER_ROLES.STAFF,
+        },
+        {
+          label: ROLE_LABELS[USER_ROLES.CONTENT_MANAGER],
+          value: USER_ROLES.CONTENT_MANAGER,
         },
       ],
+      admin: {
+        description: 'User roles determine access levels and permissions',
+      },
     },
     {
       name: 'orders',

@@ -72,6 +72,27 @@ export const seed = async ({
         roles: ['admin'],
       },
     })
+
+    payload.logger.info('Seeding test staff users...')
+    await payload.create({
+      collection: 'users',
+      data: {
+        name: 'Staff Member',
+        email: 'staff@drip.com',
+        password: 'staff123',
+        roles: ['staff'],
+      },
+    })
+
+    await payload.create({
+      collection: 'users',
+      data: {
+        name: 'Content Manager',
+        email: 'content@drip.com',
+        password: 'content123',
+        roles: ['content_manager'],
+      },
+    })
   }
 
   payload.logger.info('Seeding categories...')

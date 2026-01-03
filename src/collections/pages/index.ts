@@ -11,6 +11,7 @@ import {
 } from '@payloadcms/plugin-seo/fields'
 import { revalidatePage, revalidateDelete } from './hooks/revalidate-page'
 import { adminOnly } from '@/access/admin-only'
+import { canManageContent } from '@/access/can-manage-content'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { Content } from '@/blocks/content/config'
 import { CallToAction } from '@/blocks/call-to-action/config'
@@ -20,10 +21,10 @@ import { FormBlock } from '@/blocks/forms/config'
 export const Pages: CollectionConfig = {
   slug: 'pages',
   access: {
-    create: adminOnly,
-    delete: adminOnly,
+    create: canManageContent,
+    delete: canManageContent,
     read: adminOrPublishedStatus,
-    update: adminOnly,
+    update: canManageContent,
   },
   admin: {
     group: 'Content',

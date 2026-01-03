@@ -23,14 +23,13 @@ export async function Navbar() {
         <div className="flex items-center gap-6 w-1/3">
           <Logo />
           {menu.length ? (
-            <ul className="hidden gap-6 text-sm md:flex md:items-center">
+            <ul className="hidden gap-6 text-sm md:flex md:items-center list-none">
               {menu.map((item) => (
-                <Suspense
-                  key={item.id}
-                  fallback={<NavLink label={item.link.label} url={`${item.link.url}`} />}
-                >
-                  <ActiveStateNavLink label={item.link.label} url={`${item.link.url}`} />
-                </Suspense>
+                <li key={item.id}>
+                  <Suspense fallback={<NavLink label={item.link.label} url={`${item.link.url}`} />}>
+                    <ActiveStateNavLink label={item.link.label} url={`${item.link.url}`} />
+                  </Suspense>
+                </li>
               ))}
             </ul>
           ) : null}

@@ -1,4 +1,5 @@
 import { checkRole } from '@/access/utilities'
+import { STAFF_ROLES } from '@/lib/constants/roles'
 import { subDays } from 'date-fns'
 import { PayloadHandler } from 'payload'
 
@@ -9,8 +10,8 @@ import { PayloadHandler } from 'payload'
 export const analyticsOverviewHandler: PayloadHandler = async (req) => {
   const { payload, user } = req
 
-  // Check admin access
-  if (!user || !checkRole(['admin'], user)) {
+  // Check staff access (admin, staff, content_manager)
+  if (!user || !checkRole(STAFF_ROLES, user)) {
     return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

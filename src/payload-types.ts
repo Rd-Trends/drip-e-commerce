@@ -178,7 +178,10 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   name?: string | null;
-  roles?: ('admin' | 'customer')[] | null;
+  /**
+   * User roles determine access levels and permissions
+   */
+  roles?: ('admin' | 'customer' | 'staff' | 'content_manager')[] | null;
   orders?: {
     docs?: (number | Order)[];
     hasNextPage?: boolean;
@@ -345,6 +348,10 @@ export interface Product {
   };
   priceInNGNEnabled?: boolean | null;
   priceInNGN?: number | null;
+  /**
+   * Cost price for this product, this won't be shown to customers (admin only)
+   */
+  costPrice?: number | null;
   relatedProducts?: (number | Product)[] | null;
   meta?: {
     title?: string | null;
@@ -458,6 +465,10 @@ export interface Variant {
   inventory?: number | null;
   priceInNGNEnabled?: boolean | null;
   priceInNGN?: number | null;
+  /**
+   * Cost price for this variant (admin only)
+   */
+  costPrice?: number | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -1314,6 +1325,7 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInNGNEnabled?: T;
   priceInNGN?: T;
+  costPrice?: T;
   relatedProducts?: T;
   meta?:
     | T
@@ -1342,6 +1354,7 @@ export interface VariantsSelect<T extends boolean = true> {
   inventory?: T;
   priceInNGNEnabled?: T;
   priceInNGN?: T;
+  costPrice?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;

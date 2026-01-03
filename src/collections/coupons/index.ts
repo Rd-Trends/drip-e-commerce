@@ -4,16 +4,17 @@ import { amountField } from '@payloadcms/plugin-ecommerce'
 import { adminOnly } from '@/access/admin-only'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { publicAccess } from '@/access/public-access'
+import { canManageContent } from '@/access/can-manage-content'
 import { currenciesConfig } from '@/lib/constants'
 import type { Coupon } from '@/payload-types'
 
 export const Coupons: CollectionConfig = {
   slug: 'coupons',
   access: {
-    create: adminOnly,
+    create: canManageContent,
     read: publicAccess,
-    update: adminOnly,
-    delete: adminOnly,
+    update: canManageContent,
+    delete: canManageContent,
   },
   admin: {
     useAsTitle: 'code',

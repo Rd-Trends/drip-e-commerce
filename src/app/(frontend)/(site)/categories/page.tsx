@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function CategoriesPage() {
   return (
-    <Section paddingY="xs" className="pb-20">
+    <Section paddingY="xs" className="mb-20">
       <Container>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Shop by Category</h1>

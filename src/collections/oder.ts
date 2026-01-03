@@ -1,6 +1,4 @@
 import { amountField, createOrdersCollection, currencyField } from '@payloadcms/plugin-ecommerce'
-import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { isAdmin } from '@/access/is-admin'
 import { isDocumentOwner } from '@/access/is-document-owner'
 import { currenciesConfig } from '@/lib/constants'
 import { addressFields } from './address/fields'
@@ -9,6 +7,8 @@ import { CollectionAfterChangeHook } from 'payload'
 import { Order } from '@/payload-types'
 import { OrderConfirmationEmail } from '@/lib/emails'
 import { render } from '@react-email/components'
+import { canManageOrders } from '@/access/can-manage-orders'
+import { canManageOrdersFieldAccess } from '@/access/can-manage-orders-field-access'
 
 const sendOrderConfirmationEmail: CollectionAfterChangeHook<Order> = async ({
   doc,
@@ -50,7 +50,11 @@ const sendOrderConfirmationEmail: CollectionAfterChangeHook<Order> = async ({
 }
 
 const defaultOrdersCollection = createOrdersCollection({
-  access: { isAdmin, adminOnlyFieldAccess, isDocumentOwner },
+  access: {
+    isAdmin: canManageOrders,
+    adminOnlyFieldAccess: canManageOrdersFieldAccess,
+    isDocumentOwner,
+  },
   enableVariants: true,
   customersSlug: 'users',
   productsSlug: 'products',

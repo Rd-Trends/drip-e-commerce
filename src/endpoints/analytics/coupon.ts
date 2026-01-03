@@ -1,10 +1,11 @@
 import type { PayloadHandler } from 'payload'
 import { checkRole } from '@/access/utilities'
+import { STAFF_ROLES } from '@/lib/constants/roles'
 
 export const couponAnalyticsHandler: PayloadHandler = async (req) => {
   const { payload, user } = req
 
-  if (!user || !checkRole(['admin'], user)) {
+  if (!user || !checkRole(STAFF_ROLES, user)) {
     return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

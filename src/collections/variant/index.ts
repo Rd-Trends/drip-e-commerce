@@ -1,11 +1,12 @@
+import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
-import { isAdmin } from '@/access/is-admin'
+import { canManageContent } from '@/access/can-manage-content'
 import { currenciesConfig } from '@/lib/constants'
-import { createVariantsCollection } from '@payloadcms/plugin-ecommerce'
+import { amountField, createVariantsCollection } from '@payloadcms/plugin-ecommerce'
 import { CollectionConfig } from 'payload'
 
 const defaultCollection = createVariantsCollection({
-  access: { isAdmin, adminOrPublishedStatus },
+  access: { isAdmin: canManageContent, adminOrPublishedStatus },
   currenciesConfig,
   inventory: {
     fieldName: 'inventory',
@@ -24,4 +25,23 @@ export const Variants: CollectionConfig = {
     ...defaultCollection?.admin,
     description: 'Product variants available for purchase in the store',
   },
+  fields: [
+    ...(defaultCollection?.fields || []),
+    amountField({
+      currenciesConfig,
+      overrides: {
+        name: 'costPrice',
+        label: 'Cost Price (₦)',
+        required: false,
+        access: {
+          read: adminOnlyFieldAccess,
+          create: adminOnlyFieldAccess,
+          update: adminOnlyFieldAccess,
+        },
+        admin: {
+          description: 'Cost price for this variant (admin only)',
+        },
+      },
+    }),
+  ],
 }

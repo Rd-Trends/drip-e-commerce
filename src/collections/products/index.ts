@@ -1,8 +1,9 @@
+import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
 import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
-import { createProductsCollection } from '@payloadcms/plugin-ecommerce'
+import { amountField, createProductsCollection } from '@payloadcms/plugin-ecommerce'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -160,6 +161,26 @@ export const Products: CollectionConfig = {
         {
           fields: [
             ...defaultCollection.fields,
+            amountField({
+              currenciesConfig,
+              overrides: {
+                name: 'costPrice',
+                label: 'Cost Price (₦)',
+                required: false,
+                access: {
+                  read: adminOnlyFieldAccess,
+                  create: adminOnlyFieldAccess,
+                  update: adminOnlyFieldAccess,
+                },
+                admin: {
+                  description:
+                    "Cost price for this product, this won't be shown to customers (admin only)",
+                  condition: (data) => {
+                    return data?.enableVariants !== true
+                  },
+                },
+              },
+            }),
             {
               name: 'relatedProducts',
               type: 'relationship',

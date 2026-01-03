@@ -1,11 +1,12 @@
 import type { PayloadHandler } from 'payload'
 import { checkRole } from '@/access/utilities'
+import { STAFF_ROLES } from '@/lib/constants/roles'
 import { subDays } from 'date-fns'
 
 export const productAnalyticsHandler: PayloadHandler = async (req) => {
   const { payload, user } = req
 
-  if (!user || !checkRole(['admin'], user)) {
+  if (!user || !checkRole(STAFF_ROLES, user)) {
     return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
