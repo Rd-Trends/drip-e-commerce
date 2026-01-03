@@ -3,51 +3,8 @@ import { isDocumentOwner } from '@/access/is-document-owner'
 import { currenciesConfig } from '@/lib/constants'
 import { addressFields } from './address/fields'
 import { CollectionConfig } from 'payload'
-import { CollectionAfterChangeHook } from 'payload'
-import { Order } from '@/payload-types'
-import { OrderConfirmationEmail } from '@/lib/emails'
-import { render } from '@react-email/components'
 import { canManageOrders } from '@/access/can-manage-orders'
 import { canManageOrdersFieldAccess } from '@/access/can-manage-orders-field-access'
-
-const sendOrderConfirmationEmail: CollectionAfterChangeHook<Order> = async ({
-  doc,
-  operation,
-  req: { payload },
-}) => {
-  // Only send email on create or when status changes to 'processing'
-  if (operation === 'create' || (operation === 'update' && doc.status === 'processing')) {
-    if (!doc.customerEmail) {
-      payload.logger.warn(`Order ${doc.id} has no customer email, skipping confirmation email`)
-      return doc
-    }
-
-    try {
-      // Fetch full order with populated relations
-      const fullOrder = await payload.findByID({
-        collection: 'orders',
-        id: doc.id,
-        depth: 2, // Populate nested relations
-      })
-
-      const emailHtml = await render(OrderConfirmationEmail({ order: fullOrder }))
-
-      await payload.sendEmail({
-        to: doc.customerEmail,
-        subject: `Order Confirmation - #${doc.id} - Drip E-Commerce`,
-        html: emailHtml,
-      })
-
-      payload.logger.info(
-        `Order confirmation email sent to ${doc.customerEmail} for order #${doc.id}`,
-      )
-    } catch (error) {
-      payload.logger.error(`Failed to send order confirmation email for order #${doc.id}: ${error}`)
-    }
-  }
-
-  return doc
-}
 
 const defaultOrdersCollection = createOrdersCollection({
   access: {
@@ -67,10 +24,7 @@ export const Orders: CollectionConfig = {
   ...defaultOrdersCollection,
   hooks: {
     ...defaultOrdersCollection.hooks,
-    afterChange: [
-      ...(defaultOrdersCollection.hooks?.afterChange || []),
-      sendOrderConfirmationEmail,
-    ],
+    afterChange: [...(defaultOrdersCollection.hooks?.afterChange || [])],
   },
   fields: [
     ...defaultOrdersCollection.fields,

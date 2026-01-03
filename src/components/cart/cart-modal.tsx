@@ -21,6 +21,14 @@ import { Product } from '@/payload-types'
 import { DeleteItemButton } from './delete-item-button'
 import { CartItemAdjuster } from './cart-item-adjuster'
 import { OpenCartButton } from './open-cart-button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 
 export function CartModal() {
   const { cart, isOpen, setIsOpen } = useCart()
@@ -49,10 +57,22 @@ export function CartModal() {
         </SheetHeader>
 
         {!cart || cart?.items?.length === 0 ? (
-          <div className="text-center flex flex-col items-center gap-2">
-            <ShoppingCart className="h-16" />
-            <p className="text-center text-2xl font-bold">Your cart is empty.</p>
-          </div>
+          <Empty className="my-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ShoppingCart className="h-12 w-12" />
+              </EmptyMedia>
+              <EmptyTitle>Your cart is empty</EmptyTitle>
+              <EmptyDescription>
+                Add items to your cart to see them here and proceed to checkout.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <LinkButton href="/shop" onClick={() => setIsOpen(false)}>
+                Start Shopping
+              </LinkButton>
+            </EmptyContent>
+          </Empty>
         ) : (
           <div className="flex flex-1 flex-col justify-between w-full">
             <ul className="grow overflow-auto py-4 flex flex-col w-full gap-4 px-4">

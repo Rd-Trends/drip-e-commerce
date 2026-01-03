@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
 import { amountField } from '@payloadcms/plugin-ecommerce'
-
-import { adminOnly } from '@/access/admin-only'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { publicAccess } from '@/access/public-access'
 import { canManageContent } from '@/access/can-manage-content'

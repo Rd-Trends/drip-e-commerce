@@ -1,9 +1,9 @@
-import { isAdmin } from '@/access/is-admin'
+import { canManageContent } from '@/access/can-manage-content'
 import { createVariantTypesCollection } from '@payloadcms/plugin-ecommerce'
 import { CollectionConfig } from 'payload'
 
 const defaultCollection = createVariantTypesCollection({
-  access: { isAdmin, publicAccess: () => true },
+  access: { isAdmin: canManageContent, publicAccess: () => true },
   variantOptionsSlug: 'variantOptions',
 })
 

@@ -1,6 +1,4 @@
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
-import { isAdmin } from '@/access/is-admin'
 import { currenciesConfig } from '@/lib/constants'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { amountField, createProductsCollection } from '@payloadcms/plugin-ecommerce'
@@ -21,9 +19,11 @@ import {
 import { CollectionConfig, DefaultDocumentIDType, slugField, Where } from 'payload'
 import type { Product as TProduct } from '@/payload-types'
 import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
+import { canManageContent } from '@/access/can-manage-content'
+import { canManageContentOrPublishedStatus } from '@/access/can-manage-content-or-published-status'
 
 const defaultCollection = createProductsCollection({
-  access: { isAdmin, adminOrPublishedStatus },
+  access: { isAdmin: canManageContent, adminOrPublishedStatus: canManageContentOrPublishedStatus },
   enableVariants: true,
   currenciesConfig,
   inventory: {

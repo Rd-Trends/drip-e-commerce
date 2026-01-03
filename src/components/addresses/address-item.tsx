@@ -4,6 +4,7 @@ import React from 'react'
 import type { Address } from '@/payload-types'
 import { CreateAddressModal } from '@/components/addresses/create-address-modal'
 import { getStateLabel } from '@/lib/nigerian-states'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Props = {
   address: Partial<Address> // Allow address to be partial and entirely optional as this is entirely for display purposes
@@ -74,6 +75,22 @@ export const AddressItem: React.FC<Props> = ({
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+export const AddressItemSkeleton: React.FC = () => {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="space-y-2 flex-1">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-4 w-36" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-9 w-16" />
+      </div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
+import { AdminActionButton } from '@/components/ui/admin-action-button'
 import { FolderOpen } from 'lucide-react'
 
 import type { Metadata } from 'next'
@@ -59,6 +60,14 @@ async function CategoryList() {
           <EmptyTitle>No categories found</EmptyTitle>
           <EmptyDescription>There are no categories available at the moment.</EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <AdminActionButton
+            permission="canManageContent"
+            href="/admin/collections/categories/create"
+          >
+            Create Category
+          </AdminActionButton>
+        </EmptyContent>
       </Empty>
     )
   }

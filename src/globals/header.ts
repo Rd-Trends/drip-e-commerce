@@ -3,11 +3,13 @@ import type { GlobalConfig } from 'payload'
 import { link } from '@/fields/link'
 import { revalidateTag } from 'next/cache'
 import { Header as THeader } from '@/payload-types'
+import { canManageContent } from '@/access/can-manage-content'
 
 export const Header: GlobalConfig = {
   slug: 'header',
   access: {
     read: () => true,
+    update: canManageContent,
   },
   fields: [
     {

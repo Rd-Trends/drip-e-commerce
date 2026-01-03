@@ -1,6 +1,6 @@
 import type { PayloadHandler } from 'payload'
 import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants/roles'
+import { STAFF_ROLES } from '@/lib/constants'
 import { subDays } from 'date-fns'
 
 export const productAnalyticsHandler: PayloadHandler = async (req) => {

@@ -1,10 +1,10 @@
-import { isAdmin } from '@/access/is-admin'
+import { canManageOrders } from '@/access/can-manage-orders'
 import { currenciesConfig } from '@/lib/constants'
 import { createTransactionsCollection } from '@payloadcms/plugin-ecommerce'
 import { addressFields } from './address/fields'
 
 export const Transactions = createTransactionsCollection({
-  access: { isAdmin },
+  access: { isAdmin: canManageOrders },
   enableVariants: true,
   currenciesConfig,
   addressFields,

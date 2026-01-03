@@ -10,7 +10,6 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 import { revalidatePage, revalidateDelete } from './hooks/revalidate-page'
-import { adminOnly } from '@/access/admin-only'
 import { canManageContent } from '@/access/can-manage-content'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { Content } from '@/blocks/content/config'

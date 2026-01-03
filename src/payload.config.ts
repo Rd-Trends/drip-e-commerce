@@ -14,7 +14,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import { Categories } from '@/collections/categories'
 import { Coupons } from '@/collections/coupons'
@@ -142,7 +142,11 @@ export default buildConfig({
   }),
   endpoints,
   plugins,
-  email: nodemailerAdapter(),
+  email: resendAdapter({
+    defaultFromAddress: 'drip-fashion@drip.ng',
+    defaultFromName: 'Drip Fashion',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

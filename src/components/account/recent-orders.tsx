@@ -14,6 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Order, User } from '@/payload-types'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import { ShoppingBag } from 'lucide-react'
 
 export async function RecentOrders({ user }: { user: User }) {
   const payload = await getPayload({ config: configPromise })
@@ -39,7 +48,22 @@ export async function RecentOrders({ user }: { user: User }) {
       </CardHeader>
       <CardContent>
         {orders.length === 0 ? (
-          <p className="text-sm text-muted-foreground">You have no orders.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ShoppingBag className="h-12 w-12" />
+              </EmptyMedia>
+              <EmptyTitle>No orders yet</EmptyTitle>
+              <EmptyDescription>
+                You haven&apos;t placed any orders yet. Start shopping to see your orders here.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <LinkButton href="/shop" variant="outline">
+                Start Shopping
+              </LinkButton>
+            </EmptyContent>
+          </Empty>
         ) : (
           <ul className="flex flex-col gap-4">
             {orders.map((order: Order) => (

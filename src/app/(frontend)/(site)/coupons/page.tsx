@@ -3,6 +3,7 @@ import { Container } from '@/components/layout/container'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, LinkButton } from '@/components/ui/button'
+import { AdminActionButton } from '@/components/ui/admin-action-button'
 import { Tag, Clock, ShoppingBag } from 'lucide-react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -106,9 +107,18 @@ async function CouponList() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <LinkButton href="/shop" variant="outline" size="sm">
-            Browse Products
-          </LinkButton>
+          <div className="flex gap-2">
+            <LinkButton href="/shop" variant="outline" size="sm">
+              Browse Products
+            </LinkButton>
+            <AdminActionButton
+              permission="canManageContent"
+              href="/admin/collections/coupons/create"
+              size="sm"
+            >
+              Create Coupon
+            </AdminActionButton>
+          </div>
         </EmptyContent>
       </Empty>
     )

@@ -1,7 +1,9 @@
-import { Coupon, User } from '@/payload-types'
+import { Coupon, Order, User } from '@/payload-types'
 import { BasePayload, PayloadRequest } from 'payload'
 import Paystack from '@paystack/paystack-sdk'
 import { PaystackTransactionMetadata } from '../shared/types'
+import { render } from '@react-email/components'
+import { OrderConfirmationEmail } from '@/lib/emails/order-confirmation'
 
 type VerifyPaymentParams = {
   reference: string
@@ -196,5 +198,27 @@ export async function trackCouponUsage(
     })
   } catch (error) {
     payload.logger.error(error, 'Error tracking coupon usage')
+  }
+}
+
+export async function sendOrderConfirmationEmail(order: Order, payload: BasePayload) {
+  try {
+    const emailHtml = await render(OrderConfirmationEmail({ order }))
+
+    await payload.sendEmail({
+      to: order.customerEmail,
+      subject: `Order Confirmation - #${order.id} - Drip Fashion`,
+      html: emailHtml,
+    })
+
+    const email = order.customer
+      ? typeof order.customer === 'object'
+        ? order.customer.email
+        : ''
+      : order.customerEmail
+
+    payload.logger.info(`Order confirmation email sent to ${email} for order #${order.id}`)
+  } catch (error) {
+    payload.logger.error(error, `Error sending order confirmation email for order #${order.id}`)
   }
 }

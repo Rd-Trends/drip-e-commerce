@@ -1,6 +1,7 @@
 import type { FieldHook } from 'payload'
 
 import type { User } from '@/payload-types'
+import { USER_ROLES } from '@/lib/constants'
 
 // ensure the first user created is an admin
 // 1. lookup a single user on create as succinctly as possible
@@ -12,8 +13,8 @@ export const ensureFirstUserIsAdmin: FieldHook<User> = async ({ operation, req, 
     const users = await req.payload.find({ collection: 'users', depth: 0, limit: 0 })
     if (users.totalDocs === 0) {
       // if `admin` not in array of values, add it
-      if (!(value || []).includes('admin')) {
-        return [...(value || []), 'admin']
+      if (!(value || []).includes(USER_ROLES.ADMIN)) {
+        return [USER_ROLES.ADMIN]
       }
     }
   }

@@ -179,9 +179,9 @@ export interface User {
   id: number;
   name?: string | null;
   /**
-   * User roles determine access levels and permissions
+   * Assign user roles to control access permissions. Admin: full system access | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management
    */
-  roles?: ('admin' | 'customer' | 'staff' | 'content_manager')[] | null;
+  roles?: ('admin' | 'customer' | 'order-manager' | 'content-manager')[] | null;
   orders?: {
     docs?: (number | Order)[];
     hasNextPage?: boolean;

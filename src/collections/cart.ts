@@ -1,4 +1,4 @@
-import { isAdmin } from '@/access/is-admin'
+import { canManageOrders } from '@/access/can-manage-orders'
 import { isDocumentOwner } from '@/access/is-document-owner'
 import { currenciesConfig } from '@/lib/constants'
 import { createCartsCollection } from '@payloadcms/plugin-ecommerce'
@@ -6,7 +6,7 @@ import { CollectionConfig } from 'payload'
 
 const defaultCollection = createCartsCollection({
   access: {
-    isAdmin,
+    isAdmin: canManageOrders,
     isDocumentOwner,
     isAuthenticated: ({ req }) => !!req.user,
   },

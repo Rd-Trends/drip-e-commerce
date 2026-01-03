@@ -5,6 +5,7 @@ import {
   updateCartAndTransaction,
   updateInventory,
   trackCouponUsage,
+  sendOrderConfirmationEmail,
 } from './helpers'
 
 export const confirmPaystackOrderHandler: Endpoint['handler'] = async (req) => {
@@ -52,6 +53,8 @@ export const confirmPaystackOrderHandler: Endpoint['handler'] = async (req) => {
         status: 'processing',
         transactions: [transaction.id],
       },
+      depth: 2, // Populate order relations
+      req,
     })
 
     // Update cart and transaction
@@ -72,6 +75,10 @@ export const confirmPaystackOrderHandler: Endpoint['handler'] = async (req) => {
     if (metadata.couponId) {
       await trackCouponUsage(payload, metadata.couponId, user?.id || null)
     }
+
+    await sendOrderConfirmationEmail(order, payload)
+
+    // in the future, we may need to send emails to admins as well (using payload job queue)
 
     return Response.json({
       message: 'Payment confirmed successfully',

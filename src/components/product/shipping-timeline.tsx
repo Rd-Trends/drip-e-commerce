@@ -8,19 +8,19 @@ const shippingSteps = [
   {
     icon: Package,
     title: 'Order Processing',
-    description: '1-2 business days',
+    description: '1 business day',
     details: 'Your order is carefully prepared and packaged',
   },
   {
     icon: Truck,
     title: 'In Transit',
-    description: '3-5 business days',
+    description: '2-4 business days',
     details: 'Your package is on its way to you',
   },
   {
     icon: CheckCircle,
     title: 'Delivered',
-    description: 'Total: 4-7 business days',
+    description: 'Total: 3-5 business days',
     details: 'Your order arrives at your doorstep',
   },
 ]
