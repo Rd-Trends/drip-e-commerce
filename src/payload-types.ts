@@ -833,8 +833,22 @@ export interface ContentBlock {
  * via the `definition` "FAQBlock".
  */
 export interface FAQBlock {
-  title?: string | null;
-  description?: string | null;
+  enableIntro?: boolean | null;
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   faqs?:
     | {
         question: string;
@@ -1572,8 +1586,8 @@ export interface ContentBlockSelect<T extends boolean = true> {
  * via the `definition` "FAQBlock_select".
  */
 export interface FAQBlockSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
+  enableIntro?: T;
+  introContent?: T;
   faqs?:
     | T
     | {

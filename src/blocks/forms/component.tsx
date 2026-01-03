@@ -36,6 +36,7 @@ export type FormBlockType = {
 export const FormBlock: React.FC<
   FormBlockType & {
     id?: DefaultDocumentIDType
+    paddingY?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   }
 > = (props) => {
   const {
@@ -43,6 +44,7 @@ export const FormBlock: React.FC<
     form: formFromProps,
     form: { id: formID, confirmationMessage, confirmationType, redirect, submitButtonLabel } = {},
     introContent,
+    paddingY = 'lg',
   } = props
 
   const formMethods = useForm({
@@ -128,7 +130,7 @@ export const FormBlock: React.FC<
   )
 
   return (
-    <Section paddingY="none">
+    <Section paddingY={paddingY}>
       <Container>
         {enableIntro && introContent && !hasSubmitted && (
           <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
