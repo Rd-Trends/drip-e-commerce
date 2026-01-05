@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils'
-import { OrderStatus as StatusOptions } from '@/payload-types'
+import { Order } from '@/payload-types'
 
 type Props = {
-  status: StatusOptions
+  status: Order['status']
   className?: string
 }
 

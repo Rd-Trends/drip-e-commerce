@@ -1,6 +1,6 @@
 import type { PayloadHandler } from 'payload'
 import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants/roles'
+import { STAFF_ROLES } from '@/lib/constants'
 
 export const couponAnalyticsHandler: PayloadHandler = async (req) => {
   const { payload, user } = req

@@ -1,5 +1,5 @@
 import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants/roles'
+import { STAFF_ROLES } from '@/lib/constants'
 import { subDays } from 'date-fns'
 import { PayloadHandler } from 'payload'
 

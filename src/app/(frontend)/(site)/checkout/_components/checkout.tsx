@@ -27,6 +27,15 @@ import { ShippingInformation } from './shipping-information'
 import { Price } from '@/components/price'
 import { useAddresses } from '@/hooks/use-address'
 import Link from 'next/link'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import { ShoppingCart } from 'lucide-react'
 
 type AppliedCoupon = {
   id: number
@@ -52,12 +61,20 @@ export function CheckoutPage() {
 
   if (cartIsEmpty && !isConfirmingOrder) {
     return (
-      <Card>
-        <CardContent className="pt-6 text-center">
-          <p className="text-lg mb-4">Your cart is empty.</p>
-          <LinkButton href="/shop">Continue shopping</LinkButton>
-        </CardContent>
-      </Card>
+      <Empty className="my-16">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ShoppingCart className="h-12 w-12" />
+          </EmptyMedia>
+          <EmptyTitle>Your cart is empty</EmptyTitle>
+          <EmptyDescription>
+            Add some items to your cart before proceeding to checkout.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <LinkButton href="/shop">Continue Shopping</LinkButton>
+        </EmptyContent>
+      </Empty>
     )
   }
 

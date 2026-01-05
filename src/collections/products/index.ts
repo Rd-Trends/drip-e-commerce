@@ -1,9 +1,12 @@
+import type { CollectionConfig, DefaultDocumentIDType, Where } from 'payload'
+import { canManageContent } from '@/access/can-manage-content'
+import { canManageContentOrPublishedStatus } from '@/access/can-manage-content-or-published-status'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
-import { isAdmin } from '@/access/is-admin'
-import { currenciesConfig } from '@/lib/constants'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
-import { amountField, createProductsCollection } from '@payloadcms/plugin-ecommerce'
+import { pricesField } from '../../fields/prices-field'
+import { inventoryField } from '../../fields/inventory-field'
+import { variantsFields } from '../../fields/variants-field'
+import { currenciesConfig } from '@/lib/constants'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -18,36 +21,26 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import { CollectionConfig, DefaultDocumentIDType, slugField, Where } from 'payload'
-import type { Product as TProduct } from '@/payload-types'
+import { slugField } from 'payload'
 import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
-
-const defaultCollection = createProductsCollection({
-  access: { isAdmin, adminOrPublishedStatus },
-  enableVariants: true,
-  currenciesConfig,
-  inventory: {
-    fieldName: 'inventory',
-  },
-  variantsSlug: 'variants',
-  variantTypesSlug: 'variantTypes',
-})
+import { amountField } from '@/fields/ammount-field'
+import { Product as TProduct } from '@/payload-types'
 
 export const Products: CollectionConfig = {
-  ...defaultCollection,
-  labels: {
-    singular: 'Product',
-    plural: 'Products',
+  slug: 'products',
+  access: {
+    create: canManageContent,
+    delete: canManageContent,
+    read: canManageContentOrPublishedStatus,
+    update: canManageContent,
   },
-
   hooks: {
     afterChange: [revalidateAfterChange],
     afterDelete: [revalidateDelete],
   },
-
   admin: {
-    ...defaultCollection?.admin,
-    defaultColumns: ['title', 'enableVariants', '_status', 'variants.variants'],
+    group: 'Shop',
+    defaultColumns: ['title', 'enableVariants', '_status', 'inventory', 'priceInNGN'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -66,7 +59,6 @@ export const Products: CollectionConfig = {
     description: 'Products available for purchase in the store',
   },
   defaultPopulate: {
-    ...defaultCollection?.defaultPopulate,
     title: true,
     slug: true,
     variantOptions: true,
@@ -77,6 +69,15 @@ export const Products: CollectionConfig = {
     inventory: true,
     meta: true,
   },
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 100,
+      },
+    },
+    maxPerDoc: 50,
+  },
+  trash: true,
   fields: [
     { name: 'title', type: 'text', required: true },
     {
@@ -160,7 +161,27 @@ export const Products: CollectionConfig = {
         },
         {
           fields: [
-            ...defaultCollection.fields,
+            inventoryField({
+              overrides: {
+                admin: {
+                  condition: ({ enableVariants }) => enableVariants !== true,
+                },
+              },
+            }),
+            ...variantsFields,
+            {
+              name: 'bulkVariantCreator',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/fields/ui/bulk-variant-create#BulkVariantCreator',
+                },
+                condition: (data) => {
+                  return data?.enableVariants === true && data?.variantTypes?.length > 0
+                },
+              },
+            },
+            ...pricesField({ currenciesConfig }),
             amountField({
               currenciesConfig,
               overrides: {
@@ -263,4 +284,8 @@ export const Products: CollectionConfig = {
     },
     slugField(),
   ],
+  labels: {
+    plural: 'Products',
+    singular: 'Product',
+  },
 }

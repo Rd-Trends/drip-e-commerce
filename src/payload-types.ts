@@ -7,11 +7,6 @@
  */
 
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "OrderStatus".
- */
-export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
-/**
  * Supported timezones in IANA format.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -179,9 +174,9 @@ export interface User {
   id: number;
   name?: string | null;
   /**
-   * User roles determine access levels and permissions
+   * Assign user roles to control access permissions. Admin: full system access | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management
    */
-  roles?: ('admin' | 'customer' | 'staff' | 'content_manager')[] | null;
+  roles?: ('admin' | 'customer' | 'order-manager' | 'content-manager')[] | null;
   orders?: {
     docs?: (number | Order)[];
     hasNextPage?: boolean;
@@ -216,6 +211,8 @@ export interface User {
   password?: string | null;
 }
 /**
+ * Customer orders
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
  */
@@ -229,7 +226,7 @@ export interface Order {
         id?: string | null;
       }[]
     | null;
-  shippingAddress: {
+  shippingAddress?: {
     title?: string | null;
     firstName?: string | null;
     lastName?: string | null;
@@ -237,44 +234,7 @@ export interface Order {
     addressLine1?: string | null;
     addressLine2?: string | null;
     city?: string | null;
-    state:
-      | 'abia'
-      | 'adamawa'
-      | 'akwa-ibom'
-      | 'anambra'
-      | 'bauchi'
-      | 'bayelsa'
-      | 'benue'
-      | 'borno'
-      | 'cross-river'
-      | 'delta'
-      | 'ebonyi'
-      | 'edo'
-      | 'ekiti'
-      | 'enugu'
-      | 'fct'
-      | 'gombe'
-      | 'imo'
-      | 'jigawa'
-      | 'kaduna'
-      | 'kano'
-      | 'katsina'
-      | 'kebbi'
-      | 'kogi'
-      | 'kwara'
-      | 'lagos'
-      | 'nasarawa'
-      | 'niger'
-      | 'ogun'
-      | 'ondo'
-      | 'osun'
-      | 'oyo'
-      | 'plateau'
-      | 'rivers'
-      | 'sokoto'
-      | 'taraba'
-      | 'yobe'
-      | 'zamfara';
+    state?: string | null;
     postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
@@ -282,7 +242,7 @@ export interface Order {
   customer?: (number | null) | User;
   customerEmail?: string | null;
   transactions?: (number | Transaction)[] | null;
-  status?: OrderStatus;
+  status?: ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
   currency?: 'NGN' | null;
   /**
    * Order subtotal before shipping
@@ -347,6 +307,9 @@ export interface Product {
     totalDocs?: number;
   };
   priceInNGNEnabled?: boolean | null;
+  /**
+   * This price will also be used for sorting and filtering products. If you have variants enabled then you can enter the lowest or average price to help with search and filtering, but this price will not be used for checkout.
+   */
   priceInNGN?: number | null;
   /**
    * Cost price for this product, this won't be shown to customers (admin only)
@@ -411,8 +374,6 @@ export interface Media {
   focalY?: number | null;
 }
 /**
- * Options for product variants
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variantOptions".
  */
@@ -430,8 +391,6 @@ export interface VariantOption {
   deletedAt?: string | null;
 }
 /**
- * Types of product variants
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variantTypes".
  */
@@ -449,8 +408,6 @@ export interface VariantType {
   deletedAt?: string | null;
 }
 /**
- * Product variants available for purchase in the store
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variants".
  */
@@ -464,9 +421,12 @@ export interface Variant {
   options: (number | VariantOption)[];
   inventory?: number | null;
   priceInNGNEnabled?: boolean | null;
+  /**
+   * This price will also be used for sorting and filtering products. If you have variants enabled then you can enter the lowest or average price to help with search and filtering, but this price will not be used for checkout.
+   */
   priceInNGN?: number | null;
   /**
-   * Cost price for this variant (admin only)
+   * Cost price for this product, this won't be shown to customers (admin only)
    */
   costPrice?: number | null;
   updatedAt: string;
@@ -491,6 +451,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Payment transactions
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
  */
@@ -517,44 +479,7 @@ export interface Transaction {
     addressLine1?: string | null;
     addressLine2?: string | null;
     city?: string | null;
-    state:
-      | 'abia'
-      | 'adamawa'
-      | 'akwa-ibom'
-      | 'anambra'
-      | 'bauchi'
-      | 'bayelsa'
-      | 'benue'
-      | 'borno'
-      | 'cross-river'
-      | 'delta'
-      | 'ebonyi'
-      | 'edo'
-      | 'ekiti'
-      | 'enugu'
-      | 'fct'
-      | 'gombe'
-      | 'imo'
-      | 'jigawa'
-      | 'kaduna'
-      | 'kano'
-      | 'katsina'
-      | 'kebbi'
-      | 'kogi'
-      | 'kwara'
-      | 'lagos'
-      | 'nasarawa'
-      | 'niger'
-      | 'ogun'
-      | 'ondo'
-      | 'osun'
-      | 'oyo'
-      | 'plateau'
-      | 'rivers'
-      | 'sokoto'
-      | 'taraba'
-      | 'yobe'
-      | 'zamfara';
+    state?: string | null;
     postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
@@ -586,7 +511,13 @@ export interface Cart {
       }[]
     | null;
   secret?: string | null;
+  /**
+   * Leave empty for guest carts
+   */
   customer?: (number | null) | User;
+  /**
+   * Timestamp when this cart was converted to an order
+   */
   purchasedAt?: string | null;
   status?: ('active' | 'purchased' | 'abandoned') | null;
   subtotal?: number | null;
@@ -602,7 +533,7 @@ export interface Cart {
  */
 export interface Address {
   id: number;
-  customer?: (number | null) | User;
+  customer: number | User;
   title?: string | null;
   firstName?: string | null;
   lastName?: string | null;
@@ -610,6 +541,8 @@ export interface Address {
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
+  postalCode?: string | null;
+  phone?: string | null;
   state:
     | 'abia'
     | 'adamawa'
@@ -648,9 +581,7 @@ export interface Address {
     | 'taraba'
     | 'yobe'
     | 'zamfara';
-  postalCode?: string | null;
   country: 'NG';
-  phone?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -833,8 +764,22 @@ export interface ContentBlock {
  * via the `definition` "FAQBlock".
  */
 export interface FAQBlock {
-  title?: string | null;
-  description?: string | null;
+  enableIntro?: boolean | null;
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   faqs?:
     | {
         question: string;
@@ -1298,10 +1243,10 @@ export interface AddressesSelect<T extends boolean = true> {
   addressLine1?: T;
   addressLine2?: T;
   city?: T;
-  state?: T;
   postalCode?: T;
-  country?: T;
   phone?: T;
+  state?: T;
+  country?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1572,8 +1517,8 @@ export interface ContentBlockSelect<T extends boolean = true> {
  * via the `definition` "FAQBlock_select".
  */
 export interface FAQBlockSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
+  enableIntro?: T;
+  introContent?: T;
   faqs?:
     | T
     | {

@@ -86,7 +86,6 @@ export default async function ProductPage({ params }: Args) {
         image: item.image as Media,
       })) || []
 
-  const metaImage = typeof product.meta?.image === 'object' ? product.meta?.image : undefined
   const hasStock = product.enableVariants
     ? product?.variants?.docs?.some((variant) => {
         if (typeof variant !== 'object') return false

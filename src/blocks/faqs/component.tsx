@@ -14,16 +14,14 @@ export const FAQBlock: React.FC<
   FAQBlockProps & {
     id?: string | number
     className?: string
+    paddingY?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   }
-> = ({ title, description, faqs }) => {
+> = ({ enableIntro, introContent, faqs, paddingY = 'lg' }) => {
   return (
-    <Section paddingY="none">
+    <Section paddingY={paddingY}>
       <Container>
-        {(title || description) && (
-          <div className="mb-8 text-center">
-            {title && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>}
-            {description && <p className="mt-4 text-lg text-muted-foreground">{description}</p>}
-          </div>
+        {enableIntro && introContent && (
+          <RichText data={introContent} enableGutter={false} className="mb-8" />
         )}
 
         <Accordion className="w-full">

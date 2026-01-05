@@ -17,12 +17,15 @@ import { IndentFeatureClient as IndentFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { TableFeatureClient as TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HeadingFeatureClient as HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { BulkVariantCreator as BulkVariantCreator_58f28dc6463ae36a8564b108a92d7a81 } from '@/fields/ui/bulk-variant-create'
+import { PriceCell as PriceCell_b235b617602aa791a94d538413494ce7 } from '../../../../src/fields/ui/price-cell'
+import { PriceInput as PriceInput_3961c15853251d3ec4b21477f19c2c1f } from '../../../../src/fields/ui/price-input'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
-import { VariantOptionsSelector as VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
+import { VariantOptionsSelector as VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442 } from '../../../../src/fields/ui/variant-option-selector'
 import { BeforeDashboard as BeforeDashboard_9f32ce6f473387f99159899dd857e0af } from '@/components/before-dashboard'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_1e8728352cbeb6ce3a8773f21ce4eb41 } from '../../../../src/views/analytics/index'
@@ -47,12 +50,15 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#TableFeatureClient": TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HeadingFeatureClient": HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/fields/ui/bulk-variant-create#BulkVariantCreator": BulkVariantCreator_58f28dc6463ae36a8564b108a92d7a81,
+  "/src/fields/ui/price-cell#PriceCell": PriceCell_b235b617602aa791a94d538413494ce7,
+  "/src/fields/ui/price-input#PriceInput": PriceInput_3961c15853251d3ec4b21477f19c2c1f,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
-  "@payloadcms/plugin-ecommerce/rsc#VariantOptionsSelector": VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb,
+  "/src/fields/ui/variant-option-selector#VariantOptionsSelector": VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442,
   "@/components/before-dashboard#BeforeDashboard": BeforeDashboard_9f32ce6f473387f99159899dd857e0af,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/src/views/analytics/index#default": default_1e8728352cbeb6ce3a8773f21ce4eb41

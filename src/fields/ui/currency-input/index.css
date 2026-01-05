@@ -1,0 +1,25 @@
+.currency-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.currency-input-symbol {
+  position: absolute;
+  left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--theme-elevation-600, #64748b);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.currency-input-wrapper input {
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  max-width: 100%;
+}

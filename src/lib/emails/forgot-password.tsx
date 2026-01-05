@@ -54,7 +54,7 @@ export const ForgotPasswordEmail = ({
                   : 'A password reset has been requested for your Drip E-Commerce admin account. If this was you, you can set a new password by clicking the button below:'}
               </Text>
               <Button
-                className="bg-primary rounded text-primary-foreground text-[15px] no-underline text-center block w-full max-w-52.5 py-3.5 px-1.75 font-medium my-6"
+                className="bg-primary rounded-full text-primary-foreground text-[15px] no-underline text-center block w-full max-w-52.5 py-3.5 px-1.75 font-medium my-6"
                 href={resetPasswordLink}
               >
                 Reset Password

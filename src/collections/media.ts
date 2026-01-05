@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,

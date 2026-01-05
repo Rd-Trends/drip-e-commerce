@@ -11,12 +11,13 @@ export const ContentBlock: React.FC<
   ContentBlockProps & {
     id?: DefaultDocumentIDType
     className?: string
+    paddingY?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   }
 > = (props) => {
-  const { columns } = props
+  const { columns, paddingY = 'lg' } = props
 
   return (
-    <Section paddingY="none">
+    <Section paddingY={paddingY}>
       <Container className="grid grid-cols-4 lg:grid-cols-12 gap-y-8 gap-x-16">
         {columns &&
           columns.length > 0 &&

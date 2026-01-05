@@ -90,5 +90,77 @@ export const ecommerceTranslationsEN = {
     variantTypes: 'Variant Types',
     variantTypesCollectionDescription:
       'Variant types are used to define the different types of variants your products can have, such as size or color. Each variant type can have multiple options associated with it.',
+    // Additional fields
+    costPrice: 'Cost Price',
+    costPriceDescription:
+      "Cost price for this product, this won't be shown to customers (admin only)",
+    costPriceDescriptionVariant: 'Cost price for this variant (admin only)',
+    inventoryDescription: 'Available stock for this variant',
+    title: 'Title',
+    titleDescription:
+      'Used for administrative purposes, not shown to customers. This is populated by default.',
+    titleReadOnly: 'This field is read-only and auto-generated',
+    options: 'Options',
+    optionsDescription: 'Select variant options that define this specific variant',
+    // Labels
+    label: 'Label',
+    labelDescription: 'Display name for this item',
+    name: 'Name',
+    nameDescription: 'Internal identifier (lowercase, no spaces)',
+    // Cart fields
+    guestCartSecret: 'Guest Cart Secret',
+    guestCartSecretDescription: 'Secret token for guest cart access (auto-generated)',
+    purchasedAtDescription: 'Timestamp when this cart was converted to an order',
+    // Order fields
+    customerEmailDescription: 'Email address of the customer',
+    grandTotal: 'Grand Total',
+    grandTotalDescription:
+      'Final total amount (subtotal + shipping + tax - discount) for this order',
+    shippingFee: 'Shipping Fee',
+    shippingFeeDescription: 'Shipping fee for this order',
+    tax: 'Tax',
+    taxDescription: 'Tax amount for this order',
+    discount: 'Discount',
+    discountDescription: 'Discount amount for this order',
+    // Coupon fields
+    couponType: 'Coupon Type',
+    discountType: 'Discount Type',
+    discountTypePercentage: 'Percentage',
+    discountTypeFixed: 'Fixed Amount',
+    discountValue: 'Discount Value',
+    discountValueDescription: 'Discount value (percentage: 1-100, fixed: amount in Naira)',
+    fixedAmount: 'Fixed Discount Amount',
+    fixedAmountDescription: 'Fixed discount amount in Naira',
+    minPurchaseAmount: 'Minimum Purchase',
+    minPurchaseAmountDescription: 'Minimum purchase amount required to use this coupon',
+    maxDiscountAmount: 'Maximum Discount',
+    maxDiscountAmountDescription: 'Maximum discount amount (for percentage coupons)',
+    // Transaction fields
+
+    paymentMethodPaystack: 'Paystack',
+    paystackCustomerId: 'Paystack Customer ID',
+    paystackPaymentReference: 'Paystack Payment Reference',
+    // Product sections
+    productDetails: 'Product Details',
+    pricingAndInventory: 'Pricing & Inventory',
+    relatedProducts: 'Related Products',
+    seo: 'SEO',
+    featuredProduct: 'Featured Product',
+    enableVariantsLabel: 'Enable Variants',
+    // Currency
+    nigerianNaira: 'Nigerian Naira',
+    // Countries
+    nigeria: 'Nigeria',
+    // Address fields
+    state: 'State',
+    // Cart status
+    cartStatusActive: 'Active',
+    cartStatusPurchased: 'Purchased',
+    cartStatusAbandoned: 'Abandoned',
+    // Order status
+    orderStatusProcessing: 'Processing',
+    orderStatusCompleted: 'Completed',
+    orderStatusCancelled: 'Cancelled',
+    orderStatusRefunded: 'Refunded',
   },
 }

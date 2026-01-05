@@ -1,6 +1,6 @@
 import type { Access } from 'payload'
 
-import { USER_ROLES } from '@/lib/constants/roles'
+import { USER_ROLES } from '@/lib/constants'
 import { checkRole } from '@/access/utilities'
 
 /**

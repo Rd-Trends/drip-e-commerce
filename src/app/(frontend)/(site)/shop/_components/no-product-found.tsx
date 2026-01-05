@@ -2,6 +2,7 @@
 
 import { Package } from 'lucide-react'
 import { LinkButton } from '@/components/ui/button'
+import { AdminActionButton } from '@/components/ui/admin-action-button'
 import {
   Empty,
   EmptyContent,
@@ -59,6 +60,13 @@ export function NoProductFound({ searchQuery, categories }: ProductListEmptyProp
                   : 'Search'}
             </LinkButton>
           )}
+          <AdminActionButton
+            permission="canManageContent"
+            href="/admin/collections/products/create"
+            variant={showClearButton ? 'default' : 'default'}
+          >
+            Create Product
+          </AdminActionButton>
         </div>
       </EmptyContent>
     </Empty>

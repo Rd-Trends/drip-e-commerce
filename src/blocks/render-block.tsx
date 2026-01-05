@@ -34,7 +34,7 @@ export const RenderBlocks: React.FC<{
                 <Fragment key={String(index)}>
                   {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
                   {/* @ts-ignore - weird type mismatch here */}
-                  <Block {...block} className={index > 0 ? 'mt-8' : undefined} />
+                  <Block {...block} paddingY={index === 0 ? 'xs' : 'lg'} />
                 </Fragment>
               )
             }

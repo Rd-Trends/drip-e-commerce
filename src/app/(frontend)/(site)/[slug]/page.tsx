@@ -58,9 +58,7 @@ export default async function Page({ params }: Args) {
   return (
     <Fragment>
       <LivePreviewListener />
-      <article className="pt-16 pb-24">
-        <RenderBlocks blocks={content} />
-      </article>
+      <RenderBlocks blocks={content} />
     </Fragment>
   )
 }

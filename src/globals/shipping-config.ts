@@ -65,30 +65,17 @@ export const ShippingConfig: GlobalConfig = {
         },
       ],
     },
-    {
-      name: 'freeShippingThreshold',
-      type: 'number',
-      label: 'Free Shipping Threshold (₦)',
-      admin: {
-        description:
-          'Order subtotal amount in Naira above which shipping is free. Leave empty to disable free shipping.',
-        step: 1000,
+    amountField({
+      currenciesConfig,
+      overrides: {
+        name: 'freeShippingThreshold',
+        label: 'Free Shipping Threshold (₦)',
+        admin: {
+          description:
+            'Order subtotal amount in Naira above which shipping is free. Leave empty to disable free shipping.',
+        },
       },
-      hooks: {
-        beforeChange: [
-          ({ value }) => {
-            // Convert Naira to kobo (multiply by 100)
-            return value ? Math.round(value * 100) : null
-          },
-        ],
-        afterRead: [
-          ({ value }) => {
-            // Convert kobo to Naira for display (divide by 100)
-            return value ? value / 100 : null
-          },
-        ],
-      },
-    },
+    }),
     {
       name: 'taxRate',
       type: 'number',

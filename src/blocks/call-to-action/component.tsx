@@ -10,10 +10,11 @@ export const CallToActionBlock: React.FC<
   CTABlockProps & {
     id?: string | number
     className?: string
+    paddingY?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   }
-> = ({ links, richText, className }) => {
+> = ({ links, richText, className, paddingY = 'lg' }) => {
   return (
-    <Section paddingY="none" className={className}>
+    <Section paddingY={paddingY} className={className}>
       <Container className="relative overflow-hidden rounded-lg bg-background border px-8 py-12 md:px-16 md:py-20">
         {/* Decorative elements */}
         <div className="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-1/2 rounded-full bg-primary-foreground/5 blur-3xl" />

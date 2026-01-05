@@ -77,10 +77,10 @@ export const seed = async ({
     await payload.create({
       collection: 'users',
       data: {
-        name: 'Staff Member',
-        email: 'staff@drip.com',
-        password: 'staff123',
-        roles: ['staff'],
+        name: 'Order Manager',
+        email: 'order@drip.com',
+        password: 'order123',
+        roles: ['order-manager'],
       },
     })
 
@@ -90,7 +90,7 @@ export const seed = async ({
         name: 'Content Manager',
         email: 'content@drip.com',
         password: 'content123',
-        roles: ['content_manager'],
+        roles: ['content-manager'],
       },
     })
   }

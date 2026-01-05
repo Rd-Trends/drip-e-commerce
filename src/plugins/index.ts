@@ -6,6 +6,7 @@ import { Plugin } from 'payload'
 import { Product } from '@/payload-types'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { getServerSideURL } from '@/utils/get-url'
+import { canManageContent } from '@/access/can-manage-content'
 
 const generateTitle: GenerateTitle<Product> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Ecommerce Template` : 'Payload Ecommerce Template'
@@ -30,10 +31,22 @@ export const plugins: Plugin[] = [
       admin: {
         group: 'Content',
       },
+      access: {
+        create: () => true, // Anyone can submit a form
+        read: canManageContent, // Only admins and content managers can read submissions
+        update: canManageContent,
+        delete: canManageContent,
+      },
     },
     formOverrides: {
       admin: {
         group: 'Content',
+      },
+      access: {
+        create: canManageContent,
+        read: () => true, // Everyone can read forms (for public form display)
+        update: canManageContent,
+        delete: canManageContent,
       },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {

@@ -14,21 +14,21 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { resendAdapter } from '@payloadcms/email-resend'
 
+import { plugins } from './plugins'
 import { Categories } from '@/collections/categories'
 import { Coupons } from '@/collections/coupons'
 import { Media } from '@/collections/media'
 import { Users } from '@/collections/users'
-import { plugins } from './plugins'
-import { Addresses } from './collections/address'
-import { Products } from './collections/products'
-import { VariantTypes } from './collections/variant/type'
-import { VariantOptions } from './collections/variant/option'
-import { Variants } from './collections/variant'
-import { Carts } from './collections/cart'
-import { Orders } from './collections/oder'
-import { Transactions } from './collections/transaction'
+import { Addresses } from '@/collections/addresses'
+import { Products } from '@/collections/products'
+import { VariantTypes } from '@/collections/variants/types'
+import { VariantOptions } from '@/collections/variants/options'
+import { Variants } from '@/collections/variants'
+import { Carts } from '@/collections/carts'
+import { Orders } from '@/collections/orders'
+import { Transactions } from '@/collections/transactions'
 import { ecommerceTranslationsEN } from './translations/en'
 import { Header } from './globals/header'
 import { Footer } from './globals/footer'
@@ -142,7 +142,11 @@ export default buildConfig({
   }),
   endpoints,
   plugins,
-  email: nodemailerAdapter(),
+  email: resendAdapter({
+    defaultFromAddress: 'drip-fashion@drip.ng',
+    defaultFromName: 'Drip Fashion',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

@@ -2,10 +2,9 @@ import type { CollectionConfig } from 'payload'
 
 import { adminOnly } from '@/access/admin-only'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { publicAccess } from '@/access/public-access'
 import { adminOrSelf } from '@/access/adminor-self'
 import { checkRole } from '@/access/utilities'
-import { USER_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/constants/roles'
+import { USER_ROLES, ROLE_LABELS, STAFF_ROLES } from '@/lib/constants'
 
 import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
 import { render } from '@react-email/components'
@@ -14,8 +13,15 @@ import { ForgotPasswordEmail } from '@/lib/emails/forgot-password'
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: ({ req: { user } }) => checkRole(['admin'], user),
-    create: publicAccess,
+    admin: ({ req: { user } }) => checkRole(STAFF_ROLES, user),
+    create: ({ req: { user } }) => {
+      // ensure only admins can create users
+      if (user) {
+        return checkRole([USER_ROLES.ADMIN], user)
+      }
+
+      return true // Allow public registration
+    },
     delete: adminOnly,
     read: adminOrSelf,
     update: adminOrSelf,
@@ -83,8 +89,8 @@ export const Users: CollectionConfig = {
           value: USER_ROLES.CUSTOMER,
         },
         {
-          label: ROLE_LABELS[USER_ROLES.STAFF],
-          value: USER_ROLES.STAFF,
+          label: ROLE_LABELS[USER_ROLES.ORDER_MANAGER],
+          value: USER_ROLES.ORDER_MANAGER,
         },
         {
           label: ROLE_LABELS[USER_ROLES.CONTENT_MANAGER],
@@ -92,7 +98,8 @@ export const Users: CollectionConfig = {
         },
       ],
       admin: {
-        description: 'User roles determine access levels and permissions',
+        description:
+          'Assign user roles to control access permissions. Admin: full system access | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management',
       },
     },
     {
