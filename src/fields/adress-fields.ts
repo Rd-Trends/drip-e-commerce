@@ -1,5 +1,4 @@
 import { Field } from 'payload'
-import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 
 export const addressFields: Field[] = [
   {
@@ -39,10 +38,8 @@ export const addressFields: Field[] = [
   },
   {
     name: 'state',
-    type: 'select',
+    type: 'text',
     label: 'State',
-    required: true,
-    options: NIGERIAN_STATES,
   },
   {
     name: 'postalCode',

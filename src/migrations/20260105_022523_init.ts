@@ -2,7 +2,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TYPE "public"."enum_users_roles" AS ENUM('admin', 'customer');
+   CREATE TYPE "public"."enum_users_roles" AS ENUM('admin', 'customer', 'order-manager', 'content-manager');
   CREATE TYPE "public"."enum_coupons_type" AS ENUM('percentage', 'fixed');
   CREATE TYPE "public"."enum_addresses_state" AS ENUM('abia', 'adamawa', 'akwa-ibom', 'anambra', 'bauchi', 'bayelsa', 'benue', 'borno', 'cross-river', 'delta', 'ebonyi', 'edo', 'ekiti', 'enugu', 'fct', 'gombe', 'imo', 'jigawa', 'kaduna', 'kano', 'katsina', 'kebbi', 'kogi', 'kwara', 'lagos', 'nasarawa', 'niger', 'ogun', 'ondo', 'osun', 'oyo', 'plateau', 'rivers', 'sokoto', 'taraba', 'yobe', 'zamfara');
   CREATE TYPE "public"."enum_addresses_country" AS ENUM('NG');
@@ -10,12 +10,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TYPE "public"."enum__products_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum_variants_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__variants_v_version_status" AS ENUM('draft', 'published');
+  CREATE TYPE "public"."enum_carts_status" AS ENUM('active', 'purchased', 'abandoned');
   CREATE TYPE "public"."enum_carts_currency" AS ENUM('NGN');
-  CREATE TYPE "public"."enum_orders_shipping_address_state" AS ENUM('abia', 'adamawa', 'akwa-ibom', 'anambra', 'bauchi', 'bayelsa', 'benue', 'borno', 'cross-river', 'delta', 'ebonyi', 'edo', 'ekiti', 'enugu', 'fct', 'gombe', 'imo', 'jigawa', 'kaduna', 'kano', 'katsina', 'kebbi', 'kogi', 'kwara', 'lagos', 'nasarawa', 'niger', 'ogun', 'ondo', 'osun', 'oyo', 'plateau', 'rivers', 'sokoto', 'taraba', 'yobe', 'zamfara');
   CREATE TYPE "public"."enum_orders_status" AS ENUM('processing', 'completed', 'cancelled', 'refunded');
   CREATE TYPE "public"."enum_orders_currency" AS ENUM('NGN');
   CREATE TYPE "public"."enum_transactions_payment_method" AS ENUM('paystack');
-  CREATE TYPE "public"."enum_transactions_billing_address_state" AS ENUM('abia', 'adamawa', 'akwa-ibom', 'anambra', 'bauchi', 'bayelsa', 'benue', 'borno', 'cross-river', 'delta', 'ebonyi', 'edo', 'ekiti', 'enugu', 'fct', 'gombe', 'imo', 'jigawa', 'kaduna', 'kano', 'katsina', 'kebbi', 'kogi', 'kwara', 'lagos', 'nasarawa', 'niger', 'ogun', 'ondo', 'osun', 'oyo', 'plateau', 'rivers', 'sokoto', 'taraba', 'yobe', 'zamfara');
   CREATE TYPE "public"."enum_transactions_status" AS ENUM('pending', 'succeeded', 'failed', 'cancelled', 'expired', 'refunded');
   CREATE TYPE "public"."enum_transactions_currency" AS ENUM('NGN');
   CREATE TYPE "public"."enum_pages_blocks_cta_links_link_appearance" AS ENUM('default', 'outline');
@@ -62,6 +61,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TABLE "categories" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"title" varchar NOT NULL,
+  	"image_id" integer,
   	"generate_slug" boolean DEFAULT true,
   	"slug" varchar NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -116,7 +116,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   CREATE TABLE "addresses" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"customer_id" integer,
+  	"customer_id" integer NOT NULL,
   	"title" varchar,
   	"first_name" varchar,
   	"last_name" varchar,
@@ -124,10 +124,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"address_line1" varchar,
   	"address_line2" varchar,
   	"city" varchar,
-  	"state" "enum_addresses_state" NOT NULL,
   	"postal_code" varchar,
-  	"country" "enum_addresses_country" DEFAULT 'NG' NOT NULL,
   	"phone" varchar,
+  	"state" "enum_addresses_state" NOT NULL,
+  	"country" "enum_addresses_country" DEFAULT 'NG' NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
@@ -148,6 +148,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"enable_variants" boolean,
   	"price_in_n_g_n_enabled" boolean,
   	"price_in_n_g_n" numeric,
+  	"cost_price" numeric,
   	"meta_title" varchar,
   	"meta_image_id" integer,
   	"meta_description" varchar,
@@ -188,6 +189,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"version_enable_variants" boolean,
   	"version_price_in_n_g_n_enabled" boolean,
   	"version_price_in_n_g_n" numeric,
+  	"version_cost_price" numeric,
   	"version_meta_title" varchar,
   	"version_meta_image_id" integer,
   	"version_meta_description" varchar,
@@ -221,6 +223,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"inventory" numeric DEFAULT 0,
   	"price_in_n_g_n_enabled" boolean,
   	"price_in_n_g_n" numeric,
+  	"cost_price" numeric,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"deleted_at" timestamp(3) with time zone,
@@ -243,6 +246,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"version_inventory" numeric DEFAULT 0,
   	"version_price_in_n_g_n_enabled" boolean,
   	"version_price_in_n_g_n" numeric,
+  	"version_cost_price" numeric,
   	"version_updated_at" timestamp(3) with time zone,
   	"version_created_at" timestamp(3) with time zone,
   	"version_deleted_at" timestamp(3) with time zone,
@@ -295,6 +299,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"secret" varchar,
   	"customer_id" integer,
   	"purchased_at" timestamp(3) with time zone,
+  	"status" "enum_carts_status" DEFAULT 'active',
   	"subtotal" numeric,
   	"currency" "enum_carts_currency" DEFAULT 'NGN',
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -319,7 +324,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"shipping_address_address_line1" varchar,
   	"shipping_address_address_line2" varchar,
   	"shipping_address_city" varchar,
-  	"shipping_address_state" "enum_orders_shipping_address_state" NOT NULL,
+  	"shipping_address_state" varchar,
   	"shipping_address_postal_code" varchar,
   	"shipping_address_country" varchar,
   	"shipping_address_phone" varchar,
@@ -355,7 +360,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   CREATE TABLE "transactions" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"payment_method" "enum_transactions_payment_method",
+  	"payment_method" "enum_transactions_payment_method" DEFAULT 'paystack',
   	"paystack_customer_id" numeric,
   	"paystack_reference" varchar,
   	"billing_address_title" varchar,
@@ -365,7 +370,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"billing_address_address_line1" varchar,
   	"billing_address_address_line2" varchar,
   	"billing_address_city" varchar,
-  	"billing_address_state" "enum_transactions_billing_address_state" NOT NULL,
+  	"billing_address_state" varchar,
   	"billing_address_postal_code" varchar,
   	"billing_address_country" varchar,
   	"billing_address_phone" varchar,
@@ -433,8 +438,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar,
-  	"description" varchar,
+  	"enable_intro" boolean,
+  	"intro_content" jsonb,
   	"block_name" varchar
   );
   
@@ -521,8 +526,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
-  	"title" varchar,
-  	"description" varchar,
+  	"enable_intro" boolean,
+  	"intro_content" jsonb,
   	"_uuid" varchar,
   	"block_name" varchar
   );
@@ -874,6 +879,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   ALTER TABLE "users_roles" ADD CONSTRAINT "users_roles_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "users_sessions" ADD CONSTRAINT "users_sessions_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "categories" ADD CONSTRAINT "categories_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "coupons_rels" ADD CONSTRAINT "coupons_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."coupons"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "coupons_rels" ADD CONSTRAINT "coupons_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "coupons_rels" ADD CONSTRAINT "coupons_rels_categories_fk" FOREIGN KEY ("categories_id") REFERENCES "public"."categories"("id") ON DELETE cascade ON UPDATE no action;
@@ -985,6 +991,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "users_updated_at_idx" ON "users" USING btree ("updated_at");
   CREATE INDEX "users_created_at_idx" ON "users" USING btree ("created_at");
   CREATE UNIQUE INDEX "users_email_idx" ON "users" USING btree ("email");
+  CREATE INDEX "categories_image_idx" ON "categories" USING btree ("image_id");
   CREATE UNIQUE INDEX "categories_slug_idx" ON "categories" USING btree ("slug");
   CREATE INDEX "categories_updated_at_idx" ON "categories" USING btree ("updated_at");
   CREATE INDEX "categories_created_at_idx" ON "categories" USING btree ("created_at");
@@ -1321,12 +1328,11 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TYPE "public"."enum__products_v_version_status";
   DROP TYPE "public"."enum_variants_status";
   DROP TYPE "public"."enum__variants_v_version_status";
+  DROP TYPE "public"."enum_carts_status";
   DROP TYPE "public"."enum_carts_currency";
-  DROP TYPE "public"."enum_orders_shipping_address_state";
   DROP TYPE "public"."enum_orders_status";
   DROP TYPE "public"."enum_orders_currency";
   DROP TYPE "public"."enum_transactions_payment_method";
-  DROP TYPE "public"."enum_transactions_billing_address_state";
   DROP TYPE "public"."enum_transactions_status";
   DROP TYPE "public"."enum_transactions_currency";
   DROP TYPE "public"."enum_pages_blocks_cta_links_link_appearance";

@@ -953,7 +953,7 @@
           "name": "customer_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "title": {
           "name": "title",
@@ -997,18 +997,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "postal_code": {
+          "name": "postal_code",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "state": {
           "name": "state",
           "type": "enum_addresses_state",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "postal_code": {
-          "name": "postal_code",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "country": {
           "name": "country",
@@ -1017,12 +1023,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'NG'"
-        },
-        "phone": {
-          "name": "phone",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -3540,6 +3540,14 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "enum_carts_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'active'"
+        },
         "subtotal": {
           "name": "subtotal",
           "type": "numeric",
@@ -3857,10 +3865,9 @@
         },
         "shipping_address_state": {
           "name": "shipping_address_state",
-          "type": "enum_orders_shipping_address_state",
-          "typeSchema": "public",
+          "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "shipping_address_postal_code": {
           "name": "shipping_address_postal_code",
@@ -4318,7 +4325,8 @@
           "type": "enum_transactions_payment_method",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'paystack'"
         },
         "paystack_customer_id": {
           "name": "paystack_customer_id",
@@ -4376,10 +4384,9 @@
         },
         "billing_address_state": {
           "name": "billing_address_state",
-          "type": "enum_transactions_billing_address_state",
-          "typeSchema": "public",
+          "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "billing_address_postal_code": {
           "name": "billing_address_postal_code",
@@ -5136,15 +5143,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "title": {
-          "name": "title",
-          "type": "varchar",
+        "enable_intro": {
+          "name": "enable_intro",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
-        "description": {
-          "name": "description",
-          "type": "varchar",
+        "intro_content": {
+          "name": "intro_content",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -6128,15 +6135,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "title": {
-          "name": "title",
-          "type": "varchar",
+        "enable_intro": {
+          "name": "enable_intro",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
-        "description": {
-          "name": "description",
-          "type": "varchar",
+        "intro_content": {
+          "name": "intro_content",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -10228,8 +10235,8 @@
       "values": [
         "admin",
         "customer",
-        "staff",
-        "content_manager"
+        "order-manager",
+        "content-manager"
       ]
     },
     "public.enum_coupons_type": {
@@ -10322,54 +10329,20 @@
         "published"
       ]
     },
+    "public.enum_carts_status": {
+      "name": "enum_carts_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "purchased",
+        "abandoned"
+      ]
+    },
     "public.enum_carts_currency": {
       "name": "enum_carts_currency",
       "schema": "public",
       "values": [
         "NGN"
-      ]
-    },
-    "public.enum_orders_shipping_address_state": {
-      "name": "enum_orders_shipping_address_state",
-      "schema": "public",
-      "values": [
-        "abia",
-        "adamawa",
-        "akwa-ibom",
-        "anambra",
-        "bauchi",
-        "bayelsa",
-        "benue",
-        "borno",
-        "cross-river",
-        "delta",
-        "ebonyi",
-        "edo",
-        "ekiti",
-        "enugu",
-        "fct",
-        "gombe",
-        "imo",
-        "jigawa",
-        "kaduna",
-        "kano",
-        "katsina",
-        "kebbi",
-        "kogi",
-        "kwara",
-        "lagos",
-        "nasarawa",
-        "niger",
-        "ogun",
-        "ondo",
-        "osun",
-        "oyo",
-        "plateau",
-        "rivers",
-        "sokoto",
-        "taraba",
-        "yobe",
-        "zamfara"
       ]
     },
     "public.enum_orders_status": {
@@ -10394,49 +10367,6 @@
       "schema": "public",
       "values": [
         "paystack"
-      ]
-    },
-    "public.enum_transactions_billing_address_state": {
-      "name": "enum_transactions_billing_address_state",
-      "schema": "public",
-      "values": [
-        "abia",
-        "adamawa",
-        "akwa-ibom",
-        "anambra",
-        "bauchi",
-        "bayelsa",
-        "benue",
-        "borno",
-        "cross-river",
-        "delta",
-        "ebonyi",
-        "edo",
-        "ekiti",
-        "enugu",
-        "fct",
-        "gombe",
-        "imo",
-        "jigawa",
-        "kaduna",
-        "kano",
-        "katsina",
-        "kebbi",
-        "kogi",
-        "kwara",
-        "lagos",
-        "nasarawa",
-        "niger",
-        "ogun",
-        "ondo",
-        "osun",
-        "oyo",
-        "plateau",
-        "rivers",
-        "sokoto",
-        "taraba",
-        "yobe",
-        "zamfara"
       ]
     },
     "public.enum_transactions_status": {
@@ -10608,6 +10538,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "41b3248e-8f03-494c-81ad-bae958cd0709",
+  "id": "a58d9b5b-d9b4-4599-9b7e-a1b12b7c189f",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

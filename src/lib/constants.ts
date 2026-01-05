@@ -1,4 +1,4 @@
-import { CountryType, CurrenciesConfig } from '@payloadcms/plugin-ecommerce/types'
+import { CurrenciesConfig } from '@/types/currency'
 
 export type SortFilterItem = {
   reverse: boolean
@@ -31,7 +31,7 @@ export const currenciesConfig: CurrenciesConfig = {
   ],
 }
 
-export const supportedCountries: CountryType[] = [
+export const supportedCountries = [
   {
     label: 'Nigeria',
     value: 'NG',

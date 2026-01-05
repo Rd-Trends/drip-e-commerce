@@ -6,6 +6,7 @@ import { revenueAnalyticsHandler } from './analytics/revenue'
 import { productAnalyticsHandler } from './analytics/products'
 import { orderStatusAnalyticsHandler } from './analytics/order-status'
 import { couponAnalyticsHandler } from './analytics/coupon'
+import { bulkCreateVariants } from './variants/bulk-create'
 
 export const endpoints: Endpoint[] = [
   {
@@ -42,5 +43,10 @@ export const endpoints: Endpoint[] = [
     path: '/analytics/coupons',
     method: 'get',
     handler: couponAnalyticsHandler,
+  },
+  {
+    path: '/variants-bulk-create',
+    method: 'post',
+    handler: bulkCreateVariants,
   },
 ]

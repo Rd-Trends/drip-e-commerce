@@ -1,0 +1,17 @@
+.formattedPrice {
+  .formattedPriceLabel {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .formattedPriceInput {
+    width: 100%;
+  }
+
+  .formattedPriceDescription {
+    max-width: 46rem;
+  }
+}
