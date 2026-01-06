@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await payload.find({
     collection: 'products',
     draft: false,
-    limit: 1000,
+    limit: 0,
     pagination: false,
     where: {
       _status: {
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = await payload.find({
     collection: 'pages',
     draft: false,
-    limit: 1000,
+    limit: 0,
     pagination: false,
     where: {
       _status: {
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all categories
   const categories = await payload.find({
     collection: 'categories',
-    limit: 1000,
+    limit: 0,
     pagination: false,
     select: {
       slug: true,
@@ -70,12 +70,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/coupons`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
     },
     {
       url: `${baseUrl}/size-guide`,

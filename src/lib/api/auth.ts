@@ -18,7 +18,9 @@ const fetchJSON = async (url: string, options: RequestInit = {}) => {
   })
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
+    const errorData = await response.json()
+    const errorMessage = errorData?.errors?.[0]?.message || 'An error occurred'
+    throw new Error(errorMessage)
   }
 
   return response.json()

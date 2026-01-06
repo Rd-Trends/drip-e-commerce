@@ -143,6 +143,7 @@
     overflow-x: auto;
     border: 1px solid var(--theme-elevation-150);
     border-radius: var(--border-radius);
+    margin-bottom: var(--base);
   }
 
   &__table {
@@ -218,6 +219,7 @@
     justify-content: flex-end;
     padding-top: var(--base);
     border-top: 1px solid var(--theme-elevation-150);
+    margin-top: var(--base);
   }
 
   &__empty {

@@ -9,7 +9,7 @@ import { Container } from '@/components/layout/container'
 import { StickyAddToCart } from '@/components/cart/sticky-add-to-cart'
 import { ChevronLeftIcon } from 'lucide-react'
 import React, { Suspense } from 'react'
-import { ProductGridItem } from '@/components/product/grid-item'
+import { RelatedProductsSection } from '@/components/product/related-products-section'
 import configPromise from '@payload-config'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -104,9 +104,6 @@ export default async function ProductPage({ params }: Args) {
     }, price)
   }
 
-  const relatedProducts =
-    product.relatedProducts?.filter((relatedProduct) => typeof relatedProduct === 'object') ?? []
-
   // Generate product schema for SEO
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
   const mainImage = gallery.length > 0 ? gallery[0]?.image : undefined
@@ -196,34 +193,19 @@ export default async function ProductPage({ params }: Args) {
       </Section>
 
       {/* Related Products */}
-      {relatedProducts.length ? (
-        <Section paddingY="none">
-          <Container>
-            <RelatedProducts products={relatedProducts} />
-          </Container>
-        </Section>
-      ) : null}
+      <Section paddingY="none">
+        <Container>
+          <Suspense fallback={null}>
+            <RelatedProductsSection product={product} limit={8} />
+          </Suspense>
+        </Container>
+      </Section>
 
       {/* Sticky Add to Cart - Mobile Only */}
       <Suspense fallback={null}>
         <StickyAddToCart product={product} />
       </Suspense>
     </React.Fragment>
-  )
-}
-
-function RelatedProducts({ products }: { products: Product[] }) {
-  if (!products.length) return null
-
-  return (
-    <div className="py-8">
-      <h2 className="mb-4 text-2xl font-bold">Related Products</h2>
-      <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
-        {products.map((product) => {
-          return <ProductGridItem key={product.id} product={product} />
-        })}
-      </section>
-    </div>
   )
 }
 

@@ -44,13 +44,6 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     components: {
-      views: {
-        analytics: {
-          Component: '/src/views/analytics/index',
-          path: '/analytics',
-        },
-      },
-
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/components/before-dashboard#BeforeDashboard'],

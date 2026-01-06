@@ -29,7 +29,7 @@ export type SectionProps = React.HTMLAttributes<HTMLElement> & {
 /**
  * Section
  *
- * Controls vertical spacing for a page section. Combine with <Container />
+ * Controls vertical spacing for a page section. Combine with Container
  * to manage max-width and horizontal padding.
  *
  * Usage:

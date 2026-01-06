@@ -35,6 +35,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
     convertFromBaseValue({ baseValue: value, currency }),
   )
   const isTypingRef = useRef(false)
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Sync displayValue when value prop changes externally (not from user typing)
   useEffect(() => {
@@ -56,13 +57,21 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
       isTypingRef.current = true
       setDisplayValue(inputValue)
 
-      // Convert to base value and update
-      if (inputValue === '') {
-        onChange(0)
-      } else {
-        const baseValue = convertToBaseValue({ currency, displayValue: inputValue })
-        onChange(baseValue)
+      // Clear any existing timer
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current)
       }
+
+      // Debounce the onChange callback to avoid excessive autosave triggers
+      debounceTimer.current = setTimeout(() => {
+        // Convert to base value and update
+        if (inputValue === '') {
+          onChange(0)
+        } else {
+          const baseValue = convertToBaseValue({ currency, displayValue: inputValue })
+          onChange(baseValue)
+        }
+      }, 500)
     },
     [currency, onChange],
   )
@@ -70,16 +79,27 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
   const handleBlur = useCallback(() => {
     isTypingRef.current = false
 
+    // Clear any pending debounce to ensure immediate update on blur
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current)
+      debounceTimer.current = null
+    }
+
     if (displayValue === '') {
       setDisplayValue('0.00')
       onChange(0)
       return
     }
 
-    // Format the value on blur
+    // Format the value on blur and ensure it's saved
     const baseValue = convertToBaseValue({ currency, displayValue })
     const formattedValue = convertFromBaseValue({ baseValue, currency })
+
+    // Update display with formatted value
     setDisplayValue(formattedValue)
+
+    // Ensure the final value is saved
+    onChange(baseValue)
   }, [currency, displayValue, onChange])
 
   const handleFocus = useCallback(() => {
@@ -89,6 +109,15 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
       setDisplayValue('')
     }
   }, [displayValue])
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current)
+      }
+    }
+  }, [])
 
   return (
     <div className="currency-input-wrapper">

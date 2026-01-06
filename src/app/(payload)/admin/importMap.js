@@ -28,7 +28,6 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { VariantOptionsSelector as VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442 } from '../../../../src/fields/ui/variant-option-selector'
 import { BeforeDashboard as BeforeDashboard_9f32ce6f473387f99159899dd857e0af } from '@/components/before-dashboard'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
-import { default as default_1e8728352cbeb6ce3a8773f21ce4eb41 } from '../../../../src/views/analytics/index'
 
 export const importMap = {
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
@@ -60,6 +59,5 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "/src/fields/ui/variant-option-selector#VariantOptionsSelector": VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442,
   "@/components/before-dashboard#BeforeDashboard": BeforeDashboard_9f32ce6f473387f99159899dd857e0af,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
-  "/src/views/analytics/index#default": default_1e8728352cbeb6ce3a8773f21ce4eb41
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
 }

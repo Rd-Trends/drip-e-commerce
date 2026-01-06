@@ -4,7 +4,7 @@ import { revalidateTag } from 'next/cache'
 import { adminOnly } from '@/access/admin-only'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 import { currenciesConfig } from '@/lib/constants'
-import { amountField } from '@payloadcms/plugin-ecommerce'
+import { amountField } from '@/fields/ammount-field'
 import { queryKeys } from '@/lib/query-keys'
 
 export const ShippingConfig: GlobalConfig = {

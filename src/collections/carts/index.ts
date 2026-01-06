@@ -13,7 +13,7 @@ export const Carts: CollectionConfig = {
   slug: 'carts',
   access: {
     create: () => true, // Allow authenticated users and guest users
-    delete: canManageOrders,
+    delete: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
     read: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
     update: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
   },

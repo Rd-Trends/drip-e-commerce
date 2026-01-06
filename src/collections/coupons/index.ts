@@ -17,7 +17,7 @@ export const Coupons: CollectionConfig = {
   admin: {
     useAsTitle: 'code',
     defaultColumns: ['code', 'type', 'value', 'active', 'validFrom', 'validUntil'],
-    group: 'Ecommerce',
+    group: 'Shop',
   },
   fields: [
     {

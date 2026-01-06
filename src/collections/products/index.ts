@@ -169,18 +169,6 @@ export const Products: CollectionConfig = {
               },
             }),
             ...variantsFields,
-            {
-              name: 'bulkVariantCreator',
-              type: 'ui',
-              admin: {
-                components: {
-                  Field: '@/fields/ui/bulk-variant-create#BulkVariantCreator',
-                },
-                condition: (data) => {
-                  return data?.enableVariants === true && data?.variantTypes?.length > 0
-                },
-              },
-            },
             ...pricesField({ currenciesConfig }),
             amountField({
               currenciesConfig,

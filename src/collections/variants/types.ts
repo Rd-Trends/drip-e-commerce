@@ -29,6 +29,7 @@ export const VariantTypes: CollectionConfig = {
       type: 'join',
       collection: 'variantOptions',
       maxDepth: 2,
+      defaultLimit: 100,
       on: 'variantType',
       orderable: true,
     },
