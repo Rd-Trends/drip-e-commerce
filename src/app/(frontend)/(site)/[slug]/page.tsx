@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 
 import { LivePreviewListener } from '@/components/live-preview-listener'
 import { RenderBlocks } from '@/blocks/render-block'
-// import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utils/generate-meta'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -17,9 +16,9 @@ export async function generateStaticParams() {
   const pages = await payload.find({
     collection: 'pages',
     draft: false,
-    limit: 1000,
-    overrideAccess: false,
+    limit: 0,
     pagination: false,
+    overrideAccess: false,
     select: {
       slug: true,
     },

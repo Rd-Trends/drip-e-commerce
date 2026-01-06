@@ -60,30 +60,28 @@ export const ProductItem: React.FC<Props> = ({ product, quantity, variant, curre
       </div>
       <div className="flex grow justify-between items-center">
         <div className="flex flex-col gap-1">
-          <p className="font-medium text-lg">
-            <Link href={itemURL}>{title}</Link>
+          <p className="font-medium">
+            <Link href={itemURL} className="hover:text-primary transition-colors">
+              {title}
+            </Link>
           </p>
           {variant && (
-            <p className="text-sm font-mono text-primary/50 tracking-widest">
+            <p className="text-sm text-muted-foreground">
               {variant.options
                 ?.map((option) => {
                   if (typeof option === 'object') return option.label
                   return null
                 })
-                .join(', ')}
+                .join(' • ')}
             </p>
           )}
-          <div>
-            {'x'}
-            {quantity}
-          </div>
+          {quantity && <p className="text-sm text-muted-foreground">Quantity: {quantity}</p>}
         </div>
 
         {itemPrice && quantity && (
           <div className="text-right">
-            <p className="font-medium text-lg">Subtotal</p>
             <Price
-              className="font-mono text-primary/50 text-sm"
+              className="font-medium"
               amount={itemPrice * quantity}
               currencyCode={currencyCode}
             />

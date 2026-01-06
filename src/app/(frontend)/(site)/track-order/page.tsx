@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Form from 'next/form'
+import Section from '@/components/layout/section'
+import Container from '@/components/layout/container'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,9 +91,11 @@ export default async function GuestOrderPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <OrderDetails order={order} />
-    </div>
+    <Section paddingY="sm" className="mb-20">
+      <Container size="md" center>
+        <OrderDetails order={order} />
+      </Container>
+    </Section>
   )
 }
 

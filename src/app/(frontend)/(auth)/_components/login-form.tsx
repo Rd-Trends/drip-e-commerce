@@ -35,14 +35,6 @@ export function LoginForm() {
     },
   })
 
-  //   // Show warning message if present
-  //   React.useEffect(() => {
-  //     const warning = searchParams.get('warning')
-  //     if (warning) {
-  //       toast.info(warning)
-  //     }
-  //   }, [searchParams])
-
   function onSubmit(data: LoginFormData) {
     login(data, {
       onSuccess: () => {

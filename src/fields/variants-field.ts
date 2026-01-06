@@ -28,10 +28,14 @@ export const variantsFields: Field[] = [
       },
       defaultColumns: ['title', 'options', 'inventory', 'prices', '_status'],
       disableListColumn: true,
+      components: {
+        afterInput: [{ path: '@/fields/ui/bulk-variant-create#BulkVariantCreator' }],
+      },
     },
     collection: 'variants',
     label: 'Available variants',
     maxDepth: 2,
+    defaultLimit: 100,
     on: 'product',
   },
 ]

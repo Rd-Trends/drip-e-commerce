@@ -1,6 +1,7 @@
 import { currenciesConfig } from '@/lib/constants'
 import { Currency } from '@payloadcms/plugin-ecommerce/types'
 import { createContext, useCallback, useContext, useState } from 'react'
+import { formatCurrency as formatCurrencyUtil } from '@/utils/format-currency'
 
 export type CurrencyContextType = {
   currency: Currency
@@ -25,25 +26,7 @@ const CurrencyProvider = ({ children }: { children: React.ReactNode }) => {
 
   const formatCurrency = useCallback(
     (value?: null | number, options?: { currency?: Currency }): string => {
-      if (value === undefined || value === null) {
-        return ''
-      }
-
-      const currencyToUse = options?.currency || currency
-
-      if (!currencyToUse) {
-        return value.toString()
-      }
-
-      if (value === 0) {
-        return `${currencyToUse.symbol}0.${'0'.repeat(currencyToUse.decimals)}`
-      }
-
-      // Convert from base value (e.g., cents) to decimal value (e.g., dollars)
-      const decimalValue = value / Math.pow(10, currencyToUse.decimals)
-
-      // Format with the correct number of decimal places
-      return `${currencyToUse.symbol}${decimalValue.toFixed(currencyToUse.decimals)}`
+      return formatCurrencyUtil(value, { currency: options?.currency || currency })
     },
     [currency],
   )

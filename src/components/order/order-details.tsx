@@ -14,17 +14,18 @@ interface OrderDetailsProps {
   backHref?: string
 }
 
-export function OrderDetails({ order, backHref = '/orders' }: OrderDetailsProps) {
+export function OrderDetails({ order, backHref }: OrderDetailsProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <LinkButton href={backHref} variant="outline" size="icon">
-          <ChevronLeftIcon className="h-4 w-4" />
-          <span className="sr-only">Back to orders</span>
-        </LinkButton>
-        <h1 className="text-2xl font-bold tracking-tight">Order Details</h1>
-      </div>
-
+      {backHref && (
+        <div className="flex items-center gap-4">
+          <LinkButton href={backHref} variant="outline" size="icon">
+            <ChevronLeftIcon className="h-4 w-4" />
+            <span className="sr-only">Back to orders</span>
+          </LinkButton>
+          <h1 className="text-2xl font-bold tracking-tight">Order Details</h1>
+        </div>
+      )}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="md:col-span-2">
           <CardHeader>
@@ -67,32 +68,75 @@ export function OrderDetails({ order, backHref = '/orders' }: OrderDetailsProps)
                 })}
               </div>
               <Separator />
-              <div className="flex items-center justify-between font-medium">
-                <span>Total</span>
-                {order.grandTotal && <Price amount={order.grandTotal} />}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  {order.subtotal && <Price className="text-sm" amount={order.subtotal} />}
+                </div>
+                {order.shippingFee !== null && order.shippingFee !== undefined && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Shipping Fee</span>
+                    <Price className="text-sm" amount={order.shippingFee} />
+                  </div>
+                )}
+                {order.tax !== null && order.tax !== undefined && order.tax > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Tax</span>
+                    <Price className="text-sm" amount={order.tax} />
+                  </div>
+                )}
+                {order.discount !== null && order.discount !== undefined && order.discount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Discount</span>
+                    <Price className="text-sm text-green-600" amount={-order.discount} />
+                  </div>
+                )}
+                <Separator />
+                <div className="flex items-center justify-between font-medium">
+                  <span>Total</span>
+                  {order.grandTotal && <Price amount={order.grandTotal} />}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Shipping Address</CardTitle>
+            <CardTitle>Shipping & Customer Information</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* @ts-expect-error - some kind of type hell */}
-            {order.shippingAddress && <AddressItem address={order.shippingAddress} />}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-1">
-              <span className="font-medium">Email</span>
-              <span className="text-muted-foreground">{order.customerEmail}</span>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="font-medium mb-3">Shipping Address</h3>
+                {/* @ts-expect-error - some kind of type hell */}
+                {order.shippingAddress && <AddressItem address={order.shippingAddress} />}
+              </div>
+              <div>
+                <h3 className="font-medium mb-3">Customer Details</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Email</span>
+                    <p className="text-sm">
+                      {typeof order.customer === 'object' && order.customer?.email
+                        ? order.customer.email
+                        : order.customerEmail}
+                    </p>
+                  </div>
+                  {typeof order.customer === 'object' && order.customer?.name && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Name</span>
+                      <p className="text-sm">{order.customer.name}</p>
+                    </div>
+                  )}
+                  {order.shippingAddress?.phone && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Phone</span>
+                      <p className="text-sm">{order.shippingAddress.phone}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

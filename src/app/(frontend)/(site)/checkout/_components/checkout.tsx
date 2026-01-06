@@ -100,7 +100,7 @@ function CheckoutForm({
   onConfirmingOrder: () => void
 }) {
   const { user } = useAuth()
-  const { mutate: clearCart } = useDeleteCart()
+  const { mutateAsync: clearCart } = useDeleteCart()
   const { mutate: initiatePayment, isPending: isInitiatingPayment } = useInitiatePayment()
   const { mutate: confirmOrder } = useConfirmOrder()
 
@@ -152,10 +152,11 @@ function CheckoutForm({
           },
         },
         {
-          onSuccess: (confirmResult) => {
+          onSuccess: async (confirmResult) => {
             if (confirmResult.orderID) {
               setOrderID(confirmResult.orderID)
-              clearCart()
+              await clearCart()
+              setShowIsConfirmingOrder(false)
             }
           },
           onError: () => {
@@ -238,7 +239,7 @@ function CheckoutForm({
 
   return (
     <Fragment>
-      {cart && (
+      {cart && !orderID && (
         <Fragment>
           <div className="w-full grid lg:grid-cols-2 gap-8">
             <div className="lg:col-span-1 space-y-6">
@@ -295,7 +296,7 @@ function CheckoutForm({
 
       {orderID && <OrderSuccess orderID={orderID.toString()} email={email} />}
 
-      <Dialog open={showIsConfirmingOrder && !orderID}>
+      <Dialog open={showIsConfirmingOrder} onOpenChange={setShowIsConfirmingOrder}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle className="text-center">Confirming Your Order</DialogTitle>
@@ -315,7 +316,7 @@ function CheckoutForm({
 const OrderSuccess = ({ orderID, email }: { orderID: string; email: string }) => {
   const { user } = useAuth()
   return (
-    <Card>
+    <Card className="max-w-md mx-auto mt-10">
       <CardHeader className="text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <CheckCircleIcon className="h-8 w-8 text-primary" />
@@ -337,7 +338,7 @@ const OrderSuccess = ({ orderID, email }: { orderID: string; email: string }) =>
             className="w-full"
             render={
               <Link
-                href={user ? `/account/order/${orderID}` : `/orders/${orderID}?email=${email}`}
+                href={user ? `/track-order?id=${orderID}&email=${email}` : `/orders/${orderID}`}
               />
             }
           >

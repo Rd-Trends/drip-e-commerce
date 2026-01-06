@@ -8,6 +8,7 @@ import { currenciesConfig } from '@/lib/constants'
 import { validateOptions } from './hooks/validate-options'
 import { variantsCollectionBeforeChange } from './hooks/before-change'
 import { amountField } from '@/fields/ammount-field'
+import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
 
 export const Variants: CollectionConfig = {
   slug: 'variants',
@@ -87,6 +88,8 @@ export const Variants: CollectionConfig = {
   },
   hooks: {
     beforeChange: [variantsCollectionBeforeChange],
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateDelete],
   },
   trash: true,
   versions: {
