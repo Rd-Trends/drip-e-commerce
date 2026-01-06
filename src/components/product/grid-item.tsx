@@ -45,7 +45,7 @@ export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
         {image ? (
           <Media
             className="h-full w-full"
-            imgClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            imgClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 rounded-md"
             resource={image}
             fill
           />
