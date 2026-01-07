@@ -17,6 +17,7 @@ import {
 import { Order, Product, Variant } from '@/payload-types'
 import tailwindConfig from './tailwind.config'
 import { formatDateTime } from '@/utils/format-date-time'
+import { formatCurrency } from '@/utils/format-currency'
 
 interface OrderConfirmationEmailProps {
   order?: Order
@@ -85,22 +86,12 @@ const dummyOrder = {
 }
 
 export const OrderConfirmationEmail = ({
-  order = dummyOrder as any,
+  order = dummyOrder as unknown as Order,
 }: OrderConfirmationEmailProps) => {
   const customerName = order.shippingAddress?.firstName || 'there'
   const orderDate = formatDateTime({ date: order.createdAt, format: 'MMMM dd, yyyy' })
 
-  const formatPrice = (amount?: number | null) => {
-    if (!amount) return '₦0.00'
-    // Convert from kobo to naira (divide by 100)
-    const amountInNaira = amount / 100
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(amountInNaira)
-  }
-
-  const getProductImage = (product: any): string => {
+  const getProductImage = (product: Product): string => {
     if (product.gallery && product.gallery.length > 0) {
       const firstImage = product.gallery[0]?.image
       if (firstImage && typeof firstImage === 'object') {
@@ -111,11 +102,11 @@ export const OrderConfirmationEmail = ({
     return `${baseUrl}/placeholder.png`
   }
 
-  const getVariantDetails = (variant: any): string => {
+  const getVariantDetails = (variant?: Variant | null): string => {
     if (!variant) return ''
     if (variant.options && variant.options.length > 0) {
       return variant.options
-        .map((opt: any) => {
+        .map((opt) => {
           if (typeof opt === 'object' && opt?.label) {
             return opt.label
           }
@@ -207,9 +198,9 @@ export const OrderConfirmationEmail = ({
               <Text className="text-base sm:text-lg font-bold text-foreground mb-6">
                 Order Items
               </Text>
-              {order.items?.map((item: any, index: number) => {
-                const product = typeof item.product === 'object' ? item.product : null
-                const variant = typeof item.variant === 'object' ? item.variant : undefined
+              {order.items?.map((item, index: number) => {
+                const product = typeof item.product === 'number' ? null : item.product
+                const variant = typeof item.variant === 'number' ? null : item.variant
 
                 if (!product) return null
 
@@ -224,6 +215,7 @@ export const OrderConfirmationEmail = ({
                         className="rounded-lg object-cover w-full"
                       />
                     </Column>
+
                     <Column className="align-top">
                       <Text className="m-0 text-sm font-medium text-foreground leading-snug">
                         {product.title}
@@ -237,7 +229,7 @@ export const OrderConfirmationEmail = ({
                         Quantity: {item.quantity}
                       </Text>
                       <Text className="mt-2 mb-0 text-sm font-medium text-foreground">
-                        {formatPrice(
+                        {formatCurrency(
                           (variant?.priceInNGN || product.priceInNGN || 0) * (item.quantity || 1),
                         )}
                       </Text>
@@ -257,7 +249,7 @@ export const OrderConfirmationEmail = ({
                 </Column>
                 <Column className="w-1/3 text-right">
                   <Text className="m-0 text-xs sm:text-sm text-foreground">
-                    {formatPrice(order.subtotal)}
+                    {formatCurrency(order.subtotal)}
                   </Text>
                 </Column>
               </Row>
@@ -269,7 +261,7 @@ export const OrderConfirmationEmail = ({
                   </Column>
                   <Column className="w-1/3 text-right">
                     <Text className="m-0 text-xs sm:text-sm text-foreground">
-                      {formatPrice(order.shippingFee)}
+                      {formatCurrency(order.shippingFee)}
                     </Text>
                   </Column>
                 </Row>
@@ -282,7 +274,7 @@ export const OrderConfirmationEmail = ({
                   </Column>
                   <Column className="w-1/3 text-right">
                     <Text className="m-0 text-xs sm:text-sm text-foreground">
-                      {formatPrice(order.tax)}
+                      {formatCurrency(order.tax)}
                     </Text>
                   </Column>
                 </Row>
@@ -295,7 +287,7 @@ export const OrderConfirmationEmail = ({
                   </Column>
                   <Column className="w-1/3 text-right">
                     <Text className="m-0 text-xs sm:text-sm text-foreground">
-                      -{formatPrice(order.discount)}
+                      -{formatCurrency(order.discount)}
                     </Text>
                   </Column>
                 </Row>
@@ -309,7 +301,7 @@ export const OrderConfirmationEmail = ({
                 </Column>
                 <Column className="w-1/3 text-right">
                   <Text className="m-0 text-sm sm:text-base font-bold text-foreground">
-                    {formatPrice(order.grandTotal || order.subtotal)}
+                    {formatCurrency(order.grandTotal || order.subtotal)}
                   </Text>
                 </Column>
               </Row>

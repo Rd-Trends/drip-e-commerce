@@ -45,7 +45,7 @@ export const OrderItem: React.FC<Props> = ({ order }) => {
 
       <LinkButton
         variant="outline"
-        href={`/orders/${order.id}`}
+        href={`/account/orders/${order.id}`}
         className="self-start sm:self-auto"
       >
         View Order

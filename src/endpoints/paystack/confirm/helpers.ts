@@ -222,3 +222,79 @@ export async function sendOrderConfirmationEmail(order: Order, payload: BasePayl
     payload.logger.error(error, `Error sending order confirmation email for order #${order.id}`)
   }
 }
+
+export async function sendAdminOrderNotifications(order: Order, payload: BasePayload) {
+  try {
+    const { USER_ROLES } = await import('@/lib/constants')
+    const { AdminOrderNotificationEmail } = await import('@/lib/emails/admin-order-notification')
+    const { formatCurrency } = await import('@/utils/format-currency')
+
+    // Query all users with admin or order-manager roles
+    const staffUsers = await payload.find({
+      collection: 'users',
+      where: {
+        roles: {
+          in: [USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER],
+        },
+      },
+      select: {
+        email: true,
+        name: true,
+        roles: true,
+      },
+      limit: 0, // Fetch all matching users
+    })
+
+    if (!staffUsers.docs || staffUsers.docs.length === 0) {
+      payload.logger.warn('No admin or order manager users found to send notifications')
+      return
+    }
+
+    payload.logger.info(
+      `Found ${staffUsers.docs.length} staff members to notify for order #${order.id}`,
+    )
+
+    // Render the email template
+    const emailHtml = await render(AdminOrderNotificationEmail({ order }))
+
+    // Send emails in batches of 2 to respect rate limit (2 req/sec on Resend)
+    const BATCH_SIZE = 2
+    for (let i = 0; i < staffUsers.docs.length; i += BATCH_SIZE) {
+      const batch = staffUsers.docs.slice(i, i + BATCH_SIZE)
+
+      const emailPromises = batch.map(async (user) => {
+        try {
+          await payload.sendEmail({
+            to: user.email,
+            subject: `New Order #${order.id} - ${formatCurrency(order.grandTotal)} - Drip Fashion`,
+            html: emailHtml,
+          })
+
+          payload.logger.info(
+            `Admin notification email sent to ${user.email} for order #${order.id}`,
+          )
+        } catch (error) {
+          payload.logger.error(
+            error,
+            `Failed to send admin notification to ${user.email} for order #${order.id}`,
+          )
+          // Don't throw - continue sending to other staff members
+        }
+      })
+
+      await Promise.all(emailPromises)
+
+      // Add small delay between batches if there are more emails to send
+      if (i + BATCH_SIZE < staffUsers.docs.length) {
+        await new Promise((resolve) => setTimeout(resolve, 1100))
+      }
+    }
+
+    payload.logger.info(
+      `Admin order notifications completed for order #${order.id}. Sent to ${staffUsers.docs.length} recipients.`,
+    )
+  } catch (error) {
+    payload.logger.error(error, `Error sending admin order notifications for order #${order.id}`)
+    // Don't throw - admin notifications shouldn't break order confirmation
+  }
+}

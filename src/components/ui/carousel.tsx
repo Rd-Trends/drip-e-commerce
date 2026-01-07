@@ -274,8 +274,7 @@ function CarouselDots({ className, ...props }: React.ComponentProps<'div'>) {
           role="tab"
           data-slot="carousel-dot"
           aria-selected={index === selectedIndex}
-          aria-controls="carousel-item"
-          aria-label={`Slide ${index + 1}`}
+          aria-label={`Go to slide ${index + 1}`}
           className={cn(
             'h-2 w-2 rounded-full transition-all',
             selectedIndex === index ? 'bg-primary w-4' : 'bg-primary/30',

@@ -35,7 +35,7 @@ export const variantsFields: Field[] = [
     collection: 'variants',
     label: 'Available variants',
     maxDepth: 2,
-    defaultLimit: 100,
+    defaultLimit: 100, //disables pagination, return all results
     on: 'product',
   },
 ]

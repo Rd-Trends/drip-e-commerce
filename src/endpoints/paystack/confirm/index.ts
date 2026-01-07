@@ -6,6 +6,7 @@ import {
   updateInventory,
   trackCouponUsage,
   sendOrderConfirmationEmail,
+  sendAdminOrderNotifications,
 } from './helpers'
 
 export const confirmPaystackOrderHandler: Endpoint['handler'] = async (req) => {
@@ -76,9 +77,9 @@ export const confirmPaystackOrderHandler: Endpoint['handler'] = async (req) => {
       await trackCouponUsage(payload, metadata.couponId, user?.id || null)
     }
 
+    // Send emails sequentially to avoid rate limit (2 req/sec on Resend)
     await sendOrderConfirmationEmail(order, payload)
-
-    // in the future, we may need to send emails to admins as well (using payload job queue)
+    await sendAdminOrderNotifications(order, payload)
 
     return Response.json({
       message: 'Payment confirmed successfully',

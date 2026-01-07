@@ -15,7 +15,7 @@ const items = [
   },
   {
     title: 'Orders',
-    href: '/orders',
+    href: '/account/orders',
     icon: Package,
   },
   {

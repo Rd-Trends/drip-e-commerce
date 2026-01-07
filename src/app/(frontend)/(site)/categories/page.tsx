@@ -15,9 +15,17 @@ import {
 } from '@/components/ui/empty'
 import { AdminActionButton } from '@/components/ui/admin-action-button'
 import { FolderOpen } from 'lucide-react'
-
+import { Pagination } from '@/components/pagination'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+
+const CATEGORIES_PER_PAGE = 24
+
+type SearchParams = Record<string, string | string[] | undefined>
+
+type Props = {
+  searchParams: Promise<SearchParams>
+}
 
 export const metadata: Metadata = {
   title: 'Shop by Category',
@@ -28,7 +36,10 @@ export const metadata: Metadata = {
   },
 }
 
-export default function CategoriesPage() {
+export default async function CategoriesPage({ searchParams }: Props) {
+  const { page } = await searchParams
+  const currentPage = Number(page) || 1
+
   return (
     <Section paddingY="xs" className="mb-20">
       <Container>
@@ -40,15 +51,15 @@ export default function CategoriesPage() {
         </div>
 
         <Suspense fallback={<CategoryListSkeleton />}>
-          <CategoryList />
+          <CategoryList currentPage={currentPage} />
         </Suspense>
       </Container>
     </Section>
   )
 }
 
-async function CategoryList() {
-  const categories = await getCachedCategories()
+async function CategoryList({ currentPage }: { currentPage: number }) {
+  const { categories, totalPages } = await getCachedCategories(currentPage)
 
   if (!categories || categories.length === 0) {
     return (
@@ -73,24 +84,33 @@ async function CategoryList() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6 lg:gap-6">
-      {categories.map((category) => {
-        return <CategoryCard key={category.id} category={category} />
-      })}
-    </div>
+    <>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6 lg:gap-6">
+        {categories.map((category) => {
+          return <CategoryCard key={category.id} category={category} />
+        })}
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination className="mt-12" totalPages={totalPages} currentPage={currentPage} />
+      )}
+    </>
   )
 }
 
 const getCachedCategories = unstable_cache(
-  async () => {
+  async (page: number) => {
     const payload = await getPayload({ config: configPromise })
 
-    // Fetch all categories
-    const { docs: categories = [] } = await payload.find({
+    // Fetch paginated categories
+    const result = await payload.find({
       collection: 'categories',
       sort: 'title',
-      pagination: false,
+      limit: CATEGORIES_PER_PAGE,
+      page,
     })
+
+    const { docs: categories = [], totalPages } = result
 
     // Fetch product counts for each category
     const categoriesWithCounts = await Promise.all(
@@ -121,7 +141,10 @@ const getCachedCategories = unstable_cache(
       }),
     )
 
-    return categoriesWithCounts
+    return {
+      categories: categoriesWithCounts,
+      totalPages,
+    }
   },
   ['all_categories_page'],
   {

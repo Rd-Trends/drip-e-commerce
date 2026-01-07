@@ -14,13 +14,13 @@ const shippingSteps = [
   {
     icon: Truck,
     title: 'In Transit',
-    description: '2-4 business days',
+    description: '2-3 business days',
     details: 'Your package is on its way to you',
   },
   {
     icon: CheckCircle,
     title: 'Delivered',
-    description: 'Total: 3-5 business days',
+    description: 'Total: 3-4 business days',
     details: 'Your order arrives at your doorstep',
   },
 ]
@@ -56,8 +56,7 @@ export function ShippingTimeline() {
         </div>
         <div className="mt-6 rounded-lg bg-muted p-4">
           <p className="text-sm text-muted-foreground">
-            <strong>Note:</strong> Delivery times may vary based on your location. Express shipping
-            options are available at checkout.
+            <strong>Note:</strong> Delivery times may vary based on your location.
           </p>
         </div>
       </CardContent>

@@ -315,6 +315,7 @@ function CheckoutForm({
 
 const OrderSuccess = ({ orderID, email }: { orderID: string; email: string }) => {
   const { user } = useAuth()
+
   return (
     <Card className="max-w-md mx-auto mt-10">
       <CardHeader className="text-center">
@@ -338,7 +339,7 @@ const OrderSuccess = ({ orderID, email }: { orderID: string; email: string }) =>
             className="w-full"
             render={
               <Link
-                href={user ? `/track-order?id=${orderID}&email=${email}` : `/orders/${orderID}`}
+                href={user ? `/account/orders/${orderID}` : `/track-order?id=${orderID}&email=${email}`}
               />
             }
           >

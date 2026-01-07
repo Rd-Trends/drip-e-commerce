@@ -29,7 +29,7 @@ export const VariantTypes: CollectionConfig = {
       type: 'join',
       collection: 'variantOptions',
       maxDepth: 2,
-      defaultLimit: 100,
+      defaultLimit: 0, //disables pagination, return all results
       on: 'variantType',
       orderable: true,
     },

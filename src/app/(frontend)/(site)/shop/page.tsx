@@ -3,29 +3,46 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Fragment } from 'react'
 import { NoProductFound } from './_components/no-product-found'
+import { Pagination } from '@/components/pagination'
 import type { Metadata } from 'next'
 
-export async function generateMetadata(): Promise<Metadata> {
+const PRODUCTS_PER_PAGE = 18
+
+type SearchParams = Record<string, string | string[] | undefined>
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}): Promise<Metadata> {
+  const params = await searchParams
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const shopUrl = `${baseUrl}/shop`
+
+  const category = Array.isArray(params.category) ? params.category[0] : params.category
+  const categoryName = category
+    ?.split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
   return {
     title: 'Shop All Products',
-    description:
-      'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.',
+    description: !category
+      ? 'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.'
+      : `Browse our collection of ${categoryName} items. Find your perfect style with quality clothing and accessories, all available with fast shipping in Nigeria.`,
     alternates: {
-      canonical: `${baseUrl}/shop`,
+      canonical: category ? `${shopUrl}?category=${category}` : shopUrl,
     },
   }
 }
-
-type SearchParams = { [key: string]: string | string[] | undefined }
 
 type Props = {
   searchParams: Promise<SearchParams>
 }
 
 export default async function ShopPage({ searchParams }: Props) {
-  const { q: searchValue, sort, category } = await searchParams
+  const { q: searchValue, sort, category, page } = await searchParams
+  const currentPage = Number(page) || 1
   const payload = await getPayload({ config: configPromise })
 
   // If category slug(s) is provided, find the category ID(s)
@@ -48,6 +65,8 @@ export default async function ShopPage({ searchParams }: Props) {
     collection: 'products',
     draft: false,
     overrideAccess: false,
+    limit: PRODUCTS_PER_PAGE,
+    page: currentPage,
     select: {
       title: true,
       slug: true,
@@ -99,7 +118,8 @@ export default async function ShopPage({ searchParams }: Props) {
       : {}),
   })
 
-  const resultsText = products.docs.length > 1 ? 'results' : 'result'
+  const resultsText = products.totalDocs > 1 ? 'results' : 'result'
+  const totalPages = products.totalPages
 
   return (
     <Fragment>
@@ -115,11 +135,23 @@ export default async function ShopPage({ searchParams }: Props) {
       )}
 
       {products?.docs.length > 0 ? (
-        <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
-          {products.docs.map((product) => {
-            return <ProductGridItem key={product.id} product={product} />
-          })}
-        </section>
+        <>
+          <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
+            {products.docs.map((product) => {
+              return <ProductGridItem key={product.id} product={product} />
+            })}
+          </section>
+
+          {/* Pagination */}
+
+          <Pagination
+            className="mt-12"
+            totalPages={totalPages}
+            currentPage={currentPage}
+            scrollToTop
+            scrollTarget={0}
+          />
+        </>
       ) : null}
     </Fragment>
   )

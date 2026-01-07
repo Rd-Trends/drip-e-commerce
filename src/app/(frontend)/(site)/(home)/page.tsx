@@ -4,9 +4,9 @@ import { ProductSection } from './_components/product-section'
 import { getCachedGlobal } from '@/lib/get-global.'
 
 export const metadata = {
-  title: 'Home',
+  title: 'Drip - Fits Over Feelings',
   description:
-    'Shop the latest fashion trends at Drip. Discover classic and flashy styles that make a statement. Fast delivery across Nigeria with secure payment via Paystack.',
+    'Shop the latest fashion trends at Drip. Discover classic and flashy styles that make a statement. Fast delivery across Nigeria.',
 }
 
 export default async function HomePage() {

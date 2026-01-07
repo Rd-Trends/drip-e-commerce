@@ -619,6 +619,10 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
     | number[]
     | undefined
 
+  // Derive a stable string key from the variant type IDs so effect dependencies
+  // don't trigger on form re-renders that provide a new array reference
+  const variantTypeIDsKey = variantTypeIDs ? [...variantTypeIDs].map(String).sort().join('|') : ''
+
   const [variantTypes, setVariantTypes] = useState<VariantTypeWithOptions[]>([])
   const [existingVariants, setExistingVariants] = useState<ExistingVariant[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -702,7 +706,7 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
     }
 
     fetchData()
-  }, [enableVariants, variantTypeIDs, doc.id])
+  }, [enableVariants, variantTypeIDsKey, doc.id])
 
   if (!enableVariants || !variantTypeIDs?.length || !doc.id) {
     return null

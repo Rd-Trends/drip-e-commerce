@@ -28,10 +28,12 @@ export function formatCurrency(value?: null | number, options?: { currency?: Cur
   const decimalValue = value / Math.pow(10, currencyToUse.decimals)
 
   // Format with the correct number of decimal places and thousand separators
-  const formattedNumber = decimalValue.toLocaleString('en-NG', {
-    minimumFractionDigits: currencyToUse.decimals,
-    maximumFractionDigits: currencyToUse.decimals,
-  })
+  const formattedNumber = decimalValue
+    .toLocaleString('en-NG', {
+      minimumFractionDigits: currencyToUse.decimals,
+      maximumFractionDigits: currencyToUse.decimals,
+    })
+    .replace('.00', '')
 
   return `${currencyToUse.symbol}${formattedNumber}`
 }

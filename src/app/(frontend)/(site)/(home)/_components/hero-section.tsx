@@ -16,7 +16,7 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
     <Section paddingY="sm">
       <Carousel
         plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
-        className="w-full"
+        className="w-full relative"
         opts={{
           loop: true,
         }}
@@ -26,9 +26,9 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
             const image = slide.image as Media
 
             return (
-              <CarouselItem key={index}>
-                <Container className="relative rounded-2xl bg-primary/5 p-6 md:p-12 lg:p-16">
-                  <div className="grid gap-6 md:grid-cols-2 items-center">
+              <CarouselItem key={index} className="min-h-[500px] md:min-h-[450px]">
+                <Container className="relative rounded-2xl bg-primary/5 p-6 pb-16 md:p-12 lg:p-16 h-full">
+                  <div className="grid gap-6 md:grid-cols-2 items-center h-full">
                     <div className="space-y-4">
                       {slide.badge && <Badge>{slide.badge}</Badge>}
                       <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -79,9 +79,7 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
         </CarouselContent>
 
         {/* Dots Navigation */}
-        {slides.length > 1 && (
-          <CarouselDots className="absolute bottom-4 left-0 right-0 flex justify-center gap-2" />
-        )}
+        {slides.length > 1 && <CarouselDots className="mt-6 md:mt-8" />}
       </Carousel>
     </Section>
   )
