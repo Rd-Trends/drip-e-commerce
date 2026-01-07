@@ -9,7 +9,7 @@ import { getServerSideURL } from '@/utils/get-url'
 import { canManageContent } from '@/access/can-manage-content'
 
 const generateTitle: GenerateTitle<Product> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Payload Ecommerce Template` : 'Payload Ecommerce Template'
+  return doc?.title ? `${doc.title} | Drip` : 'Drip Fashion'
 }
 
 const generateURL: GenerateURL<Product> = ({ doc }) => {

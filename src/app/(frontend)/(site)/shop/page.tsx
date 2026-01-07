@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { Fragment } from 'react'
 import { NoProductFound } from './_components/no-product-found'
 import { Pagination } from '@/components/pagination'
+import { sorting, defaultSort } from '@/lib/constants'
 import type { Metadata } from 'next'
 
 const PRODUCTS_PER_PAGE = 18
@@ -41,9 +42,16 @@ type Props = {
 }
 
 export default async function ShopPage({ searchParams }: Props) {
-  const { q: searchValue, sort, category, page } = await searchParams
+  const { q: searchValue, sort, category, page, featured } = await searchParams
   const currentPage = Number(page) || 1
   const payload = await getPayload({ config: configPromise })
+
+  // Map URL-friendly sort param to Payload sort value
+  const sortOption = sort ? sorting.find((item) => item.slug === sort) : defaultSort
+  const sortValue = sortOption?.sortValue || defaultSort.sortValue
+
+  // Check if we should filter by featured products
+  const isFeaturedFilter = featured === 'true'
 
   // If category slug(s) is provided, find the category ID(s)
   let categoryIds: number[] = []
@@ -75,8 +83,8 @@ export default async function ShopPage({ searchParams }: Props) {
       priceInNGN: true,
       isFeatured: true,
     },
-    ...(sort ? { sort } : { sort: 'title' }),
-    ...(searchValue || category
+    sort: sortValue,
+    ...(searchValue || category || isFeaturedFilter
       ? {
           where: {
             and: [
@@ -108,6 +116,15 @@ export default async function ShopPage({ searchParams }: Props) {
                     {
                       categories: {
                         in: categoryIds,
+                      },
+                    },
+                  ]
+                : []),
+              ...(isFeaturedFilter
+                ? [
+                    {
+                      isFeatured: {
+                        equals: true,
                       },
                     },
                   ]

@@ -78,7 +78,7 @@ const getViewAllLink = (type: SectionType, categorySlug?: string) => {
     case 'featured':
       return '/shop?featured=true'
     case 'latest':
-      return '/shop?sort=latest'
+      return '/shop' // Default sort is already latest (newest first)
     case 'hottest':
       return '/shop?sort=hottest'
     default:
