@@ -89,20 +89,6 @@ export function Pagination({
         const url = queryString ? `${pathname}?${queryString}` : pathname
         router.push(url, { scroll: false })
       }
-
-      // Handle scroll behavior
-      if (scrollToTop) {
-        if (typeof scrollTarget === 'string') {
-          // Scroll to element with selector
-          const element = document.querySelector(scrollTarget)
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }
-        } else {
-          // Scroll to offset from top
-          window.scrollTo({ top: scrollTarget, behavior: 'smooth' })
-        }
-      }
     },
     [
       controlledOnChange,
@@ -138,7 +124,22 @@ export function Pagination({
     return queryString ? `${pathname}?${queryString}` : pathname
   }
 
-     // Don't render if there's only one page or no pages
+  const scrollToTopIfNeeded = () => {
+    if (scrollToTop) {
+      if (typeof scrollTarget === 'number') {
+        window.scrollTo({ top: scrollTarget, behavior: 'instant' })
+      } else if (typeof scrollTarget === 'string') {
+        const element = document.querySelector(scrollTarget)
+        if (element) {
+          element.scrollIntoView({ behavior: 'instant' })
+        } else {
+          window.scrollTo({ top: 0, behavior: 'instant' })
+        }
+      }
+    }
+  }
+
+  // Don't render if there's only one page or no pages
   if (totalPages <= 1) {
     return null
   }
@@ -160,6 +161,7 @@ export function Pagination({
                   e.preventDefault()
                   pagination.previous()
                 }
+                scrollToTopIfNeeded()
               }}
               className={
                 pagination.active === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
@@ -191,6 +193,7 @@ export function Pagination({
                     e.preventDefault()
                     pagination.setPage(pageNumber)
                   }
+                  scrollToTopIfNeeded()
                 }}
                 className="cursor-pointer"
                 aria-label={`Go to page ${pageNumber}`}
@@ -216,6 +219,7 @@ export function Pagination({
                   e.preventDefault()
                   pagination.next()
                 }
+                scrollToTopIfNeeded()
               }}
               className={
                 pagination.active === totalPages

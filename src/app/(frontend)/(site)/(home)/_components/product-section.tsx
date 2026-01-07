@@ -132,6 +132,16 @@ export const getProductsByType = async (type: SectionType, categoryID?: number) 
     limit: 4,
     where: query,
     sort,
+    draft: false,
+    overrideAccess: false,
+    select: {
+      title: true,
+      slug: true,
+      gallery: true,
+      categories: true,
+      priceInNGN: true,
+      isFeatured: true,
+    },
   })
 
   return products
