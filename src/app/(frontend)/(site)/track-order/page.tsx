@@ -101,36 +101,46 @@ export default async function GuestOrderPage({ searchParams }: PageProps) {
 
 function ProvideOrderTrackingDetails({ id, email }: { id?: string; email?: string }) {
   return (
-    <Card className="w-full max-w-md mx-auto my-20">
-      <CardHeader className="space-y-2">
-        <CardTitle>Track Your Order</CardTitle>
-        <CardDescription>
-          Enter your order ID and email address to view your order details
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form className="space-y-4" action="/track-order">
-          <div className="space-y-2">
-            <Label htmlFor="id">Order ID</Label>
-            <Input id="id" name="id" placeholder="Enter your order ID" defaultValue={id} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Enter your email address"
-              defaultValue={email}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">
-            Track Order
-          </Button>
-        </Form>
-      </CardContent>
-    </Card>
+    <Section paddingY="none">
+      <Container>
+        <Card className="w-full max-w-md mx-auto my-20">
+          <CardHeader className="space-y-2">
+            <CardTitle>Track Your Order</CardTitle>
+            <CardDescription>
+              Enter your order ID and email address to view your order details
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form className="space-y-4" action="/track-order">
+              <div className="space-y-2">
+                <Label htmlFor="id">Order ID</Label>
+                <Input
+                  id="id"
+                  name="id"
+                  placeholder="Enter your order ID"
+                  defaultValue={id}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  defaultValue={email}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Track Order
+              </Button>
+            </Form>
+          </CardContent>
+        </Card>
+      </Container>
+    </Section>
   )
 }
 
