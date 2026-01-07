@@ -3,20 +3,22 @@ import { CurrenciesConfig } from '@/types/currency'
 export type SortFilterItem = {
   reverse: boolean
   slug: null | string
+  sortValue?: string // The actual value to pass to Payload query
   title: string
 }
 
 export const defaultSort: SortFilterItem = {
   slug: null,
-  reverse: false,
-  title: 'Alphabetic A-Z',
+  reverse: true,
+  sortValue: '-createdAt',
+  title: 'Latest arrivals',
 }
 
 export const sorting: SortFilterItem[] = [
   defaultSort,
-  { slug: '-createdAt', reverse: true, title: 'Latest arrivals' },
-  { slug: 'price-in-NGN-asc', reverse: false, title: 'Price: Low to high' }, // asc
-  { slug: 'price-in-NGN-desc', reverse: true, title: 'Price: High to low' },
+  { slug: 'alphabetic', reverse: false, sortValue: 'title', title: 'Alphabetic A-Z' },
+  { slug: 'price-low-high', reverse: false, sortValue: 'priceInNGN', title: 'Price: Low to high' },
+  { slug: 'price-high-low', reverse: true, sortValue: '-priceInNGN', title: 'Price: High to low' },
 ]
 
 export const currenciesConfig: CurrenciesConfig = {

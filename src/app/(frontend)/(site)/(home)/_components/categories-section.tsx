@@ -8,6 +8,8 @@ import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
 import { queryKeys } from '@/lib/query-keys'
 import { CategoryCard, CategoryCardSkeleton } from '@/components/grid/category-card'
+import { LinkButton } from '@/components/ui/button'
+import { ArrowRight } from 'lucide-react'
 
 export function CategoriesSection() {
   return (
@@ -15,9 +17,10 @@ export function CategoriesSection() {
       <Container>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Categories</h2>
-          <Link href="/categories" className="text-sm text-primary hover:underline">
-            See All
-          </Link>
+          <LinkButton href="/categories" variant="ghost" size="sm" className="group">
+            View All
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </LinkButton>
         </div>
         <Suspense fallback={<CategoriesListSkeleton />}>
           <CategoriesList />

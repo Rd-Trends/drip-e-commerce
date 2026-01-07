@@ -150,7 +150,7 @@ export default async function ProductPage({ params }: Args) {
   }
 
   return (
-    <React.Fragment>
+    <div className="mb-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
@@ -193,19 +193,16 @@ export default async function ProductPage({ params }: Args) {
       </Section>
 
       {/* Related Products */}
-      <Section paddingY="none">
-        <Container>
-          <Suspense fallback={null}>
-            <RelatedProductsSection product={product} limit={8} />
-          </Suspense>
-        </Container>
-      </Section>
+
+      <Suspense fallback={null}>
+        <RelatedProductsSection product={product} limit={8} />
+      </Suspense>
 
       {/* Sticky Add to Cart - Mobile Only */}
       <Suspense fallback={null}>
         <StickyAddToCart product={product} />
       </Suspense>
-    </React.Fragment>
+    </div>
   )
 }
 
