@@ -26,9 +26,9 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
             const image = slide.image as Media
 
             return (
-              <CarouselItem key={index} className="min-h-[500px] md:min-h-[450px]">
+              <CarouselItem key={index} className="min-h-125 md:min-h-112.5">
                 <Container className="relative rounded-2xl bg-primary/5 p-6 pb-16 md:p-12 lg:p-16 h-full">
-                  <div className="grid gap-6 md:grid-cols-2 items-center h-full">
+                  <div className="grid gap-6 md:grid-cols-2 md:items-center h-full">
                     <div className="space-y-4">
                       {slide.badge && <Badge>{slide.badge}</Badge>}
                       <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -79,7 +79,7 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
         </CarouselContent>
 
         {/* Dots Navigation */}
-        {slides.length > 1 && <CarouselDots className="mt-6 md:mt-8" />}
+        {slides.length > 1 && <CarouselDots className="mt-6 md:mt-8 bottom-4" />}
       </Carousel>
     </Section>
   )
