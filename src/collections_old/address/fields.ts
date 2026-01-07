@@ -1,5 +1,4 @@
 import { Field } from 'payload'
-import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 
 export const addressFields: Field[] = [
   {

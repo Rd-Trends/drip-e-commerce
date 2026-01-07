@@ -6,7 +6,7 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
   title: {
-    default: 'Drip - Fashion E-Commerce for Modern Style',
+    default: 'Drip - Fits Over Feelings',
     template: '%s | Drip',
   },
   description:
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     locale: 'en_NG',
     url: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
     siteName: 'Drip',
-    title: 'Drip - Fashion E-Commerce for Modern Style',
+    title: 'Drip - Fits Over Feelings',
     description:
       'Discover the latest trends in fashion at Drip. Classic and flashy styles that make a statement.',
     images: [
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   },
   verification: {
     // Add verification codes when available
-    // google: 'your-google-verification-code',
+    google: 'Th4UprEy4ngYMDCmrsAB56l4_-JEdIvRYadKteORTIo',
     // yandex: 'your-yandex-verification-code',
     // bing: 'your-bing-verification-code',
   },

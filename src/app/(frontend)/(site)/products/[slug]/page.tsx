@@ -1,4 +1,4 @@
-import type { Media, Product } from '@/payload-types'
+import type { Media } from '@/payload-types'
 import { Gallery } from '@/components/product/gallery'
 import { ProductDescription } from '@/components/product/product-description'
 import { ShippingTimeline } from '@/components/product/shipping-timeline'

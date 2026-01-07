@@ -89,6 +89,5 @@ export const metadata: Metadata = {
   },
   openGraph: mergeOpenGraph({
     title: 'Order Details',
-    url: '/orders/[id]',
   }),
 }

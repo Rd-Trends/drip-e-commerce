@@ -44,7 +44,7 @@ const supportLinks = [
 const quickLinks = [
   { href: '/shop', label: 'Shop Now' },
   { href: '/account', label: 'My Account' },
-  { href: '/orders', label: 'Track Order' },
+  { href: '/track-orders', label: 'Track Order' },
 ]
 
 // Legal links

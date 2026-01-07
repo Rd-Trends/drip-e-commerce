@@ -37,6 +37,7 @@ import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
 import { Pages } from './collections/pages'
+// import { jobs } from './jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -135,6 +136,7 @@ export default buildConfig({
   }),
   endpoints,
   plugins,
+  // jobs,
   email: resendAdapter({
     defaultFromAddress: 'drip-fashion@drip.ng',
     defaultFromName: 'Drip Fashion',

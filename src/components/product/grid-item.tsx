@@ -41,7 +41,7 @@ export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
       )}
 
       {/* Product Image */}
-      <div className="relative aspect-square w-full overflow-hidden">
+      <div className="relative aspect-square w-full rounded-md overflow-hidden">
         {image ? (
           <Media
             className="h-full w-full"
