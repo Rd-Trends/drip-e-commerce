@@ -32,8 +32,10 @@ export default function FilterDropdown({
 
   useEffect(() => {
     list.forEach((listItem: ListItem) => {
+      // For path-based items (like "All"), check if we're on that path AND the queryKey param is not set
+      // For slug-based items, check if the query param matches the slug
       if (
-        ('path' in listItem && pathname === listItem.path) ||
+        ('path' in listItem && pathname === listItem.path && !searchParams.get(queryKey)) ||
         ('slug' in listItem && searchParams.get(queryKey) === listItem.slug)
       ) {
         setActive(listItem.title)

@@ -11,8 +11,12 @@ export const createUrl = (params: {
   queryKey?: string
 }) => {
   const { pathname, listItem, searchParams, queryKey = 'sort' } = params
+
+  // Reset pagination when any filter changes
+  searchParams.delete('page')
+
   if (listItem.path) {
-    searchParams.delete('q')
+    searchParams.delete(queryKey)
     return `${listItem.path}?${searchParams.toString()}`
   }
   if (listItem.slug) {

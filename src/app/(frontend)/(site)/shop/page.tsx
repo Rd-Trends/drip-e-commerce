@@ -27,7 +27,7 @@ export async function generateMetadata({
     .join(' ')
 
   return {
-    title: 'Shop All Products',
+    title: !category ? 'Shop All Products' : `Shop ${categoryName} Collection`,
     description: !category
       ? 'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.'
       : `Browse our collection of ${categoryName} items. Find your perfect style with quality clothing and accessories, all available with fast shipping in Nigeria.`,

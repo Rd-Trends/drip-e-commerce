@@ -26,8 +26,10 @@ const FilterList = ({
       ) : null}
       <ul className="list-none p-0 m-0 hidden md:flex flex-col gap-2 ">
         {list.map((item) => {
+          // For path-based items (like "All"), check if we're on that path AND the queryKey param is not set
+          // For slug-based items, check if the query param matches the slug
           const active = item.path
-            ? pathname === item.path
+            ? pathname === item.path && !searchParams.get(queryKey)
             : searchParams.get(queryKey) === item.slug
 
           return (
