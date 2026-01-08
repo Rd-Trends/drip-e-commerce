@@ -36,3 +36,16 @@ export function SortingList() {
     </Suspense>
   )
 }
+
+const featuredOptions = [
+  { title: 'All Products', path: '/shop' },
+  { title: 'Featured Only', slug: 'true' },
+]
+
+export function FeaturedList() {
+  return (
+    <Suspense fallback={<FilterListLoader title="Featured" />}>
+      <FilterList list={featuredOptions} title="Featured" queryKey="featured" />
+    </Suspense>
+  )
+}

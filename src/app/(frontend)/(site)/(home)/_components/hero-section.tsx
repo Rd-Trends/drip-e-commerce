@@ -35,7 +35,7 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
                         {slide.title}
                       </h1>
                       {slide.description && (
-                        <p className="max-w-150 text-muted-foreground md:text-xl">
+                        <p className="max-w-150 text-foreground/80 md:text-xl">
                           {slide.description}
                         </p>
                       )}
