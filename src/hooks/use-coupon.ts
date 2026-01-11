@@ -28,7 +28,7 @@ export type ValidateCouponResponse = {
 export function useValidateCoupon() {
   return useMutation({
     mutationFn: async (data: ValidateCouponRequest): Promise<ValidateCouponResponse> => {
-      const response = await fetch('/api/coupons/validate', {
+      const response = await fetch('/api/validate-coupon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

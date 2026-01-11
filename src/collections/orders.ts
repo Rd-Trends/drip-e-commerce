@@ -23,11 +23,20 @@ export const Orders: CollectionConfig = {
     description: 'Customer orders',
   },
   fields: [
-    // {
-    //   name: 'id',
-    //   type: 'text',
-    //   admin: { hidden: true },
-    // },
+    {
+      name: 'id',
+      type: 'text',
+      admin: { hidden: true },
+      hooks: {
+        beforeChange: [
+          ({ operation }) => {
+            if (operation === 'create') {
+              return crypto.randomUUID()
+            }
+          },
+        ],
+      },
+    },
     {
       type: 'tabs',
       tabs: [

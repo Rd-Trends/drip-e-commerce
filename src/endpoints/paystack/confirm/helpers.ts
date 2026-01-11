@@ -69,7 +69,7 @@ export async function verifyPayment({ reference, req }: VerifyPaymentParams) {
 type UpdateCartAndTransactionParams = {
   cartId: number
   transactionId: number
-  orderId: number
+  orderId: string
   req: PayloadRequest
 }
 

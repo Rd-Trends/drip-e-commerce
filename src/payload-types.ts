@@ -178,7 +178,7 @@ export interface User {
    */
   roles?: ('admin' | 'customer' | 'order-manager' | 'content-manager')[] | null;
   orders?: {
-    docs?: (number | Order)[];
+    docs?: (string | Order)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -217,7 +217,7 @@ export interface User {
  * via the `definition` "orders".
  */
 export interface Order {
-  id: number;
+  id: string;
   items?:
     | {
         product?: (number | null) | Product;
@@ -485,7 +485,7 @@ export interface Transaction {
   status: 'pending' | 'succeeded' | 'failed' | 'cancelled' | 'expired' | 'refunded';
   customer?: (number | null) | User;
   customerEmail?: string | null;
-  order?: (number | null) | Order;
+  order?: (string | null) | Order;
   cart?: (number | null) | Cart;
   amount?: number | null;
   currency?: 'NGN' | null;
@@ -1085,7 +1085,7 @@ export interface PayloadLockedDocument {
       } | null)
     | ({
         relationTo: 'orders';
-        value: number | Order;
+        value: string | Order;
       } | null)
     | ({
         relationTo: 'transactions';
@@ -1353,6 +1353,7 @@ export interface CartsSelect<T extends boolean = true> {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
+  id?: T;
   items?:
     | T
     | {

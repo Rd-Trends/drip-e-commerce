@@ -1,21 +1,19 @@
 import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { NextRequest, NextResponse } from 'next/server'
-import { validateCoupon } from '@/utils/coupon-helpers'
-import { Cart, Coupon } from '@/payload-types'
+import { Endpoint, getPayload } from 'payload'
+import { validateCoupon } from './helpers'
 
-export async function POST(req: NextRequest) {
+export const validateCouponHandler: Endpoint['handler'] = async (req) => {
   try {
     const payload = await getPayload({ config: configPromise })
-    const body = await req.json()
+    const body = await req.json?.()
     const { code, cartId } = body
 
     if (!code || typeof code !== 'string') {
-      return NextResponse.json({ error: 'Coupon code is required' }, { status: 400 })
+      return Response.json({ error: 'Coupon code is required' }, { status: 400 })
     }
 
     if (!cartId) {
-      return NextResponse.json({ error: 'Cart ID is required' }, { status: 400 })
+      return Response.json({ error: 'Cart ID is required' }, { status: 400 })
     }
 
     // Find coupon by code (case-insensitive)
@@ -30,10 +28,10 @@ export async function POST(req: NextRequest) {
     })
 
     if (!couponsResult.docs || couponsResult.docs.length === 0) {
-      return NextResponse.json({ error: 'Invalid coupon code' }, { status: 404 })
+      return Response.json({ error: 'Invalid coupon code' }, { status: 404 })
     }
 
-    const coupon = couponsResult.docs[0] as Coupon
+    const coupon = couponsResult.docs[0]
 
     // Fetch cart with populated items
     const cart = await payload.findByID({
@@ -43,7 +41,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (!cart) {
-      return NextResponse.json({ error: 'Cart not found' }, { status: 404 })
+      return Response.json({ error: 'Cart not found' }, { status: 404 })
     }
 
     // Get user ID from authenticated session if available
@@ -51,14 +49,14 @@ export async function POST(req: NextRequest) {
     const userId = user?.id || null
 
     // Validate coupon
-    const validationResult = validateCoupon(coupon as Coupon, cart as Cart, userId)
+    const validationResult = validateCoupon(coupon, cart, userId)
 
     if (!validationResult.valid) {
-      return NextResponse.json({ error: validationResult.error }, { status: 400 })
+      return Response.json({ error: validationResult.error }, { status: 400 })
     }
 
     // Return success with discount details
-    return NextResponse.json({
+    return Response.json({
       valid: true,
       coupon: {
         id: coupon.id,
@@ -72,7 +70,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('Error validating coupon:', error)
-    return NextResponse.json(
+    return Response.json(
       { error: 'An error occurred while validating the coupon' },
       { status: 500 },
     )

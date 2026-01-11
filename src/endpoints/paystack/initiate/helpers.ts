@@ -3,7 +3,7 @@ import { PayloadRequest } from 'payload'
 import Paystack from '@paystack/paystack-sdk'
 import { calculateShippingFee } from '@/utils/calculate-shipping'
 import { calculateTax } from '@/utils/calculate-tax'
-import { validateCoupon } from '@/utils/coupon-helpers'
+import { validateCoupon } from '@/endpoints/coupons/helpers'
 import { PaystackTransactionMetadata } from '../shared/types'
 
 type CalculateTotalsParams = {
@@ -62,7 +62,7 @@ export async function calculateFees({
         } else {
           payload.logger.warn(`Coupon validation failed: ${validationResult.error}`)
         }
-        
+
         // Check for free shipping
         if (validationResult.valid && validationResult.freeShipping) {
           freeShipping = true

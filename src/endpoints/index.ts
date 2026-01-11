@@ -2,6 +2,7 @@ import { Endpoint } from 'payload'
 import { initiatePaystackPaymentHandler } from './paystack/initiate'
 import { confirmPaystackOrderHandler } from './paystack/confirm'
 import { bulkCreateVariants } from './variants/bulk-create'
+import { validateCouponHandler } from './coupons/validate'
 
 export const endpoints: Endpoint[] = [
   {
@@ -18,5 +19,10 @@ export const endpoints: Endpoint[] = [
     path: '/variants-bulk-create',
     method: 'post',
     handler: bulkCreateVariants,
+  },
+  {
+    path: '/validate-coupon',
+    method: 'post',
+    handler: validateCouponHandler,
   },
 ]
