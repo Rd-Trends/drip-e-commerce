@@ -57,7 +57,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: calc(var(--base) / 2);
+    margin-bottom: var(--base);
   }
 
   &__label {
@@ -217,9 +217,8 @@
   &__footer {
     display: flex;
     justify-content: flex-end;
-    padding-top: var(--base);
+    padding: var(--base);
     border-top: 1px solid var(--theme-elevation-150);
-    margin-top: var(--base);
   }
 
   &__empty {

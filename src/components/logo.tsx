@@ -3,7 +3,10 @@ import { SVGProps } from 'react'
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 font-bold text-xl no-underline select-none">
+    <Link
+      href="/"
+      className="flex items-center text-left gap-2 font-bold text-xl no-underline select-none"
+    >
       <LogoIcon className="h-8 w-auto text-primary" />{' '}
       <span className="inline-block select-none -mt-1.5">Drip</span>
     </Link>

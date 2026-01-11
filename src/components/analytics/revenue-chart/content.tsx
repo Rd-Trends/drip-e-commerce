@@ -24,7 +24,7 @@ async function fetchRevenueData(period: number = 30): Promise<RevenueData[]> {
       status: { equals: 'completed' },
       createdAt: { greater_than_equal: startDate.toISOString() },
     },
-    limit: 10000,
+    limit: 0,
     sort: 'createdAt',
   })
 

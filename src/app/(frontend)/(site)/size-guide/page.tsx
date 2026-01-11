@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function SizeGuidePage() {
   return (
-    <Section paddingY="xs">
+    <Section paddingY="xs" className="mb-20">
       <Container>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Size Guide</h1>
@@ -32,7 +32,7 @@ export default function SizeGuidePage() {
         <Card>
           <CardContent className="pt-6">
             <Tabs defaultValue="clothing" className="w-full">
-              <TabsList className="mb-6 grid grid-cols-3 lg:grid-cols-6 w-full">
+              <TabsList className="mb-6">
                 <TabsTrigger value="clothing">Tops</TabsTrigger>
                 <TabsTrigger value="bottoms">Bottoms</TabsTrigger>
                 <TabsTrigger value="shoes">Footwear</TabsTrigger>

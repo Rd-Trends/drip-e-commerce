@@ -17,7 +17,7 @@ const NavLink = ({ url, label, className }: { url: string; label: string; classN
       prefetch={true}
       onClick={handleClick}
       className={cn(
-        'text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300',
+        'text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300 outline-none focus-visible:outline-none focus:outline-none',
         className,
       )}
     >

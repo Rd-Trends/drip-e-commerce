@@ -3,8 +3,8 @@ import { headers as getHeaders } from 'next/headers'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
-import { Logo } from '@/components/logo'
 import { Metadata } from 'next'
+import { AuthLayout } from '../_components/auth-layout'
 
 export const metadata: Metadata = {
   title: 'Sign Up',
@@ -25,20 +25,11 @@ export default async function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-2 mb-6">
-          <Logo />
-
-          <h1 className="text-xl font-bold tracking-tight">Create an account</h1>
-
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Join us to enjoy exclusive offers and faster checkout.
-          </p>
-        </div>
-
-        <SignupForm />
-      </div>
-    </div>
+    <AuthLayout
+      title="Create an account"
+      description="Join us to enjoy exclusive offers and faster checkout."
+    >
+      <SignupForm />
+    </AuthLayout>
   )
 }

@@ -289,7 +289,7 @@ export function SizeGuide({ product, categories }: SizeGuideProps) {
   const availableTabs = React.useMemo(() => {
     const clothingPatterns =
       /(shirt|polo|hoodie|jacket|jersey|t-shirt|tshirt|tee|sweater|cardigan|vest|blazer|coat|pullover|sweatshirt|top)/i
-    const bottomsPatterns = /(jean|short|pant|trouser|jogger|sweatpant|chino|cargo|track)/i
+    const bottomsPatterns = /(jean|short|pant|trouser|jogger|sweatpant|chino|cargo|track|jort)/i
     const shoePatterns = /(shoe|sneaker|boot|sandal|slipper|footwear|trainer|runner|loafer|slide)/i
     const beltPatterns = /(belt|strap|waistband)/i
     const capPatterns = /(cap|hat|beanie|snapback|bucket|fedora|headwear)/i
@@ -333,7 +333,7 @@ export function SizeGuide({ product, categories }: SizeGuideProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl flex items-center gap-2">
+        <CardTitle className="text-2xl flex items-center gap-2" id="size-guide">
           <Ruler className="h-6 w-6" />
           Size Guide
         </CardTitle>

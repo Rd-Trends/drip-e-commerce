@@ -5,12 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useForgotPassword } from '@/hooks/use-auth'
+import { AuthLayout } from './auth-layout'
 
 const forgotPasswordSchema = z.object({
   email: z.email('Please enter a valid email address.'),
@@ -43,23 +43,18 @@ export function ForgotPasswordForm() {
 
   if (emailSent) {
     return (
-      <Fragment>
-        <div className="flex flex-col gap-2 mb-6">
-          <h1 className="text-xl font-bold tracking-tight">Check your email</h1>
-
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            We&apos;ve sent a password reset link to <strong>{form.getValues('email')}</strong>.
-            Please check your inbox and follow the instructions to reset your password.
-          </p>
-        </div>
-
+      <AuthLayout
+        title="Check your email"
+        description={`We've sent a password reset link to ${form.getValues('email')}. Please check your inbox and follow the instructions to reset your password.`}
+      >
         {/* Back to Login */}
-        <Link href="/login">
-          <Button className="h-11 w-full rounded-full font-medium">Back to Login</Button>
-        </Link>
+
+        <LinkButton href="/login" className="w-full rounded-full font-medium">
+          Back to Login
+        </LinkButton>
 
         {/* Resend Link */}
-        <div className="mt-6">
+        <div className="mt-6 text-center">
           <p className="text-muted-foreground text-sm">
             Didn&apos;t receive the email?{' '}
             <button
@@ -72,20 +67,12 @@ export function ForgotPasswordForm() {
             .
           </p>
         </div>
-      </Fragment>
+      </AuthLayout>
     )
   }
 
   return (
-    <Fragment>
-      <div className="flex flex-col gap-2 mb-6">
-        <h1 className="text-xl font-bold tracking-tight">Reset your password</h1>
-
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          Enter your email address and we&apos;ll send you a link to reset your password.
-        </p>
-      </div>
-
+    <AuthLayout title="Reset your password" description="Enter your email to receive a reset link.">
       {/* Form */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FieldGroup>
@@ -116,7 +103,7 @@ export function ForgotPasswordForm() {
         </FieldGroup>
 
         {/* Submit Button */}
-        <Button type="submit" className="h-11 w-full rounded-full font-medium" disabled={isPending}>
+        <Button type="submit" className="w-full rounded-full font-medium" disabled={isPending}>
           {isPending ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>
@@ -125,15 +112,12 @@ export function ForgotPasswordForm() {
       <div className="mt-6 text-center">
         <p className="text-muted-foreground text-sm">
           Remember your password?{' '}
-          <Link
-            href="/login"
-            className="text-foreground font-medium underline hover:text-foreground/80"
-          >
+          <LinkButton href="/login" variant="link" className="h-auto p-0 text-sm font-medium">
             Sign In
-          </Link>
+          </LinkButton>
           .
         </p>
       </div>
-    </Fragment>
+    </AuthLayout>
   )
 }
