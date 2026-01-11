@@ -26,6 +26,8 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { VariantOptionsSelector as VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442 } from '../../../../src/fields/ui/variant-option-selector'
+import { AdminLogoIcon as AdminLogoIcon_7a89b5675912f3f4f82dd41bbb03d52e } from '@/components/logo'
+import { AdminLogo as AdminLogo_7a89b5675912f3f4f82dd41bbb03d52e } from '@/components/logo'
 import { BeforeDashboard as BeforeDashboard_9f32ce6f473387f99159899dd857e0af } from '@/components/before-dashboard'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 
@@ -58,6 +60,8 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "/src/fields/ui/variant-option-selector#VariantOptionsSelector": VariantOptionsSelector_b358b56963e6a58cf132c2d0a0f26442,
+  "@/components/logo#AdminLogoIcon": AdminLogoIcon_7a89b5675912f3f4f82dd41bbb03d52e,
+  "@/components/logo#AdminLogo": AdminLogo_7a89b5675912f3f4f82dd41bbb03d52e,
   "@/components/before-dashboard#BeforeDashboard": BeforeDashboard_9f32ce6f473387f99159899dd857e0af,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
 }

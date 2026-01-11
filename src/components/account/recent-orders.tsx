@@ -59,7 +59,7 @@ export async function RecentOrders({ user }: { user: User }) {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <LinkButton href="/shop" variant="outline">
+              <LinkButton href="/shop" variant="outline" scrollToTop>
                 Start Shopping
               </LinkButton>
             </EmptyContent>
@@ -75,7 +75,7 @@ export async function RecentOrders({ user }: { user: User }) {
         )}
       </CardContent>
       <CardFooter>
-        <LinkButton href="/account/orders" variant="outline">
+        <LinkButton href="/account/orders" variant="outline" scrollToTop>
           View all orders
         </LinkButton>
       </CardFooter>
@@ -120,7 +120,7 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => {
       </CardHeader>
       <CardContent>{children}</CardContent>
       <CardFooter>
-        <LinkButton href="/account/orders" variant="outline">
+        <LinkButton href="/account/orders" variant="outline" scrollToTop>
           View all orders
         </LinkButton>
       </CardFooter>

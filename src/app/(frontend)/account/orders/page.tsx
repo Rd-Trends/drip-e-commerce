@@ -84,7 +84,9 @@ export default async function Orders({ searchParams }: Props) {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <LinkButton href="/shop">Start Shopping</LinkButton>
+              <LinkButton href="/shop" scrollToTop>
+                Start Shopping
+              </LinkButton>
             </EmptyContent>
           </Empty>
         ) : (

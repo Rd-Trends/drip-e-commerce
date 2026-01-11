@@ -10,7 +10,7 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
 
       <Section paddingY="xs">
         <Container className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-4">
-          <div className="w-full hidden md:flex flex-col gap-4 md:gap-8 basis-1/5 sticky top-4 self-start">
+          <div className="w-full hidden md:flex flex-col gap-4 md:gap-8 basis-1/5 sticky top-20 self-start">
             <CategoryList />
             <FeaturedList />
             <SortingList />

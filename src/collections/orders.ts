@@ -24,6 +24,20 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
+      name: 'id',
+      type: 'text',
+      admin: { hidden: true },
+      hooks: {
+        beforeChange: [
+          ({ operation }) => {
+            if (operation === 'create') {
+              return crypto.randomUUID()
+            }
+          },
+        ],
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {
@@ -99,6 +113,10 @@ export const Orders: CollectionConfig = {
         {
           label: 'Processing',
           value: 'processing',
+        },
+        {
+          label: 'Shipped',
+          value: 'shipped',
         },
         {
           label: 'Completed',

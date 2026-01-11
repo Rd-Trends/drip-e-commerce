@@ -19,7 +19,7 @@ export function OrderDetails({ order, backHref }: OrderDetailsProps) {
     <div className="space-y-6">
       {backHref && (
         <div className="flex items-center gap-4">
-          <LinkButton href={backHref} variant="outline" size="icon">
+          <LinkButton href={backHref} variant="outline" size="icon" scrollToTop>
             <ChevronLeftIcon className="h-4 w-4" />
             <span className="sr-only">Back to orders</span>
           </LinkButton>

@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             <AccountNav />
           </Container>
-          <Container className="flex-1 lg:max-w-4xl">{children}</Container>
+          <Container className="flex-1 lg:max-w-4xl pb-10">{children}</Container>
         </div>
       </Section>
       <Footer />

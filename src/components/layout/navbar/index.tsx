@@ -4,11 +4,11 @@ import { Search, SearchSkeleton } from './search'
 import { CustomerProfile } from './customer-profile'
 import { getCachedGlobal } from '@/lib/get-global.'
 import { CartModal } from '@/components/cart/cart-modal'
-import { ActiveStateNavLink, NavLink } from './nav-link'
 import { Logo } from '@/components/logo'
 import Section from '../section'
 import Container from '../container'
 import { ThemeToggleDropdown } from '../theme-toggle-dropdown'
+import { NavMenu } from './nav-menu'
 
 export async function Navbar() {
   const header = await getCachedGlobal('header', 1)()
@@ -22,17 +22,7 @@ export async function Navbar() {
       <Container as="nav" className="h-16 flex items-center justify-between">
         <div className="flex items-center gap-6 w-1/3">
           <Logo />
-          {menu.length ? (
-            <ul className="hidden gap-6 text-sm md:flex md:items-center list-none">
-              {menu.map((item) => (
-                <li key={item.id}>
-                  <Suspense fallback={<NavLink label={item.link.label} url={`${item.link.url}`} />}>
-                    <ActiveStateNavLink label={item.link.label} url={`${item.link.url}`} />
-                  </Suspense>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <NavMenu menu={menu} />
         </div>
 
         <div className="hidden md:flex justify-center w-1/3">

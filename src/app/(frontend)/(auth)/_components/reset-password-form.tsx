@@ -4,15 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Logo } from '@/components/logo'
 import { useResetPassword } from '@/hooks/use-auth'
 import { PasswordInput } from '@/components/ui/password-input'
 import { useQueryState } from 'nuqs'
+import { AuthLayout } from './auth-layout'
 
 const resetPasswordSchema = z
   .object({
@@ -63,121 +62,94 @@ export function ResetPasswordForm() {
   // Show error if no token
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-2 mb-6">
-            <Logo />
-
-            <h1 className="text-xl font-bold tracking-tight">Invalid Reset Link</h1>
-
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              This password reset link is invalid or has expired. Please request a new one.
-            </p>
-          </div>
-          {/* Request New Link */}
-          <Link href="/forgot-password">
-            <Button className="h-11 w-full rounded-full font-medium">Request New Link</Button>
-          </Link>
-          {/* Back to Login */}
-          <div className="mt-6">
-            <p className="text-muted-foreground text-sm">
-              <Link
-                href="/login"
-                className="text-foreground font-medium underline hover:text-foreground/80"
-              >
-                Back to Login
-              </Link>
-            </p>
-          </div>
+      <AuthLayout
+        title="Invalid Reset Link"
+        description="This password reset link is invalid or has expired. Please request a new one."
+      >
+        {/* Request New Link */}
+        <LinkButton href="/forgot-password" className="w-full rounded-full font-medium">
+          Request New Link
+        </LinkButton>
+        {/* Back to Login */}
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            <LinkButton href="/login" variant="link" className="h-auto p-0 text-sm font-medium">
+              Back to Login
+            </LinkButton>
+          </p>
         </div>
-      </div>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-2 mb-6">
-          <Logo />
+    <AuthLayout
+      title="Create a new password"
+      description="Enter your new password below. Make sure it's at least 6 characters long."
+    >
+      {/* Form */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FieldGroup>
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="reset-password" required>
+                  New Password
+                </FieldLabel>
+                <PasswordInput
+                  {...field}
+                  id="reset-password"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="New Password"
+                  autoComplete="new-password"
+                  disabled={isPending}
+                />
+                <FieldDescription>Must be at least 6 characters long.</FieldDescription>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
 
-          <h1 className="text-xl font-bold tracking-tight">Create a new password</h1>
+          <Controller
+            name="passwordConfirm"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="reset-password-confirm" required>
+                  Confirm New Password
+                </FieldLabel>
+                <PasswordInput
+                  {...field}
+                  id="reset-password-confirm"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Confirm New Password"
+                  autoComplete="new-password"
+                  disabled={isPending}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+        </FieldGroup>
 
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Enter your new password below. Make sure it&apos;s at least 6 characters long.
-          </p>
-        </div>
+        {/* Submit Button */}
+        <Button type="submit" className="w-full rounded-full font-medium" disabled={isPending}>
+          {isPending ? 'Resetting password...' : 'Reset Password'}
+        </Button>
+      </form>
 
-        {/* Form */}
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FieldGroup>
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="reset-password" required>
-                    New Password
-                  </FieldLabel>
-                  <PasswordInput
-                    {...field}
-                    id="reset-password"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="New Password"
-                    autoComplete="new-password"
-                    disabled={isPending}
-                  />
-                  <FieldDescription>Must be at least 6 characters long.</FieldDescription>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="passwordConfirm"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="reset-password-confirm" required>
-                    Confirm New Password
-                  </FieldLabel>
-                  <PasswordInput
-                    {...field}
-                    id="reset-password-confirm"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Confirm New Password"
-                    autoComplete="new-password"
-                    disabled={isPending}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="h-11 w-full rounded-full font-medium"
-            disabled={isPending}
-          >
-            {isPending ? 'Resetting password...' : 'Reset Password'}
-          </Button>
-        </form>
-
-        {/* Back to Login */}
-        <div className="mt-6 text-center">
-          <p className="text-muted-foreground text-sm">
-            Remember your password?{' '}
-            <Link
-              href="/login"
-              className="text-foreground font-medium underline hover:text-foreground/80"
-            >
-              Sign In
-            </Link>
-            .
-          </p>
-        </div>
+      {/* Back to Login */}
+      <div className="mt-6 text-center">
+        <p className="text-muted-foreground text-sm">
+          Remember your password?{' '}
+          <LinkButton href="/login" variant="link" className="h-auto p-0 text-sm font-medium">
+            Sign In
+          </LinkButton>
+          .
+        </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

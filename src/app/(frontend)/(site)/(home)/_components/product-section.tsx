@@ -34,6 +34,7 @@ export function ProductSection({ title, showViewAll = true, type, category }: Pr
               variant="ghost"
               size="sm"
               className="group"
+              scrollToTop
             >
               View All
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

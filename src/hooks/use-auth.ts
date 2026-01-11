@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { authApi } from '@/lib/api/auth'
 import { queryKeys } from '@/lib/query-keys'
+import { useCart } from '@/providers/cart'
 
 /**
  * Hook to fetch and cache the current authenticated user
@@ -50,6 +51,7 @@ export const useLogin = () => {
  * logout()
  */
 export const useLogout = () => {
+  const { clearCartStorage } = useCart()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -58,6 +60,7 @@ export const useLogout = () => {
       queryClient.setQueryData(queryKeys.auth.user(), null)
       // Optionally invalidate all auth-related queries
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.all })
+      clearCartStorage()
     },
   })
 }

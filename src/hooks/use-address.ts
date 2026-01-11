@@ -58,7 +58,7 @@ export const useCreateAddress = () => {
       if (!user) {
         throw new Error('User must be logged in to create an address')
       }
-      return addressApi.createAddress(address)
+      return addressApi.createAddress({ ...address, customer: user.id })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.address.list() })

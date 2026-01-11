@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
-import { customerOnlyFieldAccess } from '@/access/customer-only-field-access'
 import { canManageOrders } from '@/access/can-manage-orders'
 import { isDocumentOwner } from '@/access/is-document-owner'
 import { addressFields } from '@/fields/adress-fields'
 import { accessOR } from '@/access/utilities'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
+import { beforeChange } from './hooks/before-change'
 
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
@@ -21,15 +21,16 @@ export const Addresses: CollectionConfig = {
     description: 'Customer addresses for shipping and billing purposes',
     hidden: true,
   },
+  hooks: {
+    beforeChange: [beforeChange],
+  },
   fields: [
     {
       name: 'customer',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
-      access: {
-        create: customerOnlyFieldAccess,
-        update: customerOnlyFieldAccess,
+      admin: {
+        position: 'sidebar',
       },
     },
     ...addressFields.filter((field) => {

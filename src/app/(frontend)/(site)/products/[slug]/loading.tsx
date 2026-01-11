@@ -12,7 +12,7 @@ export default function ProductLoading() {
     <>
       <Section paddingY="xs">
         <Container>
-          <LinkButton href="/shop" variant="ghost" className="mb-4">
+          <LinkButton href="/shop" variant="ghost" className="mb-4" scrollToTop>
             <ChevronLeftIcon />
             All products
           </LinkButton>

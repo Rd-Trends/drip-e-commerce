@@ -73,7 +73,7 @@ The coupon system allows admins to create discount codes that customers can appl
 
 ### API Endpoints
 
-- **POST `/api/coupons/validate`**: Validates a coupon code for a specific cart
+- **POST `/api/validate-coupon`**: Validates a coupon code for a specific cart
 
 ### Payment Flow Integration
 
@@ -113,11 +113,7 @@ src/
 │   └── cart/
 │       └── coupon-input.tsx       # Coupon input UI component
 ├── app/(frontend)/
-│   ├── api/coupons/validate/
-│   │   └── route.ts               # Validation API endpoint
-│   └── (site)/
-│       ├── coupons/
-│       │   └── page.tsx           # Public coupons listing page
+│   ├── api/validate-coupon        # Validation API endpoint (added via payload endpoints)
 │       └── checkout/
 │           └── _components/
 │               ├── checkout.tsx   # Updated with coupon state

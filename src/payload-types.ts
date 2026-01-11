@@ -178,7 +178,7 @@ export interface User {
    */
   roles?: ('admin' | 'customer' | 'order-manager' | 'content-manager')[] | null;
   orders?: {
-    docs?: (number | Order)[];
+    docs?: (string | Order)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -217,7 +217,7 @@ export interface User {
  * via the `definition` "orders".
  */
 export interface Order {
-  id: number;
+  id: string;
   items?:
     | {
         product?: (number | null) | Product;
@@ -235,14 +235,13 @@ export interface Order {
     addressLine2?: string | null;
     city?: string | null;
     state?: string | null;
-    postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
   };
   customer?: (number | null) | User;
   customerEmail?: string | null;
   transactions?: (number | Transaction)[] | null;
-  status?: ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
+  status?: ('processing' | 'shipped' | 'completed' | 'cancelled' | 'refunded') | null;
   currency?: 'NGN' | null;
   /**
    * Order subtotal before shipping
@@ -480,14 +479,13 @@ export interface Transaction {
     addressLine2?: string | null;
     city?: string | null;
     state?: string | null;
-    postalCode?: string | null;
     country?: string | null;
     phone?: string | null;
   };
   status: 'pending' | 'succeeded' | 'failed' | 'cancelled' | 'expired' | 'refunded';
   customer?: (number | null) | User;
   customerEmail?: string | null;
-  order?: (number | null) | Order;
+  order?: (string | null) | Order;
   cart?: (number | null) | Cart;
   amount?: number | null;
   currency?: 'NGN' | null;
@@ -533,7 +531,7 @@ export interface Cart {
  */
 export interface Address {
   id: number;
-  customer: number | User;
+  customer?: (number | null) | User;
   title?: string | null;
   firstName?: string | null;
   lastName?: string | null;
@@ -541,7 +539,6 @@ export interface Address {
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
-  postalCode?: string | null;
   phone?: string | null;
   state:
     | 'abia'
@@ -598,7 +595,7 @@ export interface Coupon {
   /**
    * Type of discount to apply
    */
-  type: 'percentage' | 'fixed';
+  type: 'percentage' | 'fixed' | 'free-shipping';
   /**
    * Discount value (percentage: 1-100, fixed: amount in Naira)
    */
@@ -1088,7 +1085,7 @@ export interface PayloadLockedDocument {
       } | null)
     | ({
         relationTo: 'orders';
-        value: number | Order;
+        value: string | Order;
       } | null)
     | ({
         relationTo: 'transactions';
@@ -1243,7 +1240,6 @@ export interface AddressesSelect<T extends boolean = true> {
   addressLine1?: T;
   addressLine2?: T;
   city?: T;
-  postalCode?: T;
   phone?: T;
   state?: T;
   country?: T;
@@ -1357,6 +1353,7 @@ export interface CartsSelect<T extends boolean = true> {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
+  id?: T;
   items?:
     | T
     | {
@@ -1376,7 +1373,6 @@ export interface OrdersSelect<T extends boolean = true> {
         addressLine2?: T;
         city?: T;
         state?: T;
-        postalCode?: T;
         country?: T;
         phone?: T;
       };
@@ -1424,7 +1420,6 @@ export interface TransactionsSelect<T extends boolean = true> {
         addressLine2?: T;
         city?: T;
         state?: T;
-        postalCode?: T;
         country?: T;
         phone?: T;
       };

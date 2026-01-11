@@ -5,10 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useCreateUser } from '@/hooks/use-auth'
@@ -143,18 +142,22 @@ export function SignupForm() {
         {/* Privacy Policy */}
         <p className="text-muted-foreground text-center text-xs leading-relaxed">
           By creating an account, you agree to Drip&apos;s{' '}
-          <Link href="/privacy-policy" className="underline hover:text-foreground">
+          <LinkButton href="/privacy-policy" variant="link" className="h-auto p-0 text-xs">
             Privacy Policy
-          </Link>{' '}
+          </LinkButton>{' '}
           and{' '}
-          <Link href="/terms-of-use" className="underline hover:text-foreground">
+          <LinkButton href="/terms-of-use" variant="link" className="h-auto p-0 text-xs">
             Terms of Use
-          </Link>
+          </LinkButton>
           .
         </p>
 
         {/* Submit Button */}
-        <Button type="submit" className="h-11 w-full font-medium" disabled={createUser.isPending}>
+        <Button
+          type="submit"
+          className="w-full rounded-full font-medium"
+          disabled={createUser.isPending}
+        >
           {createUser.isPending ? 'Creating account...' : 'Join Us'}
         </Button>
       </form>
@@ -163,12 +166,13 @@ export function SignupForm() {
       <div className="mt-6 text-center">
         <p className="text-muted-foreground text-sm">
           Already a member?{' '}
-          <Link
+          <LinkButton
             href={`/login?redirect=${encodeURIComponent(redirectURI)}`}
-            className="text-foreground font-medium underline hover:text-foreground/80"
+            variant="link"
+            className="h-auto p-0 text-sm font-medium"
           >
             Sign In
-          </Link>
+          </LinkButton>
           .
         </p>
       </div>

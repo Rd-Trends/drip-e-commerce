@@ -1,3 +1,5 @@
+'use client'
+
 import { Media } from '@/components/media'
 import { Price } from '@/components/price'
 import { Product, Variant } from '@/payload-types'
@@ -49,6 +51,12 @@ export const ProductItem: React.FC<Props> = ({ product, quantity, variant, curre
   const itemPrice = variant?.priceInNGN || product.priceInNGN
   const itemURL = `/products/${product.slug}${variant ? `?variant=${variant.id}` : ''}`
 
+  const handleClick = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }
+
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-stretch justify-stretch h-20 w-20 p-2 rounded-lg border">
@@ -61,7 +69,11 @@ export const ProductItem: React.FC<Props> = ({ product, quantity, variant, curre
       <div className="flex grow justify-between items-center">
         <div className="flex flex-col gap-1">
           <p className="font-medium">
-            <Link href={itemURL} className="hover:text-primary transition-colors">
+            <Link
+              href={itemURL}
+              onClick={handleClick}
+              className="hover:text-primary transition-colors"
+            >
               {title}
             </Link>
           </p>

@@ -12,12 +12,13 @@ export type ValidateCouponResponse = {
   coupon?: {
     id: number
     code: string
-    type: 'percentage' | 'fixed'
+    type: 'percentage' | 'fixed' | 'free-shipping'
     value: number
     fixedAmount?: number
     description?: string
   }
   discount?: number
+  freeShipping?: boolean
   error?: string
 }
 
@@ -27,7 +28,7 @@ export type ValidateCouponResponse = {
 export function useValidateCoupon() {
   return useMutation({
     mutationFn: async (data: ValidateCouponRequest): Promise<ValidateCouponResponse> => {
-      const response = await fetch('/api/coupons/validate', {
+      const response = await fetch('/api/validate-coupon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

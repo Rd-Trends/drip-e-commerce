@@ -7,6 +7,7 @@ export type CouponValidationResult = {
   valid: boolean
   error?: string
   discount?: number
+  freeShipping?: boolean
   coupon?: Coupon
 }
 
@@ -18,6 +19,11 @@ export type CouponValidationResult = {
  */
 export function calculateDiscount(coupon: Coupon, subtotal: number): number {
   let discount = 0
+
+  // Free shipping coupons don't apply cart discounts
+  if (coupon.type === 'free-shipping') {
+    return 0
+  }
 
   if (coupon.type === 'percentage') {
     // Calculate percentage discount
@@ -178,6 +184,7 @@ export function validateCoupon(
   return {
     valid: true,
     discount,
+    freeShipping: coupon.type === 'free-shipping',
     coupon,
   }
 }

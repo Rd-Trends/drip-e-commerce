@@ -3,9 +3,9 @@ import { headers as getHeaders } from 'next/headers'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
-import { Logo } from '@/components/logo'
 import { QueryToastListener } from '@/components/query-toast-listener'
 import { Metadata } from 'next'
+import { AuthLayout } from '../_components/auth-layout'
 
 export const metadata: Metadata = {
   title: 'Login',
@@ -26,21 +26,9 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    <AuthLayout title="Welcome back" description="Please enter your details to sign in.">
       <QueryToastListener />
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-2 mb-6">
-          <Logo />
-
-          <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
-
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Please enter your details to sign in.
-          </p>
-        </div>
-
-        <LoginForm />
-      </div>
-    </div>
+      <LoginForm />
+    </AuthLayout>
   )
 }

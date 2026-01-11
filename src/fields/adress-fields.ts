@@ -41,11 +41,12 @@ export const addressFields: Field[] = [
     type: 'text',
     label: 'State',
   },
-  {
-    name: 'postalCode',
-    type: 'text',
-    label: 'Postal Code',
-  },
+  // no need for postal code
+  // {
+  //   name: 'postalCode',
+  //   type: 'text',
+  //   label: 'Postal Code',
+  // },
   {
     name: 'country',
     type: 'text',

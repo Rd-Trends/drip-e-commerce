@@ -25,7 +25,7 @@ export default function NotFound() {
       </EmptyHeader>
       <EmptyContent>
         <div className="flex gap-2">
-          <LinkButton href="/">
+          <LinkButton href="/" scrollToTop>
             <Home className="mr-2 h-4 w-4" />
             Go to Homepage
           </LinkButton>
@@ -36,7 +36,7 @@ export default function NotFound() {
         </div>
         <EmptyDescription className="mt-4">
           Need help?{' '}
-          <LinkButton href="/contact" variant="link">
+          <LinkButton href="/contact-us" variant="link" scrollToTop>
             Contact support
           </LinkButton>
         </EmptyDescription>

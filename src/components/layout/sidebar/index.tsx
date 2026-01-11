@@ -25,6 +25,13 @@ function MobileMenu({ menu }: { menu: NonNullable<Header['navItems']> }) {
   const [isOpen, setIsOpen] = useState(false)
   const closeMobileMenu = () => setIsOpen(false)
 
+  const handleLinkClick = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+    closeMobileMenu()
+  }
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
@@ -86,7 +93,7 @@ function MobileMenu({ menu }: { menu: NonNullable<Header['navItems']> }) {
                 className="py-2 text-base text-black transition-colors hover:text-neutral-500 dark:text-white"
                 key={item.id}
               >
-                <Link href={`${item.link.url}`} prefetch={true} onClick={closeMobileMenu}>
+                <Link href={`${item.link.url}`} prefetch={true} onClick={handleLinkClick}>
                   {item.link.label}
                 </Link>
               </li>

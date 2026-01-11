@@ -43,8 +43,10 @@ export const validateOptions: Validate = async (values, { data, req }) => {
   if (variants.length > 0) {
     const existingOptions: (number | string)[][] = []
 
-    variants.forEach((variant: any) => {
-      existingOptions.push(variant.options)
+    variants.forEach((variant) => {
+      if (typeof variant !== 'object' || !variant.options) return
+
+      existingOptions.push(variant.options as (number | string)[])
     })
 
     const exists = existingOptions.some(

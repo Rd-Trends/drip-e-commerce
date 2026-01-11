@@ -37,7 +37,6 @@ import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
 import { Pages } from './collections/pages'
-// import { jobs } from './jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -48,6 +47,10 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/components/before-dashboard#BeforeDashboard'],
+      graphics: {
+        Icon: '@/components/logo#AdminLogoIcon',
+        Logo: '@/components/logo#AdminLogo',
+      },
     },
     user: Users.slug,
     livePreview: {
@@ -136,10 +139,9 @@ export default buildConfig({
   }),
   endpoints,
   plugins,
-  // jobs,
   email: resendAdapter({
-    defaultFromAddress: 'drip-fashion@drip.ng',
-    defaultFromName: 'Drip Fashion',
+    defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng',
+    defaultFromName: process.env.EMAIL_FROM_NAME || 'Drip Fashion',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
   secret: process.env.PAYLOAD_SECRET || '',

@@ -12,8 +12,8 @@ export const revalidateAfterChange: CollectionAfterChangeHook<Product> = ({
     if (doc._status === 'published') {
       revalidateTag(queryKeys.revalidation.products)
       revalidateTag(queryKeys.revalidation.product(doc.slug))
-      // revalidate home product sections
       revalidateTag(queryKeys.revalidation.homeProductSections)
+      revalidateTag(queryKeys.revalidation.categories)
     }
   }
   return doc
@@ -23,8 +23,8 @@ export const revalidateDelete: CollectionAfterDeleteHook<Product> = ({ doc, req:
   if (!context.disableRevalidate) {
     revalidateTag(queryKeys.revalidation.products)
     revalidateTag(queryKeys.revalidation.product(doc.slug))
-    // revalidate home product sections
     revalidateTag(queryKeys.revalidation.homeProductSections)
+    revalidateTag(queryKeys.revalidation.categories)
   }
 
   return doc

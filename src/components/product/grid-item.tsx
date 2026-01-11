@@ -1,3 +1,5 @@
+'use client'
+
 import type { Product } from '@/payload-types'
 import { Media } from '@/components/media'
 import { Price } from '@/components/price'
@@ -28,10 +30,17 @@ export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
   const image =
     gallery?.[0]?.image && typeof gallery[0]?.image !== 'string' ? gallery[0]?.image : false
 
+  const handleClick = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }
+
   return (
     <Link
       className="group relative p-4 flex h-full w-full flex-col overflow-hidden rounded-xl border bg-card transition-all hover:shadow-md"
       href={`/products/${product.slug}`}
+      onClick={handleClick}
     >
       {/* Featured Badge */}
       {isFeatured && (

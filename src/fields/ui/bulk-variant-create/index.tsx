@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import {
   useFormFields,
   ShimmerEffect,
@@ -113,10 +113,15 @@ const VariantOptionSelector: React.FC<VariantOptionSelectorProps> = ({
       <div className="bulk-variant-creator__variant-type-header">
         <label className="bulk-variant-creator__label">{type.label || type.name}</label>
         <div className="bulk-variant-creator__button-group">
-          <Button buttonStyle="secondary" size="small" onClick={() => onSelectAll(allOptionIds)}>
+          <Button
+            margin={false}
+            buttonStyle="secondary"
+            size="small"
+            onClick={() => onSelectAll(allOptionIds)}
+          >
             Select All
           </Button>
-          <Button buttonStyle="secondary" size="small" onClick={onClearAll}>
+          <Button margin={false} buttonStyle="secondary" size="small" onClick={onClearAll}>
             Clear
           </Button>
         </div>
@@ -213,7 +218,7 @@ const CombinationsTable: React.FC<CombinationsTableProps> = ({
   const allSelected = combinations.length > 0 && combinations.every((c) => c.selected)
 
   return (
-    <div className="bulk-variant-creator__card">
+    <Fragment>
       <div className="bulk-variant-creator__header">
         <h3 className="bulk-variant-creator__title">
           Generated Combinations ({combinations.filter((c) => c.selected).length} selected)
@@ -297,7 +302,7 @@ const CombinationsTable: React.FC<CombinationsTableProps> = ({
           />
         )}
       </div>
-    </div>
+    </Fragment>
   )
 }
 
@@ -565,11 +570,11 @@ const BulkVariantClient: React.FC<{
           />
 
           <div className="bulk-variant-creator__actions">
-            <Button buttonStyle="primary" onClick={generateCombinations}>
+            <Button margin={false} buttonStyle="primary" onClick={generateCombinations}>
               Generate Combinations
             </Button>
             {combinations.length > 0 && (
-              <Button buttonStyle="secondary" onClick={applyBaseValues}>
+              <Button margin={false} buttonStyle="secondary" onClick={applyBaseValues}>
                 Apply Base Values to Selected
               </Button>
             )}
@@ -578,7 +583,7 @@ const BulkVariantClient: React.FC<{
       </div>
 
       {combinations.length > 0 && (
-        <>
+        <div className="bulk-variant-creator__card">
           <CombinationsTable
             combinations={combinations}
             currentPage={currentPage}
@@ -588,20 +593,19 @@ const BulkVariantClient: React.FC<{
             onUpdateCombination={updateCombination}
             onPageChange={setCurrentPage}
           />
-          <div className="bulk-variant-creator__card">
-            <div className="bulk-variant-creator__footer">
-              <Button
-                buttonStyle="primary"
-                onClick={createVariants}
-                disabled={isCreating || combinations.filter((c) => c.selected).length === 0}
-              >
-                {isCreating
-                  ? 'Creating...'
-                  : `Create ${combinations.filter((c) => c.selected).length} Variants`}
-              </Button>
-            </div>
+          <div className="bulk-variant-creator__footer">
+            <Button
+              margin={false}
+              buttonStyle="primary"
+              onClick={createVariants}
+              disabled={isCreating || combinations.filter((c) => c.selected).length === 0}
+            >
+              {isCreating
+                ? 'Creating...'
+                : `Create ${combinations.filter((c) => c.selected).length} Variants`}
+            </Button>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

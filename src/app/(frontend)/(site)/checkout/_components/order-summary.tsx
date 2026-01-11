@@ -12,9 +12,10 @@ import { CouponInput } from '@/components/cart/coupon-input'
 type AppliedCoupon = {
   id: number
   code: string
-  type: 'percentage' | 'fixed'
+  type: 'percentage' | 'fixed' | 'free-shipping'
   value: number
   discount: number
+  freeShipping?: boolean
 }
 
 interface OrderSummaryProps {
@@ -53,7 +54,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             if (typeof item.product === 'object' && item.product) {
               const {
                 product,
-                product: {  meta, title, gallery },
+                product: { meta, title, gallery },
                 quantity,
                 variant,
               } = item
@@ -131,10 +132,11 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
             {typeof shippingFee === 'number' ? (
-              <span className="flex items-center gap-2">
-                {shippingIsFree && <Badge>Free</Badge>}
+              shippingIsFree || appliedCoupon?.freeShipping ? (
+                <Badge variant="secondary">Free</Badge>
+              ) : (
                 <Price amount={shippingFee} />
-              </span>
+              )
             ) : (
               <span>-</span>
             )}
@@ -150,7 +152,11 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           {appliedCoupon && (
             <div className="flex justify-between text-sm text-green-600 dark:text-green-500">
               <span>Discount ({appliedCoupon.code})</span>
-              <Price amount={-appliedCoupon.discount} as="span" />
+              {appliedCoupon.freeShipping ? (
+                <span>Free Shipping</span>
+              ) : (
+                <Price amount={-appliedCoupon.discount} as="span" />
+              )}
             </div>
           )}
         </div>
