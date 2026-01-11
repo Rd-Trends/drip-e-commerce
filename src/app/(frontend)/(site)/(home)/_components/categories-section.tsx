@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Section } from '@/components/layout/section'
 import Container from '@/components/layout/container'
@@ -17,7 +16,7 @@ export function CategoriesSection() {
       <Container>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Categories</h2>
-          <LinkButton href="/categories" variant="ghost" size="sm" className="group">
+          <LinkButton href="/categories" variant="ghost" size="sm" scrollToTop className="group">
             View All
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </LinkButton>

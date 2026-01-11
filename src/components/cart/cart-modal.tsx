@@ -68,7 +68,7 @@ export function CartModal() {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <LinkButton href="/shop" onClick={() => setIsOpen(false)}>
+              <LinkButton href="/shop" onClick={() => setIsOpen(false)} scrollToTop>
                 Start Shopping
               </LinkButton>
             </EmptyContent>
@@ -200,7 +200,7 @@ export function CartModal() {
                   </div>
                 )}
 
-                <LinkButton href="/checkout" className="w-full">
+                <LinkButton href="/checkout" className="w-full" scrollToTop>
                   Proceed to Checkout
                 </LinkButton>
               </div>

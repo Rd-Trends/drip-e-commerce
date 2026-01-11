@@ -13,9 +13,10 @@ import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from '
 type AppliedCoupon = {
   id: number
   code: string
-  type: 'percentage' | 'fixed'
+  type: 'percentage' | 'fixed' | 'free-shipping'
   value: number
   discount: number
+  freeShipping?: boolean
 }
 
 type CouponInputProps = {
@@ -48,13 +49,14 @@ export function CouponInput({
       { code: couponCode.trim(), cartId },
       {
         onSuccess: (result) => {
-          if (result.valid && result.coupon && result.discount) {
+          if (result.valid && result.coupon && (result.discount || result.freeShipping)) {
             onCouponApplied({
               id: result.coupon.id,
               code: result.coupon.code,
               type: result.coupon.type,
               value: result.coupon.value,
-              discount: result.discount,
+              discount: result.discount || 0,
+              freeShipping: result.freeShipping,
             })
             setCouponCode('')
             setError(null)
@@ -91,11 +93,21 @@ export function CouponInput({
             {appliedCoupon.code}
           </Badge>
           <span className="text-sm font-normal text-muted-foreground">
-            {appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}% off` : 'Fixed discount'}
+            {appliedCoupon.freeShipping
+              ? 'Free shipping'
+              : appliedCoupon.type === 'percentage'
+                ? `${appliedCoupon.value}% off`
+                : 'Fixed discount'}
           </span>
         </AlertTitle>
         <AlertDescription className="text-xs text-green-700 dark:text-green-400">
-          You save <Price amount={appliedCoupon.discount} as="span" className="font-semibold" />
+          {appliedCoupon.freeShipping ? (
+            'Shipping fee waived'
+          ) : (
+            <>
+              You save <Price amount={appliedCoupon.discount} as="span" className="font-semibold" />
+            </>
+          )}
         </AlertDescription>
         <Button
           type="button"

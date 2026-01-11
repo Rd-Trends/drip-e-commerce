@@ -23,10 +23,10 @@ export function CustomerProfile() {
   if (!user) {
     return (
       <div className="hidden md:flex items-center gap-2">
-        <LinkButton href="/login" variant="ghost" size="sm">
+        <LinkButton href="/login" variant="ghost" size="sm" scrollToTop>
           Sign in
         </LinkButton>
-        <LinkButton href="/signup" size="sm">
+        <LinkButton href="/signup" size="sm" scrollToTop>
           Sign up
         </LinkButton>
       </div>

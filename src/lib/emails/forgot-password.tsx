@@ -39,7 +39,7 @@ export const ForgotPasswordEmail = ({
           <Container className="bg-white border border-solid border-border rounded-lg p-11.25 max-w-150 mx-auto my-10">
             <Img
               src={`${baseUrl}/logo.png`}
-              width="120"
+              width="60"
               height="40"
               alt="Drip E-Commerce"
               className="mb-8"

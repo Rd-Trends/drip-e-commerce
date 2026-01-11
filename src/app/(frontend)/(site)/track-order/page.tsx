@@ -2,7 +2,7 @@
 import type { Order } from '@/payload-types'
 import type { Metadata } from 'next'
 import { mergeOpenGraph } from '@/utils/merge-open-graph'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import Form from 'next/form'
 import Section from '@/components/layout/section'
 import Container from '@/components/layout/container'
@@ -34,7 +35,7 @@ export default async function GuestOrderPage({ searchParams }: PageProps) {
 
   // If no id or email, show the lookup form
   if (!id || !email) {
-    return <ProvideOrderTrackingDetails id={id} email={email} />
+    return <ProvideOrderTrackingDetails id={id} email={email} message={null} />
   }
 
   // Fetch the order
@@ -87,7 +88,13 @@ export default async function GuestOrderPage({ searchParams }: PageProps) {
   }
 
   if (!order) {
-    notFound()
+    return (
+      <ProvideOrderTrackingDetails
+        id={id}
+        email={email}
+        message="Order not found. Please check your Order ID and email address and try again."
+      />
+    )
   }
 
   return (
@@ -99,7 +106,15 @@ export default async function GuestOrderPage({ searchParams }: PageProps) {
   )
 }
 
-function ProvideOrderTrackingDetails({ id, email }: { id?: string; email?: string }) {
+function ProvideOrderTrackingDetails({
+  id,
+  email,
+  message,
+}: {
+  id?: string
+  email?: string
+  message: string | null
+}) {
   return (
     <Section paddingY="none">
       <Container>
@@ -111,6 +126,11 @@ function ProvideOrderTrackingDetails({ id, email }: { id?: string; email?: strin
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {message && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
             <Form className="space-y-4" action="/track-order">
               <div className="space-y-2">
                 <Label htmlFor="id">Order ID</Label>

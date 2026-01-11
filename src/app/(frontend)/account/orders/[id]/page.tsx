@@ -1,11 +1,21 @@
 import type { Order } from '@/payload-types'
 import type { Metadata } from 'next'
 import { mergeOpenGraph } from '@/utils/merge-open-graph'
-import { notFound } from 'next/navigation'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { OrderDetails } from '@/components/order/order-details'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from '@/components/ui/empty'
+import { LinkButton } from '@/components/ui/button'
+import { PackageX } from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { Card } from '@/components/ui/card'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,9 +28,11 @@ export default async function AuthOrderPage({ params }: PageProps) {
   const payload = await getPayload({ config: configPromise })
   const { user } = await payload.auth({ headers })
 
-  // Redirect to login if not authenticated
+  // Show message if not authenticated
   if (!user) {
-    notFound()
+    redirect(
+      `/login?redirect=${encodeURIComponent('/account/orders')}&warning=${encodeURIComponent('Please login to access your orders.')}`,
+    )
   }
 
   const { id } = await params
@@ -73,7 +85,25 @@ export default async function AuthOrderPage({ params }: PageProps) {
   }
 
   if (!order) {
-    notFound()
+    return (
+      <Card>
+        <Empty>
+          <EmptyHeader>
+            <PackageX className="size-12 text-muted-foreground" />
+            <EmptyTitle>Order Not Found</EmptyTitle>
+            <EmptyDescription>
+              We couldn&apos;t find the order you&apos;re looking for. It may have been deleted or
+              you may not have permission to view it.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <LinkButton href="/account/orders" variant="outline" scrollToTop>
+              View All Orders
+            </LinkButton>
+          </EmptyContent>
+        </Empty>
+      </Card>
+    )
   }
 
   return <OrderDetails order={order} backHref="/account/orders" />

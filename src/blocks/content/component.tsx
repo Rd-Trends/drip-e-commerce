@@ -42,6 +42,7 @@ export const ContentBlock: React.FC<
                     href={link.url}
                     variant={link.appearance}
                     target={link.newTab ? '_blank' : '_self'}
+                    scrollToTop
                   >
                     {link?.label}
                   </LinkButton>

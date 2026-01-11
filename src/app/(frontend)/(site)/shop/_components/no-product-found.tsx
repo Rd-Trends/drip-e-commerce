@@ -51,7 +51,7 @@ export function NoProductFound({ searchQuery, categories }: ProductListEmptyProp
       <EmptyContent>
         <div className="flex gap-2">
           {showClearButton && (
-            <LinkButton href="/shop" variant="outline">
+            <LinkButton href="/shop" variant="outline" scrollToTop>
               Clear{' '}
               {searchQuery && !!categories?.length
                 ? 'All'

@@ -29,7 +29,6 @@ type AddressFormValues = {
   addressLine2?: string | null
   city?: string | null
   state?: string | null
-  postalCode?: string | null
   country?: string | null
   phone?: string | null
 }
@@ -321,62 +320,41 @@ export const AddressForm: React.FC<Props> = ({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Controller
-                name="postalCode"
-                control={form.control}
-                rules={{ required: 'Postal code is required.' }}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="postalCode">Postal / Zip Code*</FieldLabel>
-                    <Input
-                      {...field}
-                      id="postalCode"
-                      placeholder="12345"
+            <Controller
+              name="country"
+              control={form.control}
+              rules={{ required: 'Country is required.' }}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="country">Country*</FieldLabel>
+
+                  <Combobox
+                    items={supportedCountries}
+                    onValueChange={field.onChange}
+                    value={field.value || ''}
+                  >
+                    <ComboboxInput
+                      id="country"
+                      placeholder="Select your country"
+                      required
+                      className="w-full"
                       aria-invalid={fieldState.invalid}
-                      value={field.value || ''}
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="country"
-                control={form.control}
-                rules={{ required: 'Country is required.' }}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="country">Country*</FieldLabel>
-
-                    <Combobox
-                      items={supportedCountries}
-                      onValueChange={field.onChange}
-                      value={field.value || ''}
-                    >
-                      <ComboboxInput
-                        id="country"
-                        placeholder="Select your country"
-                        required
-                        className="w-full"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <ComboboxContent>
-                        <ComboboxEmpty>No countries found.</ComboboxEmpty>
-                        <ComboboxList>
-                          {(item: (typeof supportedCountries)[number]) => (
-                            <ComboboxItem key={item.value} value={item.value}>
-                              {item.label}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
+                    <ComboboxContent>
+                      <ComboboxEmpty>No countries found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: (typeof supportedCountries)[number]) => (
+                          <ComboboxItem key={item.value} value={item.value}>
+                            {item.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
           </FieldGroup>
         </div>
       </div>

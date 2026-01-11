@@ -51,6 +51,7 @@ export function HeroSection({ slides = [] }: { slides: NonNullable<Home['heroSli
                                 size="lg"
                                 className="rounded-full"
                                 href={link.url}
+                                scrollToTop
                               >
                                 {link.label}
                               </LinkButton>

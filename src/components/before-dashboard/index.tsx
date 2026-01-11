@@ -9,6 +9,7 @@ import {
   TopProducts,
   LowInventory,
 } from '../analytics'
+import { SeedButton } from './seed-button'
 
 export const BeforeDashboard: React.FC = () => {
   return (
@@ -19,6 +20,8 @@ export const BeforeDashboard: React.FC = () => {
           Quick overview of your store performance over the last 30 days
         </p>
       </div>
+
+      <SeedButton />
 
       {/* Metrics Overview */}
       <MetricsOverview />

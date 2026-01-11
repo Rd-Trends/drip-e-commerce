@@ -41,7 +41,6 @@ const dummyOrder = {
     addressLine2: 'Apartment 4B',
     city: 'Lagos',
     state: 'Lagos',
-    postalCode: '101001',
     country: 'Nigeria',
     phone: '+234 801 234 5678',
   },
@@ -146,8 +145,8 @@ export const AdminOrderNotificationEmail = ({
             {/* Alert Header */}
             <Section className="py-6 sm:py-10 px-4 sm:px-10 text-center bg-primary/5">
               <Img
-                src={`${baseUrl}/t-shirt-black.png`}
-                width="120"
+                src={`${baseUrl}/logo.png`}
+                width="60"
                 height="40"
                 alt="Drip Fashion"
                 className="mx-auto mb-4"
@@ -178,7 +177,7 @@ export const AdminOrderNotificationEmail = ({
             <Section className="m-0 w-full py-6 px-4 sm:px-10 bg-muted/50">
               <Row>
                 <Column className="w-1/2">
-                  <Text className="m-0 text-sm font-bold text-foreground">Order Number</Text>
+                  <Text className="m-0 text-sm font-bold text-foreground">Order ID</Text>
                   <Text className="mt-2 mb-4 text-sm text-muted-foreground">#{order.id}</Text>
                 </Column>
                 <Column className="w-1/2">
@@ -229,7 +228,6 @@ export const AdminOrderNotificationEmail = ({
                 )}
                 <br />
                 {order.shippingAddress?.city}, {order.shippingAddress?.state?.toUpperCase()}
-                {order.shippingAddress?.postalCode && ` ${order.shippingAddress.postalCode}`}
                 <br />
                 {order.shippingAddress?.country || 'Nigeria'}
                 {order.shippingAddress?.phone && (

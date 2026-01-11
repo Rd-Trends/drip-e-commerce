@@ -47,6 +47,7 @@ export const Coupons: CollectionConfig = {
       options: [
         { label: 'Percentage', value: 'percentage' },
         { label: 'Fixed Amount', value: 'fixed' },
+        { label: 'Free Shipping', value: 'free-shipping' },
       ],
       admin: {
         description: 'Type of discount to apply',

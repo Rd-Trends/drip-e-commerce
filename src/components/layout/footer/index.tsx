@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { getCachedGlobal } from '@/lib/get-global.'
 import { Logo } from '@/components/logo'
-import Section from './section'
-import Container from './container'
+import Section from '../section'
+import Container from '../container'
+import { FooterLink } from './footer-link'
 
 // Footer link group component for better organization
 function FooterLinkGroup({
@@ -18,12 +19,12 @@ function FooterLinkGroup({
       <ul className="space-y-3">
         {links.map((link) => (
           <li key={link.href}>
-            <Link
+            <FooterLink
               href={link.href}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {link.label}
-            </Link>
+            </FooterLink>
           </li>
         ))}
       </ul>
@@ -102,13 +103,13 @@ export async function Footer() {
             </p>
             <div className="flex gap-6 text-sm">
               {legalLinks.map((link) => (
-                <Link
+                <FooterLink
                   key={link.href}
                   href={link.href}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
-                </Link>
+                </FooterLink>
               ))}
             </div>
           </div>

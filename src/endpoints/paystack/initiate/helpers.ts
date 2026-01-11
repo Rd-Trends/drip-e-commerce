@@ -42,6 +42,7 @@ export async function calculateFees({
   // Handle coupon discount
   let discount = 0
   let couponId: number | undefined
+  let freeShipping = false
 
   if (couponIdParam) {
     try {
@@ -61,6 +62,12 @@ export async function calculateFees({
         } else {
           payload.logger.warn(`Coupon validation failed: ${validationResult.error}`)
         }
+        
+        // Check for free shipping
+        if (validationResult.valid && validationResult.freeShipping) {
+          freeShipping = true
+          couponId = couponIdParam as number
+        }
       }
     } catch (error) {
       payload.logger.error(`Error validating coupon during payment initiation: ${error}`)
@@ -73,12 +80,15 @@ export async function calculateFees({
   const taxRate = shippingConfig.taxRate || 7.5
   const taxAmount = calculateTax(adjustedFee, taxRate)
 
+  // Apply free shipping discount if coupon enables it
+  const finalShippingFee = freeShipping ? 0 : shippingFee
+
   // Calculate grand total
-  const grandTotal = adjustedFee + shippingFee + taxAmount
+  const grandTotal = adjustedFee + finalShippingFee + taxAmount
 
   return {
     subtotal,
-    shippingFee,
+    shippingFee: finalShippingFee,
     taxAmount,
     discount,
     grandTotal,

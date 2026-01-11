@@ -49,8 +49,7 @@ export const AddressItem: React.FC<Props> = ({
         <p className="font-mono">{address.addressLine1}</p>
         {address.addressLine2 && <p className="font-mono">{address.addressLine2}</p>}
         <p className="font-mono">
-          {address.city}, {address.state ? getStateLabel(address.state) || address.state : ''}{' '}
-          {address.postalCode}
+          {address.city}, {address.state ? getStateLabel(address.state) || address.state : ''}
         </p>
         <p className="font-mono">{address.country}</p>
       </div>

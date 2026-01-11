@@ -40,9 +40,10 @@ import { ShoppingCart } from 'lucide-react'
 type AppliedCoupon = {
   id: number
   code: string
-  type: 'percentage' | 'fixed'
+  type: 'percentage' | 'fixed' | 'free-shipping'
   value: number
   discount: number
+  freeShipping?: boolean
 }
 
 export function CheckoutPage() {
@@ -72,7 +73,7 @@ export function CheckoutPage() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <LinkButton href="/shop">Continue Shopping</LinkButton>
+          <LinkButton  href="/shop">Continue Shopping</LinkButton>
         </EmptyContent>
       </Empty>
     )
@@ -135,9 +136,9 @@ function CheckoutForm({
   }, [shippingConfig, discountedAmount])
 
   const totalAmount = useMemo(() => {
-    const shipping = shippingCalculation?.fee || 0
+    const shipping = appliedCoupon?.freeShipping ? 0 : shippingCalculation?.fee || 0
     return discountedAmount + shipping + taxAmount
-  }, [discountedAmount, shippingCalculation?.fee, taxAmount])
+  }, [discountedAmount, shippingCalculation?.fee, taxAmount, appliedCoupon?.freeShipping])
 
   const handlePaymentSuccess = useCallback(
     (reference: string) => {
@@ -339,7 +340,9 @@ const OrderSuccess = ({ orderID, email }: { orderID: string; email: string }) =>
             className="w-full"
             render={
               <Link
-                href={user ? `/account/orders/${orderID}` : `/track-order?id=${orderID}&email=${email}`}
+                href={
+                  user ? `/account/orders/${orderID}` : `/track-order?id=${orderID}&email=${email}`
+                }
               />
             }
           >

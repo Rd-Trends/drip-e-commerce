@@ -4,6 +4,9 @@ import Paystack from '@paystack/paystack-sdk'
 import { PaystackTransactionMetadata } from '../shared/types'
 import { render } from '@react-email/components'
 import { OrderConfirmationEmail } from '@/lib/emails/order-confirmation'
+import { USER_ROLES } from '@/lib/constants'
+import { AdminOrderNotificationEmail } from '@/lib/emails/admin-order-notification'
+import { Resend } from 'resend'
 
 type VerifyPaymentParams = {
   reference: string
@@ -65,7 +68,7 @@ export async function verifyPayment({ reference, req }: VerifyPaymentParams) {
 
 type UpdateCartAndTransactionParams = {
   cartId: number
-  transactionId: number | string
+  transactionId: number
   orderId: number
   req: PayloadRequest
 }
@@ -203,40 +206,15 @@ export async function trackCouponUsage(
 
 export async function sendOrderConfirmationEmail(order: Order, payload: BasePayload) {
   try {
-    const emailHtml = await render(OrderConfirmationEmail({ order }))
-
-    await payload.sendEmail({
-      to: order.customerEmail,
-      subject: `Order Confirmation - #${order.id} - Drip Fashion`,
-      html: emailHtml,
-    })
-
-    const email = order.customer
-      ? typeof order.customer === 'object'
-        ? order.customer.email
-        : ''
-      : order.customerEmail
-
-    payload.logger.info(`Order confirmation email sent to ${email} for order #${order.id}`)
-  } catch (error) {
-    payload.logger.error(error, `Error sending order confirmation email for order #${order.id}`)
-  }
-}
-
-export async function sendAdminOrderNotifications(order: Order, payload: BasePayload) {
-  try {
-    const { USER_ROLES } = await import('@/lib/constants')
-    const { AdminOrderNotificationEmail } = await import('@/lib/emails/admin-order-notification')
-    const { formatCurrency } = await import('@/utils/format-currency')
-
-    // Query all users with admin or order-manager roles
-    const staffUsers = await payload.find({
+    const orderManagers = await payload.find({
       collection: 'users',
       where: {
         roles: {
           in: [USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER],
         },
       },
+      //   sort by date (olderst first)
+      sort: 'createdAt',
       select: {
         email: true,
         name: true,
@@ -245,56 +223,45 @@ export async function sendAdminOrderNotifications(order: Order, payload: BasePay
       limit: 0, // Fetch all matching users
     })
 
-    if (!staffUsers.docs || staffUsers.docs.length === 0) {
-      payload.logger.warn('No admin or order manager users found to send notifications')
-      return
-    }
+    const customerEmailHtml = await render(OrderConfirmationEmail({ order }))
+    const adminEmailHtml = await render(AdminOrderNotificationEmail({ order }))
 
+    const customerEmail = order.customer
+      ? typeof order.customer === 'object'
+        ? order.customer.email
+        : ''
+      : order.customerEmail
+
+    const resend = new Resend(process.env.RESEND_API_KEY || '')
+    const emailFromAddress = process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng'
+    const emailFromName = process.env.EMAIL_FROM_NAME || 'Drip Fashion'
+
+    // Send batch emails to customer and admins
+    // We are using batch send to optimize email sending and to ensure we don't hit rate limits (max 2 emails/sec)
+    await resend.batch.send([
+      ...(!!customerEmail
+        ? [
+            {
+              to: customerEmail,
+              from: `${emailFromName} <${emailFromAddress}>`,
+              subject: `Order Confirmation - #${order.id} - Drip Fashion`,
+              html: customerEmailHtml,
+            },
+          ]
+        : []),
+      ...orderManagers.docs.map((user) => ({
+        to: user.email,
+        from: `${emailFromName} <${emailFromAddress}>`,
+        subject: `New Order #${order.id} - ${order.grandTotal} - Drip Fashion`,
+        html: adminEmailHtml,
+      })),
+    ])
+
+    payload.logger.info(`Order confirmation email sent to ${customerEmail} for order #${order.id}`)
     payload.logger.info(
-      `Found ${staffUsers.docs.length} staff members to notify for order #${order.id}`,
-    )
-
-    // Render the email template
-    const emailHtml = await render(AdminOrderNotificationEmail({ order }))
-
-    // Send emails in batches of 2 to respect rate limit (2 req/sec on Resend)
-    const BATCH_SIZE = 2
-    for (let i = 0; i < staffUsers.docs.length; i += BATCH_SIZE) {
-      const batch = staffUsers.docs.slice(i, i + BATCH_SIZE)
-
-      const emailPromises = batch.map(async (user) => {
-        try {
-          await payload.sendEmail({
-            to: user.email,
-            subject: `New Order #${order.id} - ${formatCurrency(order.grandTotal)} - Drip Fashion`,
-            html: emailHtml,
-          })
-
-          payload.logger.info(
-            `Admin notification email sent to ${user.email} for order #${order.id}`,
-          )
-        } catch (error) {
-          payload.logger.error(
-            error,
-            `Failed to send admin notification to ${user.email} for order #${order.id}`,
-          )
-          // Don't throw - continue sending to other staff members
-        }
-      })
-
-      await Promise.all(emailPromises)
-
-      // Add small delay between batches if there are more emails to send
-      if (i + BATCH_SIZE < staffUsers.docs.length) {
-        await new Promise((resolve) => setTimeout(resolve, 1100))
-      }
-    }
-
-    payload.logger.info(
-      `Admin order notifications completed for order #${order.id}. Sent to ${staffUsers.docs.length} recipients.`,
+      `Admin order notification emails sent for order #${order.id} to ${orderManagers.totalDocs} users`,
     )
   } catch (error) {
-    payload.logger.error(error, `Error sending admin order notifications for order #${order.id}`)
-    // Don't throw - admin notifications shouldn't break order confirmation
+    payload.logger.error(error, `Error sending order confirmation email for order #${order.id}`)
   }
 }

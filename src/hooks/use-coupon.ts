@@ -12,12 +12,13 @@ export type ValidateCouponResponse = {
   coupon?: {
     id: number
     code: string
-    type: 'percentage' | 'fixed'
+    type: 'percentage' | 'fixed' | 'free-shipping'
     value: number
     fixedAmount?: number
     description?: string
   }
   discount?: number
+  freeShipping?: boolean
   error?: string
 }
 

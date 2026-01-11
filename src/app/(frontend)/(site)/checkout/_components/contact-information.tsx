@@ -63,9 +63,6 @@ export const ContactInformation: React.FC<ContactInformationProps> = ({
                 <Label className="text-sm text-muted-foreground">Email</Label>
                 <p className="font-medium">{user.email}</p>
               </div>
-              <LinkButton href="/logout" variant="outline" size="sm">
-                Log out
-              </LinkButton>
             </div>
           </div>
         ) : (

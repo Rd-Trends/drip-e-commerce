@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
         description: coupon.description,
       },
       discount: validationResult.discount,
+      freeShipping: validationResult.freeShipping,
     })
   } catch (error) {
     console.error('Error validating coupon:', error)

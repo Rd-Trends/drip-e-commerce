@@ -52,10 +52,6 @@ interface MetricsClientProps {
 }
 
 export function MetricsClient({ metrics }: MetricsClientProps) {
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`
-  }
-
   return (
     <div className="metrics-grid">
       <MetricCard

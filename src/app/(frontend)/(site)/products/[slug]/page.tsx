@@ -158,7 +158,7 @@ export default async function ProductPage({ params }: Args) {
       <LivePreviewListener />
       <Section paddingY="xs">
         <Container>
-          <LinkButton href="/shop" variant="ghost" className="mb-4">
+          <LinkButton href="/shop" variant="ghost" className="mb-4" >
             <ChevronLeftIcon />
             All products
           </LinkButton>

@@ -115,9 +115,6 @@ src/
 ├── app/(frontend)/
 │   ├── api/coupons/validate/
 │   │   └── route.ts               # Validation API endpoint
-│   └── (site)/
-│       ├── coupons/
-│       │   └── page.tsx           # Public coupons listing page
 │       └── checkout/
 │           └── _components/
 │               ├── checkout.tsx   # Updated with coupon state
