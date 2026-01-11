@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     title: 'Login',
     url: '/login',
   },
+  alternates: {
+    canonical: '/login',
+  },
 }
 
 export default async function LoginPage() {

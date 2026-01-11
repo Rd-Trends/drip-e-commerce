@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     title: 'Sign Up',
     url: '/signup',
   },
+  alternates: {
+    canonical: '/signup',
+  },
 }
 
 export default async function SignupPage() {
