@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     title: 'Forgot Password',
     url: '/forgot-password',
   },
+  alternates: {
+    canonical: '/forgot-password',
+  },
 }
 
 export default async function ForgotPasswordPage() {

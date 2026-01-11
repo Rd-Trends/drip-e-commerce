@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     title: 'Reset Password',
     url: '/reset-password',
   },
+  alternates: {
+    canonical: '/reset-password',
+  },
 }
 
 export default async function ResetPasswordPage() {
