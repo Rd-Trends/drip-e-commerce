@@ -1,5 +1,3 @@
-'use client'
-
 import Link from 'next/link'
 import { Media } from '@/components/media'
 import { Category } from '@/payload-types'
@@ -14,16 +12,9 @@ type CategoryCardProps = {
 export function CategoryCard({ category, className }: CategoryCardProps) {
   const media = category.image
 
-  const handleClick = () => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }
-  }
-
   return (
     <Link
       href={`/shop?category=${category.slug}`}
-      onClick={handleClick}
       className={cn(
         'group relative flex h-full w-full flex-col justify-end overflow-hidden rounded-xl bg-muted transition-colors hover:opacity-90 aspect-4/5',
         className,

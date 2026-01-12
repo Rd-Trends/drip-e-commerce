@@ -54,7 +54,7 @@ async function ProductList({ type, categoryID }: { type: SectionType; categoryID
   const products = await getCachedProductsByType(type, categoryID)()
 
   return (
-    <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
+    <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
       {products.map((product) => {
         return <ProductGridItem key={product.id} product={product} />
       })}
@@ -64,7 +64,7 @@ async function ProductList({ type, categoryID }: { type: SectionType; categoryID
 
 function ProductListSkeleton() {
   return (
-    <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
+    <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
       {[1, 2, 3, 4].map((product) => {
         return <ProductGridItemSkeleton key={product} />
       })}
