@@ -10,9 +10,10 @@ interface RecentOrdersProps {
   timelineRange: TimelineRange
 }
 
-const getStatusBadge = (status: string) => {
-  const statusClasses: Record<string, string> = {
+const getStatusBadge = (status: NonNullable<Order['status']>) => {
+  const statusClasses: Record<NonNullable<Order['status']>, string> = {
     processing: 'badge-info',
+    shipped: 'badge-info',
     completed: 'badge-success',
     cancelled: 'badge-error',
     refunded: 'badge-warning',
