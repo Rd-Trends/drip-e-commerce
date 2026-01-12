@@ -90,7 +90,7 @@ export async function RelatedProductsSection({ product, limit = 8 }: RelatedProd
     <Section paddingY="md">
       <Container>
         <h2 className="mb-4 text-2xl font-bold">Related Products</h2>
-        <section className="grid grid-cols-2 gap-2 gap-y-6 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+        <section className="grid grid-cols-2 gap-2 gap-y-6 md:gap-6 md:grid-cols-3 xl:grid-cols-4">
           {allRelatedProducts.map((relatedProduct) => {
             return <ProductGridItem key={relatedProduct.id} product={relatedProduct} />
           })}

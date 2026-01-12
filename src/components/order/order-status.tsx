@@ -7,28 +7,31 @@ type Props = {
   className?: string
 }
 
-const statusConfig = {
+const statusConfig: Record<
+  NonNullable<Order['status']>,
+  { variant: NonNullable<React.ComponentProps<typeof Badge>['variant']>; label: string }
+> = {
   processing: {
-    variant: 'outline' as const,
+    variant: 'outline',
     label: 'Processing',
   },
   shipped: {
-    variant: 'default' as const,
+    variant: 'default',
     label: 'Shipped',
   },
   completed: {
-    variant: 'secondary' as const,
+    variant: 'secondary',
     label: 'Completed',
   },
   cancelled: {
-    variant: 'destructive' as const,
+    variant: 'destructive',
     label: 'Cancelled',
   },
   refunded: {
-    variant: 'ghost' as const,
+    variant: 'ghost',
     label: 'Refunded',
   },
-} as const
+}
 
 export const OrderStatus: React.FC<Props> = ({ status, className }) => {
   if (!status) return null

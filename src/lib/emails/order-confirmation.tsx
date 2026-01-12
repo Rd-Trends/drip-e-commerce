@@ -122,7 +122,7 @@ export const OrderConfirmationEmail = ({
       <Tailwind config={tailwindConfig}>
         <Head />
         <Body className="bg-muted font-sans">
-          <Preview>{`Your order #${String(order.id)} has been confirmed - Drip E-Commerce`}</Preview>
+          <Preview>{`Your order ${String(order.id)} has been confirmed - Drip E-Commerce`}</Preview>
           <Container className="my-0 sm:my-10 mx-auto max-w-150 border-0 sm:border border-border bg-background">
             {/* Order Confirmation Message */}
             <Section className="py-6 sm:py-10 px-4 sm:px-10 text-center">
@@ -152,7 +152,7 @@ export const OrderConfirmationEmail = ({
               <Row>
                 <Column className="">
                   <Text className="m-0 text-sm font-bold text-foreground">Order ID</Text>
-                  <Text className="mt-2 mb-0 text-sm text-muted-foreground">#{order.id}</Text>
+                  <Text className="mt-2 mb-0 text-sm text-muted-foreground">{order.id}</Text>
                 </Column>
                 <Column className="">
                   <Text className="m-0 text-sm font-bold text-foreground">Order Date</Text>

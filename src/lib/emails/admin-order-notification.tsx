@@ -140,7 +140,7 @@ export const AdminOrderNotificationEmail = ({
       <Tailwind config={tailwindConfig}>
         <Head />
         <Body className="bg-muted font-sans">
-          <Preview>{`New Order #${String(order.id)} - ${formatCurrency(order.grandTotal)} - Drip Fashion`}</Preview>
+          <Preview>{`New Order ${String(order.id)} - ${formatCurrency(order.grandTotal)} - Drip Fashion`}</Preview>
           <Container className="my-0 sm:my-10 mx-auto max-w-150 border-0 sm:border border-border bg-background">
             {/* Alert Header */}
             <Section className="py-6 sm:py-10 px-4 sm:px-10 text-center bg-primary/5">
@@ -155,7 +155,7 @@ export const AdminOrderNotificationEmail = ({
                 New Order Received
               </Heading>
               <Text className="text-sm sm:text-base text-muted-foreground font-medium m-0">
-                Order #{order.id} requires processing
+                Order {order.id} requires processing
               </Text>
             </Section>
 
@@ -178,7 +178,7 @@ export const AdminOrderNotificationEmail = ({
               <Row>
                 <Column className="w-1/2">
                   <Text className="m-0 text-sm font-bold text-foreground">Order ID</Text>
-                  <Text className="mt-2 mb-4 text-sm text-muted-foreground">#{order.id}</Text>
+                  <Text className="mt-2 mb-4 text-sm text-muted-foreground">{order.id}</Text>
                 </Column>
                 <Column className="w-1/2">
                   <Text className="m-0 text-sm font-bold text-foreground">Order Date</Text>

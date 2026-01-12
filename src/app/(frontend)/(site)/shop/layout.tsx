@@ -2,10 +2,11 @@ import { FilterDropdowns } from './_components/dropdowns'
 import { CategoryList, SortingList, FeaturedList } from './_components/lists'
 import Section from '@/components/layout/section'
 import Container from '@/components/layout/container'
+import { Fragment } from 'react'
 
 export default function SearchLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <Fragment>
       <FilterDropdowns />
 
       <Section paddingY="xs">
@@ -18,6 +19,6 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
           <div className="min-h-screen w-full">{children}</div>
         </Container>
       </Section>
-    </div>
+    </Fragment>
   )
 }

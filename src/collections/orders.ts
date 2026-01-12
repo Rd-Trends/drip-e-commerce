@@ -7,6 +7,7 @@ import { accessOR } from '@/access/utilities'
 import { cartItemsField } from '../fields/cart-item-field'
 import { amountField } from '../fields/ammount-field'
 import { currencyField } from '../fields/currency-field'
+import { nanoid } from 'nanoid'
 import { currenciesConfig } from '@/lib/constants'
 
 export const Orders: CollectionConfig = {
@@ -31,7 +32,7 @@ export const Orders: CollectionConfig = {
         beforeChange: [
           ({ operation }) => {
             if (operation === 'create') {
-              return crypto.randomUUID()
+              return nanoid(12)
             }
           },
         ],
