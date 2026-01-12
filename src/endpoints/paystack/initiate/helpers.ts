@@ -5,6 +5,7 @@ import { calculateShippingFee } from '@/utils/calculate-shipping'
 import { calculateTax } from '@/utils/calculate-tax'
 import { validateCoupon } from '@/endpoints/coupons/helpers'
 import { PaystackTransactionMetadata } from '../shared/types'
+import { nanoid } from 'nanoid'
 
 type CalculateTotalsParams = {
   cart: Cart
@@ -177,7 +178,7 @@ export async function initializePaystackTransaction({
   })
 
   // Generate unique reference
-  const reference = `txn_${crypto.randomUUID()}`
+  const reference = `txn_${nanoid()}`
 
   // Initialize transaction with Paystack
   const transactionResponse = await paystack.transaction.initialize({

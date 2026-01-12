@@ -111,7 +111,7 @@ export function CouponInput({
         </AlertDescription>
         <Button
           type="button"
-          variant="ghost"
+          variant="default"
           size="sm"
           onClick={handleRemoveCoupon}
           disabled={disabled}

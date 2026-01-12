@@ -187,7 +187,7 @@ export const AddressForm: React.FC<Props> = ({
                       type="tel"
                       id="phone"
                       autoComplete="mobile tel"
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="08123456789"
                       aria-invalid={fieldState.invalid}
                       value={field.value || ''}
                     />
