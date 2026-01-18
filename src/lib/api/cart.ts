@@ -175,4 +175,27 @@ export const cartApi = {
       method: 'DELETE',
     })
   },
+
+  /**
+   * Merge guest cart with user cart after login
+   */
+  mergeGuestCart: async (options: {
+    guestCartId?: number
+    guestCartSecret?: string
+  }): Promise<{
+    success: boolean
+    cart: Cart | null
+    merged: boolean
+    message?: string
+  }> => {
+    const data = await fetchJSON(`${API_URL}/api/merge-guest-cart`, {
+      method: 'POST',
+      body: JSON.stringify({
+        guestCartId: options.guestCartId,
+        guestCartSecret: options.guestCartSecret,
+      }),
+    })
+
+    return data
+  },
 }

@@ -388,3 +388,34 @@ export const useUpdateCartItemQuantity = () => {
     },
   })
 }
+
+/**
+ * Hook for merging guest cart with user cart
+ * This is automatically called on login/signup, but can be called manually if needed
+ * @example
+ * const { mutate: mergeCart, isPending } = useMergeGuestCart()
+ * mergeCart({ guestCartId: 123, guestCartSecret: 'secret' })
+ */
+export const useMergeGuestCart = () => {
+  const queryClient = useQueryClient()
+  const { updateCartIdentifier, clearCartStorage } = useCart()
+
+  return useMutation({
+    mutationFn: cartApi.mergeGuestCart,
+    onSuccess: (result) => {
+      if (result.success && result.cart) {
+        // Update cart identifier with the merged/user cart
+        updateCartIdentifier({
+          cartID: result.cart.id as number,
+          secret: result.cart.secret ?? undefined,
+        })
+
+        // Invalidate cart query to refetch with new data
+        queryClient.invalidateQueries({ queryKey: queryKeys.cart.detail(result.cart.id) })
+      } else if (result.success && !result.cart) {
+        // User has no cart, clear storage
+        clearCartStorage()
+      }
+    },
+  })
+}

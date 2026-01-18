@@ -5,6 +5,7 @@ import type { User } from '@/payload-types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { authApi } from '@/lib/api/auth'
+import { cartApi } from '@/lib/api/cart'
 import { queryKeys } from '@/lib/query-keys'
 import { useCart } from '@/providers/cart'
 
@@ -35,11 +36,39 @@ export const useUser = () => {
  */
 export const useLogin = () => {
   const queryClient = useQueryClient()
+  const { cartID, cartSecret, updateCartIdentifier, clearCartStorage } = useCart()
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: (user) => {
+    onSuccess: async (user) => {
       queryClient.setQueryData(queryKeys.auth.user(), user)
+
+      // Merge guest cart with user cart after successful login
+      try {
+        const result = await cartApi.mergeGuestCart({
+          guestCartId: cartID,
+          guestCartSecret: cartSecret,
+        })
+
+        if (result.success && result.cart) {
+          // Update cart identifier with the merged/user cart
+          updateCartIdentifier({
+            cartID: result.cart.id as number,
+            secret: result.cart.secret ?? undefined,
+          })
+
+          // Invalidate cart query to refetch with new data
+          queryClient.invalidateQueries({ queryKey: queryKeys.cart.detail(result.cart.id) })
+        } else if (result.success && !result.cart) {
+          // User has no cart, clear storage
+          clearCartStorage()
+        }
+      } catch (error) {
+        console.error('Error merging guest cart:', error)
+        // Don't fail the login if cart merge fails
+        // Just clear the cart storage to be safe
+        clearCartStorage()
+      }
     },
   })
 }
@@ -73,11 +102,39 @@ export const useLogout = () => {
  */
 export const useCreateUser = () => {
   const queryClient = useQueryClient()
+  const { cartID, cartSecret, updateCartIdentifier, clearCartStorage } = useCart()
 
   return useMutation({
     mutationFn: authApi.createUser,
-    onSuccess: (user) => {
+    onSuccess: async (user) => {
       queryClient.setQueryData(queryKeys.auth.user(), user)
+
+      // Merge guest cart with user cart after successful account creation
+      try {
+        const result = await cartApi.mergeGuestCart({
+          guestCartId: cartID,
+          guestCartSecret: cartSecret,
+        })
+
+        if (result.success && result.cart) {
+          // Update cart identifier with the merged/user cart
+          updateCartIdentifier({
+            cartID: result.cart.id as number,
+            secret: result.cart.secret ?? undefined,
+          })
+
+          // Invalidate cart query to refetch with new data
+          queryClient.invalidateQueries({ queryKey: queryKeys.cart.detail(result.cart.id) })
+        } else if (result.success && !result.cart) {
+          // User has no cart, clear storage
+          clearCartStorage()
+        }
+      } catch (error) {
+        console.error('Error merging guest cart:', error)
+        // Don't fail the account creation if cart merge fails
+        // Just clear the cart storage to be safe
+        clearCartStorage()
+      }
     },
   })
 }

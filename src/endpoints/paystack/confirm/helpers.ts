@@ -265,3 +265,97 @@ export async function sendOrderConfirmationEmail(order: Order, payload: BasePayl
     payload.logger.error(error, `Error sending order confirmation email for order #${order.id}`)
   }
 }
+
+type ProcessOrderConfirmationParams = {
+  reference: string
+  req: PayloadRequest
+  source?: 'client' | 'webhook'
+  user?: User | null
+  customerEmail?: string
+}
+
+/**
+ * Shared order confirmation logic for both client-side and webhook processing
+ * Handles idempotency using existing transaction status and order relationship
+ */
+export async function processOrderConfirmation({
+  reference,
+  req,
+  source = 'client',
+  user,
+  customerEmail,
+}: ProcessOrderConfirmationParams) {
+  const payload = req.payload
+
+  // Verify payment and get transaction
+  const { transaction, paymentIntent, metadata } = await verifyPayment({
+    reference,
+    req,
+  })
+
+  // Check if order already exists for this transaction (idempotency check)
+  if (transaction.order) {
+    payload.logger.info(
+      `Order already exists for transaction ${transaction.id}, reference ${reference}. Source: ${source}`,
+    )
+    return {
+      orderID: typeof transaction.order === 'object' ? transaction.order.id : transaction.order,
+      isNew: false,
+    }
+  }
+
+  // Extract customer email
+  const finalCustomerEmail = customerEmail || user?.email
+
+  // Create order from verified payment
+  // @ts-ignore – Type issue with create method (don't have a draft field)
+  const order = await payload.create({
+    collection: 'orders',
+    data: {
+      currency: paymentIntent.data.currency as 'NGN',
+      grandTotal: paymentIntent.data.amount,
+      tax: metadata.taxAmount || 0,
+      shippingFee: metadata.shippingAmount || 0,
+      subtotal: metadata.subtotalAmount || paymentIntent.data.amount,
+      discount: metadata.discountAmount || 0,
+      ...(user ? { customer: user.id } : { customerEmail: finalCustomerEmail }),
+      items: metadata.cartItemsSnapshot,
+      shippingAddress: metadata.shippingAddress,
+      status: 'processing',
+      transactions: [transaction.id],
+    },
+    depth: 2, // Populate order relations
+    req,
+  })
+
+  // Update cart and transaction
+  await updateCartAndTransaction({
+    cartId: metadata.cartId,
+    transactionId: transaction.id,
+    orderId: order.id,
+    req,
+  })
+
+  // Update inventory
+  await updateInventory({
+    transactionId: transaction.id,
+    req,
+  })
+
+  // Track coupon usage if applicable
+  if (metadata.couponId) {
+    await trackCouponUsage(payload, metadata.couponId, user?.id || null)
+  }
+
+  // Send order confirmation emails
+  await sendOrderConfirmationEmail(order, payload)
+
+  payload.logger.info(
+    `Order ${order.id} created successfully via ${source} for reference ${reference}`,
+  )
+
+  return {
+    orderID: order.id,
+    isNew: true,
+  }
+}
