@@ -1,21 +1,15 @@
 import FilterDropdown from '@/components/filter/dropdown'
 import { Skeleton } from '@/components/ui/skeleton'
 import { sorting } from '@/lib/constants'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { Suspense } from 'react'
+import { getCachedCategoryList } from './lists'
 
 async function CategoryDropdown() {
-  const payload = await getPayload({ config: configPromise })
-
-  const categories = await payload.find({
-    collection: 'categories',
-    sort: 'title',
-  })
+  const categories = await getCachedCategoryList()
 
   return (
     <FilterDropdown
-      list={[{ title: 'All', path: '/shop' }, ...categories.docs]}
+      list={[{ title: 'All', path: '/shop' }, ...categories]}
       title="Categories"
       placeholder="Filter by "
       queryKey="category"

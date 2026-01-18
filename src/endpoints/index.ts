@@ -1,13 +1,16 @@
 import { Endpoint } from 'payload'
 import { initiatePaystackPaymentHandler } from './paystack/initiate'
 import { confirmPaystackOrderHandler } from './paystack/confirm'
+// import { paystackWebhookHandler } from './paystack/webhook'
 import { bulkCreateVariants } from './variants/bulk-create'
 import { validateCouponHandler } from './coupons/validate'
+import { mergeGuestCartHandler } from './carts/merge-guest-cart'
 import { getMetricsHandler } from './analytics/metrics'
 import { getRevenueHandler } from './analytics/revenue'
 import { getTopProductsHandler } from './analytics/top-products'
 import { getLowInventoryHandler } from './analytics/low-inventory'
 import { getRecentOrdersHandler } from './analytics/recent-orders'
+import { resendWebhook } from './resend'
 
 export const endpoints: Endpoint[] = [
   {
@@ -20,6 +23,11 @@ export const endpoints: Endpoint[] = [
     method: 'post',
     handler: confirmPaystackOrderHandler,
   },
+  // {
+  //   path: '/payments/paystack/webhook',
+  //   method: 'post',
+  //   handler: paystackWebhookHandler,
+  // },
   {
     path: '/variants-bulk-create',
     method: 'post',
@@ -29,6 +37,11 @@ export const endpoints: Endpoint[] = [
     path: '/validate-coupon',
     method: 'post',
     handler: validateCouponHandler,
+  },
+  {
+    path: '/merge-guest-cart',
+    method: 'post',
+    handler: mergeGuestCartHandler,
   },
   {
     path: '/analytics/metrics',
@@ -54,5 +67,10 @@ export const endpoints: Endpoint[] = [
     path: '/analytics/recent-orders',
     method: 'get',
     handler: getRecentOrdersHandler,
+  },
+  {
+    path: '/webhook/resend',
+    method: 'post',
+    handler: resendWebhook,
   },
 ]
