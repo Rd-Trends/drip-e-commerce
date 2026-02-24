@@ -68,6 +68,12 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
       },
       index: canIndex,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.meta?.title || product.title,
+      description: product.meta?.description || '',
+      images: seoImage?.url ? [seoImage.url] : ['/og-image.jpg'],
+    },
     title: product.meta?.title || product.title,
   }
 }
@@ -158,7 +164,7 @@ export default async function ProductPage({ params }: Args) {
       <LivePreviewListener />
       <Section paddingY="xs">
         <Container>
-          <LinkButton href="/shop" variant="ghost" className="mb-4" >
+          <LinkButton href="/shop" variant="ghost" className="mb-4">
             <ChevronLeftIcon />
             All products
           </LinkButton>

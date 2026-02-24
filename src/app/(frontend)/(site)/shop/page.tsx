@@ -6,6 +6,7 @@ import { NoProductFound } from './_components/no-product-found'
 import { Pagination } from '@/components/pagination'
 import { sorting, defaultSort } from '@/lib/constants'
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utils/merge-open-graph'
 
 const PRODUCTS_PER_PAGE = 18
 
@@ -25,14 +26,28 @@ export async function generateMetadata({
     ?.split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
+  const canonicalUrl = category ? `${shopUrl}?category=${category}` : shopUrl
+  const pageTitle = !category ? 'Shop All Products' : `Shop ${categoryName} Collection`
+  const pageDescription = !category
+    ? 'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.'
+    : `Browse our collection of ${categoryName} items. Find your perfect style with quality clothing and accessories, all available with fast shipping in Nigeria.`
 
   return {
-    title: !category ? 'Shop All Products' : `Shop ${categoryName} Collection`,
-    description: !category
-      ? 'Browse our complete collection of fashion items. Filter by category, sort by price, and find your perfect style. Quality clothing and accessories with fast shipping in Nigeria.'
-      : `Browse our collection of ${categoryName} items. Find your perfect style with quality clothing and accessories, all available with fast shipping in Nigeria.`,
+    title: pageTitle,
+    description: pageDescription,
     alternates: {
-      canonical: category ? `${shopUrl}?category=${category}` : shopUrl,
+      canonical: canonicalUrl,
+    },
+    openGraph: mergeOpenGraph({
+      title: pageTitle,
+      description: pageDescription,
+      url: canonicalUrl,
+    }),
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDescription,
+      images: ['/og-image.jpg'],
     },
   }
 }

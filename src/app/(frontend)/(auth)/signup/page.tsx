@@ -9,6 +9,16 @@ import { AuthLayout } from '../_components/auth-layout'
 export const metadata: Metadata = {
   title: 'Sign Up',
   description: 'Create a new account',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sign Up',
+    description: 'Create a new account',
+    images: ['/og-image.jpg'],
+  },
   openGraph: {
     title: 'Sign Up',
     url: '/signup',

@@ -8,6 +8,16 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Forgot Password',
   description: 'Reset your password',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Forgot Password',
+    description: 'Reset your password',
+    images: ['/og-image.jpg'],
+  },
   openGraph: {
     title: 'Forgot Password',
     url: '/forgot-password',
