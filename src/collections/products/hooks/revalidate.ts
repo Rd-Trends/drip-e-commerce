@@ -6,14 +6,25 @@ import { queryKeys } from '@/lib/query-keys'
 
 export const revalidateAfterChange: CollectionAfterChangeHook<Product> = ({
   doc,
+  previousDoc,
   req: { context },
 }) => {
   if (!context.disableRevalidate) {
-    if (doc._status === 'published') {
+    const isPublished = doc._status === 'published'
+    const wasPublished = previousDoc?._status === 'published'
+
+    if (isPublished || wasPublished) {
       revalidateTag(queryKeys.revalidation.products)
-      revalidateTag(queryKeys.revalidation.product(doc.slug))
       revalidateTag(queryKeys.revalidation.homeProductSections)
       revalidateTag(queryKeys.revalidation.categories)
+
+      if (doc.slug) {
+        revalidateTag(queryKeys.revalidation.product(doc.slug))
+      }
+
+      if (previousDoc?.slug && previousDoc.slug !== doc.slug) {
+        revalidateTag(queryKeys.revalidation.product(previousDoc.slug))
+      }
     }
   }
   return doc

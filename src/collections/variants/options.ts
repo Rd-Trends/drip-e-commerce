@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { canManageContent } from '@/access/can-manage-content'
+import { revalidateAfterOptionChange, revalidateOptionDelete } from './hooks/revalidate-options'
 
 export const VariantOptions: CollectionConfig = {
   slug: 'variantOptions',
@@ -12,6 +13,10 @@ export const VariantOptions: CollectionConfig = {
   admin: {
     group: false,
     useAsTitle: 'label',
+  },
+  hooks: {
+    afterChange: [revalidateAfterOptionChange],
+    afterDelete: [revalidateOptionDelete],
   },
   fields: [
     {

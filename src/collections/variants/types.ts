@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { canManageContent } from '@/access/can-manage-content'
+import { revalidateAfterTypeChange, revalidateTypeDelete } from './hooks/revalidate-types'
 
 export const VariantTypes: CollectionConfig = {
   slug: 'variantTypes',
@@ -12,6 +13,10 @@ export const VariantTypes: CollectionConfig = {
   admin: {
     group: false,
     useAsTitle: 'label',
+  },
+  hooks: {
+    afterChange: [revalidateAfterTypeChange],
+    afterDelete: [revalidateTypeDelete],
   },
   fields: [
     {

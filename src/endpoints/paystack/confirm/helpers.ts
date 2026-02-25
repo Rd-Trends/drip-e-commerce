@@ -7,6 +7,9 @@ import { OrderConfirmationEmail } from '@/lib/emails/order-confirmation'
 import { USER_ROLES } from '@/lib/constants'
 import { AdminOrderNotificationEmail } from '@/lib/emails/admin-order-notification'
 import { Resend } from 'resend'
+import { revalidateTag } from 'next/cache'
+
+import { queryKeys } from '@/lib/query-keys'
 
 type VerifyPaymentParams = {
   reference: string
@@ -160,6 +163,10 @@ export async function updateInventory({
       })
     }
   }
+
+  revalidateTag(queryKeys.revalidation.products)
+  revalidateTag(queryKeys.revalidation.homeProductSections)
+  revalidateTag(queryKeys.revalidation.categories)
 }
 
 /**
