@@ -6,6 +6,10 @@ import { mergeOpenGraph } from './merge-open-graph'
 
 export const generateMeta = async (args: { doc: Page | Product }): Promise<Metadata> => {
   const { doc } = args || {}
+  const slug = typeof doc?.slug === 'string' ? doc.slug : undefined
+  const pagePath = slug && slug !== 'home' ? `/${slug}` : '/'
+  const title = doc?.meta?.title || doc?.title || 'Drip Fashion E-Commerce'
+  const description = doc?.meta?.description
 
   const ogImage =
     typeof doc?.meta?.image === 'object' &&
@@ -14,11 +18,14 @@ export const generateMeta = async (args: { doc: Page | Product }): Promise<Metad
     `${process.env.NEXT_PUBLIC_SERVER_URL}${doc.meta.image.url}`
 
   return {
-    description: doc?.meta?.description,
+    description,
+    alternates: {
+      canonical: pagePath,
+    },
     openGraph: mergeOpenGraph({
-      ...(doc?.meta?.description
+      ...(description
         ? {
-            description: doc?.meta?.description,
+            description,
           }
         : {}),
       images: ogImage
@@ -28,9 +35,19 @@ export const generateMeta = async (args: { doc: Page | Product }): Promise<Metad
             },
           ]
         : undefined,
-      title: doc?.meta?.title || doc?.title || 'Drip Fashion E-Commerce',
-      url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
+      title,
+      url: pagePath,
     }),
-    title: doc?.meta?.title || doc?.title || 'Drip Fashion E-Commerce',
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      ...(description
+        ? {
+            description,
+          }
+        : {}),
+      images: ogImage ? [ogImage] : ['/og-image.jpg'],
+    },
+    title,
   }
 }

@@ -11,11 +11,28 @@ import {
 import Section from '@/components/layout/section'
 import Container from '@/components/layout/container'
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utils/merge-open-graph'
 
 export const metadata: Metadata = {
   title: 'Size Guide - Clothing & Accessories',
   description:
     'Find your perfect fit with our comprehensive sizing charts for clothing, shoes, accessories, and more. Detailed measurements for all product categories.',
+  alternates: {
+    canonical: '/size-guide',
+  },
+  openGraph: mergeOpenGraph({
+    title: 'Size Guide - Clothing & Accessories',
+    description:
+      'Find your perfect fit with our comprehensive sizing charts for clothing, shoes, accessories, and more. Detailed measurements for all product categories.',
+    url: '/size-guide',
+  }),
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Size Guide - Clothing & Accessories',
+    description:
+      'Find your perfect fit with our comprehensive sizing charts for clothing, shoes, accessories, and more. Detailed measurements for all product categories.',
+    images: ['/og-image.jpg'],
+  },
 }
 
 export default function SizeGuidePage() {
