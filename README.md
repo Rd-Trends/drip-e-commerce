@@ -1,67 +1,74 @@
-# Payload Blank Template
+# Drip E-Commerce
 
-This template comes configured with the bare minimum to get started on anything you need.
+Fashion-focused e-commerce platform built with Next.js 15, Payload CMS 3, PostgreSQL, Tailwind CSS, Paystack, and Resend. The storefront targets Nigerian shoppers and is configured around NGN pricing, variant-based inventory, guest or authenticated checkout, and CMS-driven merchandising.
 
-## Quick start
+## Documentation Map
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+- [docs/CLIENT_HANDOFF.md](docs/CLIENT_HANDOFF.md) - business and operations guide for the client team
+- [docs/DEVELOPER_ONBOARDING.md](docs/DEVELOPER_ONBOARDING.md) - technical onboarding guide for engineers
+- [COUPON_SYSTEM.md](COUPON_SYSTEM.md) - focused notes on coupon behavior and implementation
 
-## Quick Start - local setup
+## Platform Summary
 
-To spin up this template locally, follow these steps:
+- Storefront built with the Next.js App Router and React 19
+- Payload CMS admin panel at `/admin` for catalog, content, promotions, shipping, and users
+- PostgreSQL as the primary database via `@payloadcms/db-postgres`
+- S3-compatible object storage for media uploads
+- Paystack payment flow with server-side transaction verification
+- Resend-powered transactional email for forgot password and order notifications
+- Custom analytics widgets in the admin dashboard for revenue, recent orders, and low inventory
 
-### Clone
+## Quick Start
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+1. Install Node.js `18.20.2+` or `20.9.0+` and `pnpm`.
+2. Copy `.env.example` to `.env` and fill in the required service credentials.
+3. Start PostgreSQL and ensure `DATABASE_URI` points to it.
+4. Run `pnpm install`.
+5. Run `pnpm payload migrate` if the database is new.
+6. Run `pnpm dev`.
+7. Open `http://localhost:3000` for the storefront and `http://localhost:3000/admin` for the CMS.
 
-### Development
+Optional local seed:
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+- Run `pnpm db:seed` to load demo content, sample merchandising data, shipping config, and local-only staff accounts.
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+## Useful Commands
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+| Command               | Purpose                                        |
+| --------------------- | ---------------------------------------------- |
+| `pnpm dev`            | Start the development server                   |
+| `pnpm devsafe`        | Clear `.next` and start the development server |
+| `pnpm build`          | Production build                               |
+| `pnpm start`          | Serve the production build                     |
+| `pnpm generate:types` | Regenerate `src/payload-types.ts`              |
+| `pnpm payload`        | Run Payload CLI commands                       |
+| `pnpm db:seed`        | Seed demo data                                 |
+| `pnpm test:int`       | Run integration tests                          |
+| `pnpm test:e2e`       | Run Playwright tests                           |
+| `pnpm test`           | Run all tests                                  |
+| `pnpm typecheck`      | Run TypeScript type checking                   |
 
-#### Docker (Optional)
+## Key Business Capabilities
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+- Variant-aware product catalog with size and color combinations
+- Product inventory tracking at both product and variant level
+- Cart persistence for guests and signed-in users, with guest cart merge support
+- Checkout flow with shipping, tax, coupon discounts, and Paystack payment confirmation
+- Customer account area for profile, addresses, and order history
+- Guest order tracking via order ID and email address
+- CMS-managed home page, header, footer, banners, and block-based marketing pages
+- Coupon system with date limits, usage limits, and category or product restrictions
+- Staff roles for administrators, content managers, and order managers
 
-To do so, follow these steps:
+## Important Project Notes
 
-- Modify the `MONGODB_URI` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URI` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+- The store is hardcoded to `NGN` and Nigerian shipping logic.
+- `src/payload-types.ts` is generated; do not edit it manually.
+- The existing `docker-compose.yml` is still based on the original template and references MongoDB. The live codebase uses PostgreSQL, so update that file before using Docker for local development.
+- Paystack order confirmation and transactional emails depend on valid environment variables and external service access.
 
-## How it works
+## Recommended Reading Order
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
-
-### Collections
-
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
-
-- #### Users (Authentication)
-
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+1. Read [docs/CLIENT_HANDOFF.md](docs/CLIENT_HANDOFF.md) if you need a client-safe overview of what the platform includes and how it is operated.
+2. Read [docs/DEVELOPER_ONBOARDING.md](docs/DEVELOPER_ONBOARDING.md) if you are setting up the project, extending features, or supporting deployments.
+3. Read [COUPON_SYSTEM.md](COUPON_SYSTEM.md) when working on promotions or checkout discounts.
