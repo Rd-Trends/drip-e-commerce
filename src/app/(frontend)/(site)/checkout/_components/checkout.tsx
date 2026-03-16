@@ -73,7 +73,7 @@ export function CheckoutPage() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <LinkButton  href="/shop">Continue Shopping</LinkButton>
+          <LinkButton href="/shop">Continue Shopping</LinkButton>
         </EmptyContent>
       </Empty>
     )
@@ -114,8 +114,9 @@ function CheckoutForm({
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
   const [orderID, setOrderID] = useState<number | null>(null)
   const [showIsConfirmingOrder, setShowIsConfirmingOrder] = useState(false)
+  const customerEmail = user?.email || email
 
-  const canGoToPayment = Boolean((email || user) && shippingAddress)
+  const canGoToPayment = Boolean(customerEmail && shippingAddress)
 
   // Calculate shipping and tax
   const shippingState = shippingAddress?.state
@@ -266,6 +267,7 @@ function CheckoutForm({
             <div className="lg:col-span-1">
               <OrderSummary
                 cart={cart}
+                customerEmail={customerEmail}
                 shippingFee={shippingCalculation?.fee}
                 shippingIsFree={shippingCalculation?.isFree}
                 taxAmount={taxAmount}

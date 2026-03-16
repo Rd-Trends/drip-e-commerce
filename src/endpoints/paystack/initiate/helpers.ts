@@ -11,6 +11,7 @@ type CalculateTotalsParams = {
   cart: Cart
   subtotal: number
   req: PayloadRequest
+  customerEmail: string
   shippingState?: string
   couponIdParam?: string | number
 }
@@ -22,6 +23,7 @@ export async function calculateFees({
   cart,
   subtotal,
   req,
+  customerEmail,
   shippingState,
   couponIdParam,
 }: CalculateTotalsParams) {
@@ -43,6 +45,7 @@ export async function calculateFees({
   // Handle coupon discount
   let discount = 0
   let couponId: number | undefined
+  let couponCode: string | undefined
   let freeShipping = false
 
   if (couponIdParam) {
@@ -51,15 +54,20 @@ export async function calculateFees({
         collection: 'coupons',
         id: couponIdParam,
         depth: 2,
+        overrideAccess: true,
       })
 
       if (coupon) {
-        const userId = req.user?.id || null
-        const validationResult = validateCoupon(coupon, cart, userId)
+        const validationResult = await validateCoupon(coupon, cart, {
+          payload,
+          userId: req.user?.id || null,
+          customerEmail,
+        })
 
         if (validationResult.valid && validationResult.discount) {
           discount = validationResult.discount
           couponId = couponIdParam as number
+          couponCode = coupon.code
         } else {
           payload.logger.warn(`Coupon validation failed: ${validationResult.error}`)
         }
@@ -68,6 +76,7 @@ export async function calculateFees({
         if (validationResult.valid && validationResult.freeShipping) {
           freeShipping = true
           couponId = couponIdParam as number
+          couponCode = coupon.code
         }
       }
     } catch (error) {
@@ -94,6 +103,7 @@ export async function calculateFees({
     discount,
     grandTotal,
     couponId,
+    couponCode,
   }
 }
 
@@ -189,6 +199,8 @@ export async function initializePaystackTransaction({
     callback_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/checkout/confirm`,
     metadata: JSON.stringify({
       cartId: cart.id,
+      customerEmail,
+      customerUserId: req.user?.id,
       billingAddress,
       shippingAddress,
       cartItemsSnapshot: flattenedCart,
@@ -197,6 +209,7 @@ export async function initializePaystackTransaction({
       taxAmount: fees.taxAmount,
       discountAmount: fees.discount,
       couponId: fees.couponId,
+      couponCode: fees.couponCode,
     } as PaystackTransactionMetadata),
   })
 

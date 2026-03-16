@@ -1,10 +1,12 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
+import { useCart } from '@/providers/cart'
 
 export type ValidateCouponRequest = {
   code: string
   cartId: number
+  customerEmail?: string
 }
 
 export type ValidateCouponResponse = {
@@ -26,6 +28,8 @@ export type ValidateCouponResponse = {
  * Hook to validate a coupon code
  */
 export function useValidateCoupon() {
+  const { cartSecret } = useCart()
+
   return useMutation({
     mutationFn: async (data: ValidateCouponRequest): Promise<ValidateCouponResponse> => {
       const response = await fetch('/api/validate-coupon', {
@@ -33,7 +37,10 @@ export function useValidateCoupon() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          ...(cartSecret ? { cartSecret } : {}),
+        }),
         credentials: 'include',
       })
 

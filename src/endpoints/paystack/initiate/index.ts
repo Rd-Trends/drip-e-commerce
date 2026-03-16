@@ -54,6 +54,7 @@ export const initiatePaystackPaymentHandler: Endpoint['handler'] = async (req) =
       cart,
       subtotal,
       req,
+      customerEmail,
       shippingState: data?.shippingAddress?.state,
       couponIdParam: data?.couponId,
     })

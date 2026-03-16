@@ -6,7 +6,7 @@ Fashion-focused e-commerce platform built with Next.js 15, Payload CMS 3, Postgr
 
 - [docs/CLIENT_HANDOFF.md](docs/CLIENT_HANDOFF.md) - business and operations guide for the client team
 - [docs/DEVELOPER_ONBOARDING.md](docs/DEVELOPER_ONBOARDING.md) - technical onboarding guide for engineers
-- [COUPON_SYSTEM.md](COUPON_SYSTEM.md) - focused notes on coupon behavior and implementation
+- [dcos/COUPON_SYSTEM.md](dcos/COUPON_SYSTEM.md) - focused notes on coupon behavior and implementation
 
 ## Platform Summary
 
@@ -71,4 +71,3 @@ Optional local seed:
 
 1. Read [docs/CLIENT_HANDOFF.md](docs/CLIENT_HANDOFF.md) if you need a client-safe overview of what the platform includes and how it is operated.
 2. Read [docs/DEVELOPER_ONBOARDING.md](docs/DEVELOPER_ONBOARDING.md) if you are setting up the project, extending features, or supporting deployments.
-3. Read [COUPON_SYSTEM.md](COUPON_SYSTEM.md) when working on promotions or checkout discounts.

@@ -1,8 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { amountField } from '@payloadcms/plugin-ecommerce'
-import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { publicAccess } from '@/access/public-access'
 import { canManageContent } from '@/access/can-manage-content'
+import { isStaff } from '@/access/is-staff'
 import { currenciesConfig } from '@/lib/constants'
 import type { Coupon } from '@/payload-types'
 
@@ -10,7 +9,7 @@ export const Coupons: CollectionConfig = {
   slug: 'coupons',
   access: {
     create: canManageContent,
-    read: publicAccess,
+    read: isStaff,
     update: canManageContent,
     delete: canManageContent,
   },
@@ -166,42 +165,24 @@ export const Coupons: CollectionConfig = {
           min: 0,
           defaultValue: 1,
           admin: {
-            description: 'Maximum times a single user can use this coupon',
+            description: 'Maximum times a single customer can use this coupon',
             position: 'sidebar',
           },
         },
       ],
     },
     {
-      name: 'usageCount',
-      type: 'number',
-      defaultValue: 0,
-      admin: {
-        description: 'Total number of times this coupon has been used',
-        readOnly: true,
-        position: 'sidebar',
-      },
-      access: {
-        read: adminOnlyFieldAccess,
-        update: adminOnlyFieldAccess,
-      },
-    },
-    {
-      name: 'usedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      hasMany: true,
+      name: 'usageSummary',
+      type: 'ui',
       admin: {
         position: 'sidebar',
-        readOnly: true,
         components: {
-          Field: '/src/collections/coupons/used-by-field',
+          Field: {
+            path: '/src/collections/coupons/usage-summary-field#CouponUsageSummaryField',
+          },
         },
       },
-      access: {
-        read: adminOnlyFieldAccess,
-        update: adminOnlyFieldAccess,
-      },
+      label: 'Usage',
     },
     {
       name: 'applicableCategories',

@@ -1,6 +1,7 @@
 import * as migration_20260105_022523_init from './20260105_022523_init';
 import * as migration_20260111_100336 from './20260111_100336';
 import * as migration_20260111_110044 from './20260111_110044';
+import * as migration_20260315_194041_order_coupon_attribution from './20260315_194041_order_coupon_attribution';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20260111_110044.up,
     down: migration_20260111_110044.down,
-    name: '20260111_110044'
+    name: '20260111_110044',
+  },
+  {
+    up: migration_20260315_194041_order_coupon_attribution.up,
+    down: migration_20260315_194041_order_coupon_attribution.down,
+    name: '20260315_194041_order_coupon_attribution'
   },
 ];

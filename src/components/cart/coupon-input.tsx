@@ -21,6 +21,7 @@ type AppliedCoupon = {
 
 type CouponInputProps = {
   cartId: number
+  customerEmail?: string
   onCouponApplied: (coupon: AppliedCoupon) => void
   onCouponRemoved: () => void
   appliedCoupon: AppliedCoupon | null
@@ -29,6 +30,7 @@ type CouponInputProps = {
 
 export function CouponInput({
   cartId,
+  customerEmail,
   onCouponApplied,
   onCouponRemoved,
   appliedCoupon,
@@ -39,6 +41,11 @@ export function CouponInput({
   const validateCoupon = useValidateCoupon()
 
   const handleApplyCoupon = async () => {
+    if (!customerEmail?.trim()) {
+      setError('Add your email address before applying a coupon')
+      return
+    }
+
     if (!couponCode.trim()) {
       setError('Please enter a coupon code')
       return
@@ -46,7 +53,7 @@ export function CouponInput({
     setError(null)
 
     validateCoupon.mutate(
-      { code: couponCode.trim(), cartId },
+      { code: couponCode.trim(), cartId, customerEmail },
       {
         onSuccess: (result) => {
           if (result.valid && result.coupon && (result.discount || result.freeShipping)) {
@@ -143,19 +150,26 @@ export function CouponInput({
             setError(null)
           }}
           onKeyDown={handleKeyPress}
-          disabled={disabled || validateCoupon.isPending}
+          disabled={disabled || validateCoupon.isPending || !customerEmail?.trim()}
           className="font-mono"
         />
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             variant="secondary"
             onClick={handleApplyCoupon}
-            disabled={disabled || !couponCode.trim() || validateCoupon.isPending}
+            disabled={
+              disabled || !couponCode.trim() || validateCoupon.isPending || !customerEmail?.trim()
+            }
           >
             {validateCoupon.isPending ? 'Validating...' : 'Apply'}
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
+      {!customerEmail?.trim() && (
+        <p className="text-xs text-muted-foreground">
+          Add your email address before applying a coupon.
+        </p>
+      )}
       {error && (
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="size-4" />

@@ -240,6 +240,11 @@ export interface Order {
   };
   customer?: (number | null) | User;
   customerEmail?: string | null;
+  coupon?: (number | null) | Coupon;
+  /**
+   * Immutable coupon code captured when the order was placed
+   */
+  couponCode?: string | null;
   transactions?: (number | Transaction)[] | null;
   status?: ('processing' | 'shipped' | 'completed' | 'cancelled' | 'refunded') | null;
   currency?: 'NGN' | null;
@@ -450,6 +455,71 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons".
+ */
+export interface Coupon {
+  id: number;
+  /**
+   * Unique coupon code (e.g., SAVE20, NEWYEAR2025). Will be converted to uppercase.
+   */
+  code: string;
+  /**
+   * Type of discount to apply
+   */
+  type: 'percentage' | 'fixed' | 'free-shipping';
+  /**
+   * Discount value (percentage: 1-100, fixed: amount in Naira)
+   */
+  value?: number | null;
+  /**
+   * Fixed discount amount in Naira
+   */
+  fixedAmount?: number | null;
+  /**
+   * Minimum cart subtotal required to use this coupon
+   */
+  minPurchaseAmount?: number | null;
+  /**
+   * Maximum discount amount (for percentage coupons)
+   */
+  maxDiscountAmount?: number | null;
+  /**
+   * Date and time when coupon becomes valid
+   */
+  validFrom: string;
+  /**
+   * Date and time when coupon expires
+   */
+  validUntil: string;
+  /**
+   * Enable or disable this coupon
+   */
+  active?: boolean | null;
+  /**
+   * Total number of times this coupon can be used (leave empty for unlimited)
+   */
+  usageLimit?: number | null;
+  /**
+   * Maximum times a single customer can use this coupon
+   */
+  maxUsesPerUser?: number | null;
+  /**
+   * Restrict coupon to specific categories (leave empty for all products)
+   */
+  applicableCategories?: (number | Category)[] | null;
+  /**
+   * Restrict coupon to specific products (leave empty for all products)
+   */
+  applicableProducts?: (number | Product)[] | null;
+  /**
+   * Internal notes or public description for this coupon
+   */
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Payment transactions
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -579,76 +649,6 @@ export interface Address {
     | 'yobe'
     | 'zamfara';
   country: 'NG';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "coupons".
- */
-export interface Coupon {
-  id: number;
-  /**
-   * Unique coupon code (e.g., SAVE20, NEWYEAR2025). Will be converted to uppercase.
-   */
-  code: string;
-  /**
-   * Type of discount to apply
-   */
-  type: 'percentage' | 'fixed' | 'free-shipping';
-  /**
-   * Discount value (percentage: 1-100, fixed: amount in Naira)
-   */
-  value?: number | null;
-  /**
-   * Fixed discount amount in Naira
-   */
-  fixedAmount?: number | null;
-  /**
-   * Minimum cart subtotal required to use this coupon
-   */
-  minPurchaseAmount?: number | null;
-  /**
-   * Maximum discount amount (for percentage coupons)
-   */
-  maxDiscountAmount?: number | null;
-  /**
-   * Date and time when coupon becomes valid
-   */
-  validFrom: string;
-  /**
-   * Date and time when coupon expires
-   */
-  validUntil: string;
-  /**
-   * Enable or disable this coupon
-   */
-  active?: boolean | null;
-  /**
-   * Total number of times this coupon can be used (leave empty for unlimited)
-   */
-  usageLimit?: number | null;
-  /**
-   * Maximum times a single user can use this coupon
-   */
-  maxUsesPerUser?: number | null;
-  /**
-   * Total number of times this coupon has been used
-   */
-  usageCount?: number | null;
-  usedBy?: (number | User)[] | null;
-  /**
-   * Restrict coupon to specific categories (leave empty for all products)
-   */
-  applicableCategories?: (number | Category)[] | null;
-  /**
-   * Restrict coupon to specific products (leave empty for all products)
-   */
-  applicableProducts?: (number | Product)[] | null;
-  /**
-   * Internal notes or public description for this coupon
-   */
-  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1200,8 +1200,6 @@ export interface CouponsSelect<T extends boolean = true> {
   active?: T;
   usageLimit?: T;
   maxUsesPerUser?: T;
-  usageCount?: T;
-  usedBy?: T;
   applicableCategories?: T;
   applicableProducts?: T;
   description?: T;
@@ -1378,6 +1376,8 @@ export interface OrdersSelect<T extends boolean = true> {
       };
   customer?: T;
   customerEmail?: T;
+  coupon?: T;
+  couponCode?: T;
   transactions?: T;
   status?: T;
   currency?: T;

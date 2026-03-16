@@ -88,6 +88,25 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'coupon',
+      type: 'relationship',
+      relationTo: 'coupons',
+      label: 'Coupon',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'couponCode',
+      type: 'text',
+      label: 'Coupon Code Snapshot',
+      admin: {
+        description: 'Immutable coupon code captured when the order was placed',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'transactions',
       type: 'relationship',
       relationTo: 'transactions',

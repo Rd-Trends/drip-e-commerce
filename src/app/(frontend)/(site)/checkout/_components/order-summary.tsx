@@ -20,6 +20,7 @@ type AppliedCoupon = {
 
 interface OrderSummaryProps {
   cart: Cart
+  customerEmail?: string
   shippingFee?: number
   shippingIsFree?: boolean
   taxAmount?: number
@@ -33,6 +34,7 @@ interface OrderSummaryProps {
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
   cart,
+  customerEmail,
   shippingFee,
   shippingIsFree,
   taxAmount,
@@ -167,6 +169,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           <>
             <CouponInput
               cartId={cart.id}
+              customerEmail={customerEmail}
               onCouponApplied={onCouponApplied}
               onCouponRemoved={onCouponRemoved}
               appliedCoupon={appliedCoupon || null}

@@ -11,6 +11,13 @@ import { revalidateTag } from 'next/cache'
 
 import { queryKeys } from '@/lib/query-keys'
 
+const normalizeCustomerEmail = (email?: string | null) => {
+  if (!email) return null
+
+  const normalizedEmail = email.trim().toLowerCase()
+  return normalizedEmail.length > 0 ? normalizedEmail : null
+}
+
 type VerifyPaymentParams = {
   reference: string
   req: PayloadRequest
@@ -169,48 +176,6 @@ export async function updateInventory({
   revalidateTag(queryKeys.revalidation.categories)
 }
 
-/**
- * Tracks coupon usage after successful order
- */
-export async function trackCouponUsage(
-  payload: BasePayload,
-  couponId: number,
-  userId?: number | null,
-): Promise<void> {
-  try {
-    const coupon = await payload.findByID({
-      collection: 'coupons',
-      id: couponId,
-    })
-
-    if (!coupon) return
-
-    // Increment usage count
-    const updateData: Partial<Coupon> = {
-      usageCount: (coupon.usageCount || 0) + 1,
-    }
-
-    // Add user to usedBy list if userId provided
-    if (userId) {
-      const usedBy = coupon.usedBy || []
-      const usedByIds = usedBy.map((user: User | number) =>
-        typeof user === 'object' ? user.id : user,
-      )
-
-      // Add user if not already in the list (for tracking multiple uses)
-      updateData.usedBy = [...usedByIds, userId]
-    }
-
-    await payload.update({
-      collection: 'coupons',
-      id: couponId,
-      data: updateData,
-    })
-  } catch (error) {
-    payload.logger.error(error, 'Error tracking coupon usage')
-  }
-}
-
 export async function sendOrderConfirmationEmail(order: Order, payload: BasePayload) {
   try {
     const orderManagers = await payload.find({
@@ -311,8 +276,22 @@ export async function processOrderConfirmation({
     }
   }
 
-  // Extract customer email
-  const finalCustomerEmail = customerEmail || user?.email
+  const resolvedCustomerId =
+    user?.id ||
+    metadata.customerUserId ||
+    (transaction.customer
+      ? typeof transaction.customer === 'object'
+        ? transaction.customer.id
+        : transaction.customer
+      : null)
+
+  const finalCustomerEmail = normalizeCustomerEmail(
+    customerEmail || metadata.customerEmail || transaction.customerEmail || user?.email,
+  )
+
+  if (!resolvedCustomerId && !finalCustomerEmail) {
+    throw new Error('Customer identity is missing from payment confirmation metadata')
+  }
 
   // Create order from verified payment
   // @ts-ignore – Type issue with create method (don't have a draft field)
@@ -325,7 +304,11 @@ export async function processOrderConfirmation({
       shippingFee: metadata.shippingAmount || 0,
       subtotal: metadata.subtotalAmount || paymentIntent.data.amount,
       discount: metadata.discountAmount || 0,
-      ...(user ? { customer: user.id } : { customerEmail: finalCustomerEmail }),
+      ...(resolvedCustomerId
+        ? { customer: resolvedCustomerId }
+        : { customerEmail: finalCustomerEmail }),
+      ...(metadata.couponId ? { coupon: metadata.couponId } : {}),
+      ...(metadata.couponCode ? { couponCode: metadata.couponCode } : {}),
       items: metadata.cartItemsSnapshot,
       shippingAddress: metadata.shippingAddress,
       status: 'processing',
@@ -348,11 +331,6 @@ export async function processOrderConfirmation({
     transactionId: transaction.id,
     req,
   })
-
-  // Track coupon usage if applicable
-  if (metadata.couponId) {
-    await trackCouponUsage(payload, metadata.couponId, user?.id || null)
-  }
 
   // Send order confirmation emails
   await sendOrderConfirmationEmail(order, payload)

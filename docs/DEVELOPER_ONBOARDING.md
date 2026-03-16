@@ -227,11 +227,6 @@ Notable routes:
 - Use `pnpm typecheck` after schema or hook changes
 - Run `pnpm generate:types` whenever collection or global schemas change
 
-## Known Caveats
-
-- `docker-compose.yml` still reflects the older template and references MongoDB. The active project uses PostgreSQL, so do not assume Docker is production-ready in its current state.
-- The environment template includes `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`, but the current payment flow relies on server-generated Paystack access codes rather than direct usage of that variable in app code.
-- Several support pages are expected by navigation and footer links. Make sure corresponding CMS pages are published in each environment.
 
 ## Good First Reads in the Codebase
 
