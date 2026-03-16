@@ -1,4 +1,4 @@
-import { Coupon, Order, User } from '@/payload-types'
+import { Order, User } from '@/payload-types'
 import { BasePayload, PayloadRequest } from 'payload'
 import Paystack from '@paystack/paystack-sdk'
 import { PaystackTransactionMetadata } from '../shared/types'
@@ -8,7 +8,6 @@ import { USER_ROLES } from '@/lib/constants'
 import { AdminOrderNotificationEmail } from '@/lib/emails/admin-order-notification'
 import { Resend } from 'resend'
 import { revalidateTag } from 'next/cache'
-
 import { queryKeys } from '@/lib/query-keys'
 
 const normalizeCustomerEmail = (email?: string | null) => {

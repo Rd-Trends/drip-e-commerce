@@ -4,6 +4,15 @@
 
 This document explains what the Drip platform includes, what the client team can manage from the admin panel, what external services the business depends on, and what should be checked regularly after launch.
 
+## Important URLs
+
+- Production storefront: `https://drip.ng/`
+- Production admin panel: `https://drip.ng/admin`
+- Staging environment: `https://dev.drip.ng/`
+- Staging admin panel: `https://dev.drip.ng/admin`
+- Coolify dashboard: `https://coolify.drip.ng/`
+- Private GitHub repository: `https://github.com/drip-fashion/drip-fashion`
+
 ## What Has Been Delivered
 
 Drip is a fashion e-commerce website with a connected admin panel. It supports browsing products, selecting variants such as size and color, adding items to cart, applying coupon codes, checking out through Paystack, receiving order emails, and tracking orders after purchase.
@@ -106,14 +115,38 @@ This allows the client to separate catalog work from fulfillment work without gi
 
 The project currently depends on the following services and credentials:
 
-- PostgreSQL database
+- Neon PostgreSQL database
 - Paystack account and API secret
 - Resend account and API key
-- S3-compatible media storage credentials
-- Hosting environment for the Next.js app and Payload CMS
-- Domain and DNS ownership for the storefront URL
+- Cloudflare R2 media storage credentials
+- Hostinger hosting environment for the Next.js app and Payload CMS
+- Coolify project and deployment management access at `https://coolify.drip.ng/`
+- Private GitHub repository access for source code and change management at `https://github.com/drip-fashion/drip-fashion`
+- GO54 domain and DNS ownership for the storefront URLs
 
 If any of these are changed, expired, or revoked, parts of the platform will stop working.
+
+## Account and Credential Note
+
+Most service passwords and login details are saved in Google Password Manager. If access is needed for Neon, Cloudflare R2, Resend, Hostinger, Coolify, or GitHub, the first place to check should be the client Google account password manager entries.
+
+## Deployment and Configuration Notes
+
+- Source code is stored in the private GitHub repository.
+- Deployments are managed through Coolify.
+- The live customer site runs on `https://drip.ng/`.
+- The staging environment runs on `https://dev.drip.ng/`.
+- The admin panel is available under `/admin` on both production and staging.
+
+When moving hosting, changing environments, or handing over infrastructure, the following configuration items must be preserved correctly:
+
+- Public app URL for each environment
+- Payload secret
+- Neon database connection string
+- Paystack secret key and webhook configuration
+- Resend API key and webhook configuration
+- Cloudflare R2 bucket configuration and access credentials
+- GO54-managed domain and DNS records for `drip.ng` and `dev.drip.ng`
 
 ## Day-to-Day Operating Checklist
 
@@ -127,19 +160,6 @@ Use this as a simple operational routine:
 6. Confirm shipping fees and tax settings still match business policy.
 7. Monitor payment and email service health if customers report issues.
 
-## Recommended Ownership Transfer Checklist
-
-Before the project is fully handed over, confirm the client has access to:
-
-1. Hosting provider account
-2. Domain registrar and DNS provider
-3. PostgreSQL database credentials
-4. Paystack dashboard and secret keys
-5. Resend dashboard and API keys
-6. S3 or object storage dashboard and credentials
-7. Admin user account with `Administrator` role
-8. Source code repository and deployment pipeline, if applicable
-
 ## Known Operational Notes
 
 - The store is designed around Nigerian Naira and Nigerian shipping rules.
@@ -151,5 +171,3 @@ Before the project is fully handed over, confirm the client has access to:
 ## Suggested Next Business Steps
 
 - Create a short internal SOP for how your team updates products, fulfills orders, and handles refunds.
-- Decide who owns each external service account so credentials do not become orphaned.
-- Set a schedule for reviewing promotions, inventory, and transactional email performance.

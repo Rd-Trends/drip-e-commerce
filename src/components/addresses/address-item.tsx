@@ -3,7 +3,7 @@
 import React from 'react'
 import type { Address } from '@/payload-types'
 import { CreateAddressModal } from '@/components/addresses/create-address-modal'
-import { getStateLabel } from '@/lib/nigerian-states'
+import { getCountryLabel, getStateLabel } from '@/lib/nigerian-states'
 import { Skeleton } from '@/components/ui/skeleton'
 
 type Props = {
@@ -51,7 +51,9 @@ export const AddressItem: React.FC<Props> = ({
         <p className="font-mono">
           {address.city}, {address.state ? getStateLabel(address.state) || address.state : ''}
         </p>
-        <p className="font-mono">{address.country}</p>
+        <p className="font-mono">
+          {address.country ? getCountryLabel(address.country) : 'Nigeria'}
+        </p>
       </div>
 
       {!hideActions && address.id && (

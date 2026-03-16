@@ -50,6 +50,13 @@ export function getStateLabel(value: string): string | undefined {
   return NIGERIAN_STATES.find((state) => state.value === value)?.label
 }
 
+export function getCountryLabel(value: string): string {
+  if (value.toLowerCase() === 'ng' || value.toLowerCase() === 'nigeria') {
+    return 'Nigeria'
+  }
+  return value
+}
+
 /**
  * Normalize state name for matching (handles free-text variations)
  * Used for backward compatibility with existing free-text state fields

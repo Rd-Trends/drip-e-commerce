@@ -50,7 +50,7 @@ export const AddressForm: React.FC<Props> = ({
   skipSubmission,
 }) => {
   const form = useForm<AddressFormValues>({
-    defaultValues: initialData,
+    defaultValues: { ...initialData, country: initialData?.country || 'NG' },
     mode: 'all',
   })
 
@@ -307,7 +307,7 @@ export const AddressForm: React.FC<Props> = ({
                         <ComboboxEmpty>No states found.</ComboboxEmpty>
                         <ComboboxList>
                           {(item: (typeof NIGERIAN_STATES)[number]) => (
-                            <ComboboxItem key={item.value} value={item.value}>
+                            <ComboboxItem key={item.label} value={item.value}>
                               {item.label}
                             </ComboboxItem>
                           )}
@@ -319,7 +319,7 @@ export const AddressForm: React.FC<Props> = ({
                 )}
               />
             </div>
-
+            {/* 
             <Controller
               name="country"
               control={form.control}
@@ -344,7 +344,7 @@ export const AddressForm: React.FC<Props> = ({
                       <ComboboxEmpty>No countries found.</ComboboxEmpty>
                       <ComboboxList>
                         {(item: (typeof supportedCountries)[number]) => (
-                          <ComboboxItem key={item.value} value={item.value}>
+                          <ComboboxItem key={item.label} value={item.value}>
                             {item.label}
                           </ComboboxItem>
                         )}
@@ -354,7 +354,7 @@ export const AddressForm: React.FC<Props> = ({
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
-            />
+            /> */}
           </FieldGroup>
         </div>
       </div>
