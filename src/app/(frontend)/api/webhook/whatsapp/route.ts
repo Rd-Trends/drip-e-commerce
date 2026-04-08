@@ -113,8 +113,9 @@ async function processSession(params: {
   payload: BasePayload
   sessionId: number
   phone: string
+  req: Request
 }): Promise<void> {
-  const { payload, sessionId, phone } = params
+  const { payload, sessionId, phone, req } = params
 
   try {
     // 1. Mark processing
@@ -122,6 +123,7 @@ async function processSession(params: {
       collection: 'whatsapp-sessions',
       id: sessionId,
       data: { status: 'processing' },
+      req,
     })
 
     await sendTextMessage(phone, '⏳ Processing your product, please wait…')
@@ -162,6 +164,7 @@ async function processSession(params: {
         collection: 'whatsapp-sessions',
         id: sessionId,
         data: { status: 'failed' },
+        req,
       })
       return
     }
@@ -206,6 +209,7 @@ async function processSession(params: {
                             label,
                             value: label.toLowerCase(),
                           },
+                          req,
                         })
                         .then((doc) => doc.id),
                     ),
@@ -244,6 +248,7 @@ async function processSession(params: {
           image: images[0]?.id ?? null,
         },
       },
+      req,
     })
 
     // 9. Create variant docs
@@ -270,6 +275,7 @@ async function processSession(params: {
               costPrice: costPrice,
               _status: 'published',
             },
+            req,
           }),
         ),
       )
@@ -284,6 +290,7 @@ async function processSession(params: {
             collection: 'media',
             id: img.id,
             data: { alt: img.altText },
+            req,
           }),
         ),
     )
@@ -293,6 +300,7 @@ async function processSession(params: {
       collection: 'whatsapp-sessions',
       id: sessionId,
       data: { status: 'done' },
+      req,
     })
 
     // 12. Send success message
@@ -350,8 +358,9 @@ async function handleTextMessage(params: {
   phone: string
   senderName: string
   textBody: string
+  req: Request
 }): Promise<void> {
-  const { payload, phone, senderName, textBody } = params
+  const { payload, phone, senderName, textBody, req } = params
   const trimmed = textBody.trim()
   const isKeyword = CONFIRMATION_RE.test(trimmed)
 
@@ -367,7 +376,7 @@ async function handleTextMessage(params: {
       return
     }
     // Fire-and-forget — processing runs in background
-    processSession({ payload, sessionId: session.id, phone }).catch((err) =>
+    processSession({ payload, sessionId: session.id, phone, req }).catch((err) =>
       console.error(`[whatsapp] processSession error:`, err),
     )
     return
@@ -380,6 +389,7 @@ async function handleTextMessage(params: {
       collection: 'whatsapp-sessions',
       id: session.id,
       data: { messages: [...existing, { type: 'text', text: trimmed }] },
+      req,
     })
   } else {
     await payload.create({
@@ -390,6 +400,7 @@ async function handleTextMessage(params: {
         status: 'pending',
         messages: [{ type: 'text', text: trimmed }],
       },
+      req,
     })
     await sendTextMessage(
       phone,
@@ -411,8 +422,9 @@ async function handleImageMessage(params: {
   imageId: string
   mimeType: string
   caption?: string
+  req: Request
 }): Promise<void> {
-  const { payload, phone, senderName, imageId, mimeType, caption } = params
+  const { payload, phone, senderName, imageId, mimeType, caption, req } = params
 
   // 1. Download and upload image
   const imageBuffer = await downloadWhatsAppImage(imageId, mimeType)
@@ -430,6 +442,7 @@ async function handleImageMessage(params: {
       name: `whatsapp-${Date.now()}.${mimeType.split('/').pop()}`,
       size: imageBuffer.length,
     },
+    req,
   })
 
   if (!mediaDoc.id) {
@@ -512,7 +525,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // Schedule the webhook processing in the background after the response is sent
   after(async () => {
-    await processWebhook(body)
+    await processWebhook(body, request)
   })
 
   // Return 200 immediately so Meta doesn't time out or retry
@@ -522,7 +535,7 @@ export async function POST(request: Request): Promise<Response> {
 // ─── Background Processing ────────────────────────────────────────────────────
 
 /** Processes all inbound messages from a webhook payload. Runs after the 200 response. */
-async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
+async function processWebhook(body: WhatsAppWebhookPayload, req: Request): Promise<void> {
   const payload = await getPayload({ config })
 
   for (const entry of body.entry ?? []) {
@@ -544,7 +557,7 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
         const senderName = contact.profile.name
 
         if (message.type === 'text' && message.text?.body) {
-          handleTextMessage({ payload, phone, senderName, textBody: message.text.body }).catch(
+          handleTextMessage({ payload, phone, senderName, textBody: message.text.body, req }).catch(
             (err) => payload.logger.error(err, `[whatsapp] unhandled text error for ${message.id}`),
           )
         } else if (message.type === 'image' && message.image?.id) {
@@ -555,6 +568,7 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
             imageId: message.image.id,
             mimeType: message.image.mime_type ?? 'image/jpeg',
             caption: message.image.caption,
+            req,
           }).catch((err) =>
             payload.logger.error(err, `[whatsapp] unhandled image error for ${message.id}`),
           )
