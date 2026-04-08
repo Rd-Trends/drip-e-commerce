@@ -37,6 +37,7 @@ import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
 import { Pages } from './collections/pages'
+import { WhatsappSessions } from '@/collections/whatsapp-sessions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -90,8 +91,10 @@ export default buildConfig({
     Orders,
     Transactions,
     Pages,
+    WhatsappSessions,
   ],
   globals: [Header, Footer, Home, ShippingConfig, Banner],
+
   i18n: {
     translations: {
       en: ecommerceTranslationsEN,

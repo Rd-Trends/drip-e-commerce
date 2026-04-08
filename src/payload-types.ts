@@ -80,6 +80,7 @@ export interface Config {
     orders: Order;
     transactions: Transaction;
     pages: Page;
+    'whatsapp-sessions': WhatsappSession;
     forms: Form;
     'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
@@ -114,6 +115,7 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    'whatsapp-sessions': WhatsappSessionsSelect<false> | WhatsappSessionsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -1004,6 +1006,32 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-sessions".
+ */
+export interface WhatsappSession {
+  id: number;
+  phone: string;
+  senderName?: string | null;
+  status: 'pending' | 'processing' | 'done' | 'failed';
+  /**
+   * Chronological log of all messages received in this session
+   */
+  messages?:
+    | {
+        type: 'text' | 'image';
+        /**
+         * Message text content or image caption
+         */
+        text?: string | null;
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1094,6 +1122,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'whatsapp-sessions';
+        value: number | WhatsappSession;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1534,6 +1566,25 @@ export interface FormBlockSelect<T extends boolean = true> {
   introContent?: T;
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-sessions_select".
+ */
+export interface WhatsappSessionsSelect<T extends boolean = true> {
+  phone?: T;
+  senderName?: T;
+  status?: T;
+  messages?:
+    | T
+    | {
+        type?: T;
+        text?: T;
+        image?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
