@@ -225,13 +225,16 @@ async function handleImageMessage(params: {
     return
   }
 
+  const extension = getImageExtension(mimeType)
+
+  // 2. Upload to Payload media collection with a neutral SEO-safe base name
   const mediaDoc = await payload.create({
     collection: 'media',
-    data: { alt: caption || 'WhatsApp product image' },
+    data: { alt: 'Drip fashion product image' },
     file: {
       data: imageBuffer,
       mimetype: mimeType,
-      name: `whatsapp-${Date.now()}.${mimeType.split('/').pop()}`,
+      name: `drip-fashion-product-${Date.now()}.${extension}`,
       size: imageBuffer.length,
     },
     req,
@@ -242,14 +245,14 @@ async function handleImageMessage(params: {
     return
   }
 
-  // 2. Build message entry — image reference + optional caption as text
+  // 3. Build message entry — image reference + optional caption as text
   const imageMessage = {
     type: 'image' as const,
     text: caption || undefined,
     image: mediaDoc.id,
   }
 
-  // 3. Append to pending session or open a new one
+  // 4. Append to pending session or open a new one
   const session = await findPendingSession(payload, phone, req)
 
   if (session) {
@@ -291,10 +294,9 @@ async function handleImageMessage(params: {
  *   4. Fetch available categories for AI context
  *   5. Run AI extraction (parseProductFromMessage)
  *   6. Create any new variant options in parallel
- *   7. Create draft product
+ *   7. Create draft product (reuses the saved media docs + slug)
  *   8. Create variant docs (cartesian product of option combos)
- *   9. Backfill media alt-text from AI suggestions
- *  10. Mark session `done` and send a rich summary to the user
+ *   9. Mark session `done` and send a rich summary to the user
  *
  * Called fire-and-forget when the user sends a confirmation keyword.
  */
@@ -419,12 +421,13 @@ async function processSession(params: {
 
     const variantTypeIds = [...new Set(variantMap.map((v) => v.typeId))]
 
-    // 8. Create the draft product
+    // 8. Create the draft product using the already-saved media docs
     const product = await payload.create({
       collection: 'products',
       draft: true,
       data: {
         title: parsed.title,
+        slug: parsed.slug,
         description: textToLexical(parsed.description),
         priceInNGN: price,
         priceInNGNEnabled: true,
@@ -441,7 +444,7 @@ async function processSession(params: {
         meta: {
           title: parsed.title,
           description: parsed.metaDescription,
-          image: images[0]?.id ?? null,
+          image: parsed.images[0]?.id ?? null,
         },
       },
       req,
@@ -475,22 +478,15 @@ async function processSession(params: {
       )
     }
 
-    // 10. Backfill alt-text and filenames on uploaded images (best-effort, non-blocking)
+    // 10. Backfill alt text on uploaded images without changing filenames
     await Promise.allSettled(
       parsed.images.map((img) => {
-        const updateData: Record<string, unknown> = {}
-        if (img.altText) updateData.alt = img.altText
-        if (img.imageName) {
-          // Get the original extension from the session image
-          const originalMedia = sessionImages.find((si) => si.id === img.id)
-          const ext = originalMedia?.filename?.split('.').pop() ?? 'jpg'
-          updateData.filename = `${img.imageName}.${ext}`
-        }
-        if (Object.keys(updateData).length === 0) return Promise.resolve()
+        if (!img.altText?.trim()) return Promise.resolve()
+
         return payload.update({
           collection: 'media',
           id: img.id,
-          data: updateData,
+          data: { alt: img.altText.trim() },
           req,
         })
       }),
@@ -608,6 +604,27 @@ function textToLexical(text: string) {
       indent: 0,
       version: 1,
     },
+  }
+}
+
+function getImageExtension(mimeType: string): string {
+  switch (mimeType) {
+    case 'image/jpeg':
+      return 'jpg'
+    case 'image/png':
+      return 'png'
+    case 'image/webp':
+      return 'webp'
+    case 'image/gif':
+      return 'gif'
+    default:
+      return (
+        mimeType
+          .split('/')
+          .pop()
+          ?.replace(/[^a-z0-9]/gi, '')
+          .toLowerCase() || 'jpg'
+      )
   }
 }
 
