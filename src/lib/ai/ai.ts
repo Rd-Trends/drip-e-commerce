@@ -67,7 +67,7 @@ const productSchema = z.object({
           .number()
           .nullable()
           .describe(
-            'If this image shows a specific color variant, the variant option ID from getVariantOptions results. null if not color-specific, no color variants, or the color is a newly created option (from newOptionLabels).',
+            'If this image shows a specific color variant, the real variant option ID to link to that image. Null if not color-specific or if the image shows multiple colorways.',
           ),
       }),
     )
@@ -88,18 +88,15 @@ const productSchema = z.object({
         variantTypeName: z
           .string()
           .describe('Display name of the variant type, e.g. "Size". Copied from tool results.'),
-        existingOptions: z
+        options: z
           .array(
             z.object({
               id: z.number().describe('ID from getVariantOptions results.'),
               label: z.string().describe('Option label, e.g. "XL". Copied from tool results.'),
             }),
           )
-          .describe('Existing variant options picked directly from getVariantOptions results.'),
-        newOptionLabels: z
-          .array(z.string())
           .describe(
-            'Custom option labels only when the user explicitly requests options not in the database.',
+            'Final variant options for this type. Every option must already have a real ID from getVariantOptions or createVariantOption.',
           ),
         inventoryPerOption: z
           .number()
@@ -193,8 +190,7 @@ Your per-image responsibilities are:
 
 When Color is added as a variant:
   - Inspect each image to determine which color it primarily shows.
-  - Set colorVariantOptionId to the matching option's ID from your getVariantOptions results (you already have these IDs).
-  - If the color is a newly created option (from newOptionLabels, not yet in the DB), set colorVariantOptionId to null.
+  - Set colorVariantOptionId to the matching real option ID from getVariantOptions or createVariantOption.
   - If an image shows multiple colorways or is not color-specific (e.g. a group shot), set it to null.
 
 When Color is NOT a variant, always set colorVariantOptionId to null.
@@ -227,7 +223,8 @@ VARIANT SELECTION — READ THIS CAREFULLY
 
 STEP 1 — Call getVariantTypes to see every variant dimension in the database.
 STEP 2 — Call getVariantOptions for each relevant type before selecting options.
-STEP 3 — Build selectedVariants using ONLY IDs returned by those tools.
+STEP 3 — If a needed option does not exist, call createVariantOption to create it and get its real ID.
+STEP 4 — Build selectedVariants using ONLY real IDs returned by getVariantOptions or createVariantOption.
 
 ─── WHICH VARIANTS TO ADD (DEFAULT LOGIC) ───
 
@@ -259,7 +256,7 @@ COLOR — add ONLY when the product clearly comes in multiple distinct colorways
   - The Color label must be the DISTINGUISHING color only, not the full colorway description.
     Example: white shirt with red stripes vs white shirt with black stripes → options are "Red" and "Black", not "White/Red" or "White with Black Stripes".
   - Match detected colors to existing DB options by label.
-    Only use newOptionLabels if the color genuinely does not exist in the DB.
+  - If a needed color does not exist, call createVariantOption immediately so you have the real ID before finalizing the response.
 
 ─── RULES — NEVER DO THESE ───
 
@@ -269,7 +266,7 @@ COLOR — add ONLY when the product clearly comes in multiple distinct colorways
 ✗ Do NOT add Color when the product has only one colorway visible across all images.
 ✗ Do NOT add Size for non-sized "other" products (bags, caps, jewelry, watches) unless the user says so.
 ✗ Do NOT use waist sizes for two-piece sets — they always use clothing sizes.
-✗ Do NOT invent variant type IDs or option IDs — only use values returned by getVariantTypes / getVariantOptions.
+✗ Do NOT invent variant type IDs or option IDs — only use values returned by getVariantTypes / getVariantOptions / createVariantOption.
 
 ─── EXAMPLES ───
 
@@ -277,7 +274,7 @@ EXAMPLE 1 — Shirt, single color:
   Images: one image of a plain navy blue polo shirt.
   User: "Navy Blue Polo Shirt 15,000"
   → productType: "shirt"
-  → selectedVariants: [{ variantType: Size, existingOptions: [L, XL, XXL from DB] }]
+  → selectedVariants: [{ variantType: Size, options: [L, XL, XXL with real IDs] }]
   ✓ No Color (only one colorway visible).
 
 EXAMPLE 2 — Shirt, two colors in one image:
@@ -285,8 +282,8 @@ EXAMPLE 2 — Shirt, two colors in one image:
   User: "Striped Oxford Shirt 12,000"
   → productType: "shirt"
   → selectedVariants: [
-      { variantType: Size, existingOptions: [L, XL, XXL from DB] },
-      { variantType: Color, existingOptions: [Red, Black matched from DB], newOptionLabels: [] }
+      { variantType: Size, options: [L, XL, XXL with real IDs] },
+      { variantType: Color, options: [Red, Black with real IDs] }
     ]
   ✓ Color options are "Red" and "Black" — the shared white base is NOT listed.
 
@@ -294,7 +291,7 @@ EXAMPLE 3 — Trousers, single color:
   Images: one image of black cargo trousers.
   User: "Black Cargo Pants 18,500"
   → productType: "trousers"
-  → selectedVariants: [{ variantType: Size, existingOptions: [28, 30, 32, 34, 36, 38, 40, 42 from DB] }]
+  → selectedVariants: [{ variantType: Size, options: [28, 30, 32, 34, 36, 38, 40, 42 with real IDs] }]
   ✓ Waist sizes used. No Color (single colorway).
 
 EXAMPLE 4 — Trousers, multiple colors across images:
@@ -302,15 +299,15 @@ EXAMPLE 4 — Trousers, multiple colors across images:
   User: "Men's Slim Chinos"
   → productType: "trousers"
   → selectedVariants: [
-      { variantType: Size, existingOptions: [28, 30, 32, 34, 36, 38, 40, 42 from DB] },
-      { variantType: Color, existingOptions: matched from DB, newOptionLabels: ["Olive", "Khaki"] if not in DB }
+      { variantType: Size, options: [28, 30, 32, 34, 36, 38, 40, 42 with real IDs] },
+      { variantType: Color, options: [matched or newly created Olive/Khaki options with real IDs] }
     ]
 
 EXAMPLE 5 — Shoes, single color:
   Images: one image of white sneakers.
   User: "Classic White Sneakers 25,000"
   → productType: "other"
-  → selectedVariants: [{ variantType: Size, existingOptions: [38, 39, 40, 41, 42, 43, 44, 45 from DB] }]
+  → selectedVariants: [{ variantType: Size, options: [38, 39, 40, 41, 42, 43, 44, 45 with real IDs] }]
   ✓ Shoe sizes used. No Color.
 
 EXAMPLE 6 — Bag (non-sized other):
@@ -322,8 +319,8 @@ EXAMPLE 6 — Bag (non-sized other):
 
 EXAMPLE 7 — User explicitly requests a non-default variant:
   User: "Add S, M, L and also add a Slim Fit option"
-  → Add Size with [S, M, L from DB].
-  → Also add Fit (if it exists in DB) with "Slim Fit" as existingOptions or newOptionLabels.
+  → Add Size with [S, M, L as real options].
+  → Also add Fit with "Slim Fit" as a real option ID, creating it first if needed.
   ✓ This is the ONLY scenario where a non-Size/Color variant type is added.
 
 EXAMPLE 8 — Hoodie, three colors across images:
@@ -331,15 +328,15 @@ EXAMPLE 8 — Hoodie, three colors across images:
   User: "Premium Fleece Hoodie 22,000"
   → productType: "shirt"
   → selectedVariants: [
-      { variantType: Size, existingOptions: [L, XL, XXL from DB] },
-      { variantType: Color, existingOptions: [Grey, Black, Burgundy matched from DB] }
+      { variantType: Size, options: [L, XL, XXL with real IDs] },
+      { variantType: Color, options: [Grey, Black, Burgundy with real IDs] }
     ]
 
 EXAMPLE 9 — Two-piece tracksuit, single color:
   Images: one image of a matching grey tracksuit (hoodie + joggers sold together).
   User: "Grey Tracksuit Set 28,000"
   → productType: "two-piece"
-  → selectedVariants: [{ variantType: Size, existingOptions: [L, XL, XXL from DB] }]
+  → selectedVariants: [{ variantType: Size, options: [L, XL, XXL with real IDs] }]
   ✓ Clothing sizes used (NOT waist sizes). No Color (single colorway).
 
 EXAMPLE 10 — Two-piece native set, two colors across images:
@@ -347,8 +344,8 @@ EXAMPLE 10 — Two-piece native set, two colors across images:
   User: "Ankara Co-ord Set 35,000"
   → productType: "two-piece"
   → selectedVariants: [
-      { variantType: Size, existingOptions: [L, XL, XXL from DB] },
-      { variantType: Color, existingOptions: matched from DB, newOptionLabels: ["Brown", "Burgundy"] if not in DB }
+      { variantType: Size, options: [L, XL, XXL with real IDs] },
+      { variantType: Color, options: [matched or newly created Brown/Burgundy options with real IDs] }
     ]
   ✓ Clothing sizes used. Color added because two distinct colorways visible across images.
 
@@ -357,8 +354,8 @@ EXAMPLE 11 — Two-piece jogger set, single image with multiple colors:
   User: "Men's Jogger Set 19,500"
   → productType: "two-piece"
   → selectedVariants: [
-      { variantType: Size, existingOptions: [L, XL, XXL from DB] },
-      { variantType: Color, existingOptions: [Navy, Olive, Black matched from DB] }
+      { variantType: Size, options: [L, XL, XXL with real IDs] },
+      { variantType: Color, options: [Navy, Olive, Black with real IDs] }
     ]
   ✓ All three colorways extracted from the single image.
 
@@ -492,6 +489,50 @@ export async function parseProductFromMessage({
           return result.docs.map((o) => ({ id: o.id, label: o.label, value: o.value }))
         },
       }),
+      createVariantOption: tool({
+        description:
+          'Create a variant option when a required option does not exist yet. This tool is idempotent: if a matching option already exists for the variant type, it returns the existing option instead. Use this so selectedVariants and image color links always contain real option IDs.',
+        inputSchema: z.object({
+          variantTypeId: z.number().describe('The ID of the variant type that owns this option'),
+          label: z
+            .string()
+            .describe('The display label to create, e.g. "Burgundy", "Slim Fit", "XXXL"'),
+        }),
+        execute: async ({ variantTypeId, label }) => {
+          const cleanLabel = label.trim()
+          const normalizedValue = cleanLabel.toLowerCase()
+
+          const existing = await payload.find({
+            collection: 'variantOptions',
+            where: {
+              and: [
+                { variantType: { equals: variantTypeId } },
+                {
+                  or: [{ label: { equals: cleanLabel } }, { value: { equals: normalizedValue } }],
+                },
+              ],
+            },
+            limit: 1,
+            pagination: false,
+          })
+
+          if (existing.docs[0]) {
+            const option = existing.docs[0]
+            return { id: option.id, label: option.label, value: option.value, created: false }
+          }
+
+          const created = await payload.create({
+            collection: 'variantOptions',
+            data: {
+              variantType: variantTypeId,
+              label: cleanLabel,
+              value: normalizedValue,
+            },
+          })
+
+          return { id: created.id, label: created.label, value: created.value, created: true }
+        },
+      }),
       checkSlugAvailability: tool({
         description:
           'Check if a product slug is already taken. Returns { available: true } if the slug can be used, or { available: false, suggestion: "..." } with a unique alternative if taken. Always call this before finalizing the slug.',
@@ -508,14 +549,14 @@ export async function parseProductFromMessage({
           if (existing.docs.length === 0) {
             return { available: true }
           }
-          return { available: false, candidate: slug + nanoid(6) }
+          return { available: false, suggestion: `${slug}-${nanoid(6)}` }
         },
       }),
     },
     output: Output.object({
       schema: productSchema,
     }),
-    stopWhen: stepCountIs(7),
+    stopWhen: stepCountIs(10),
     system: buildSystemPrompt(categories),
     messages: [
       {
@@ -547,4 +588,147 @@ export async function parseProductFromMessage({
       }
     }),
   }
+}
+
+// ─── Image Grouping ───────────────────────────────────────────────────────────
+
+const imageGroupingSchema = z.object({
+  groups: z
+    .array(
+      z.object({
+        imageIds: z
+          .array(z.number())
+          .describe(
+            'The IDs of images that belong to the same product. Use the [Image ID: N] labels in the message.',
+          ),
+      }),
+    )
+    .describe(
+      'Each element represents one distinct product. Every image ID must appear in exactly one group.',
+    ),
+})
+
+export type ImageGroup = {
+  imageIds: number[]
+}
+
+/**
+ * Uses AI vision to cluster a set of product images into groups where each
+ * group contains images belonging to the same product.
+ *
+ * - Single or zero images → returned immediately as one group, no API call.
+ * - Multiple images → GPT-5 vision inspects them and assigns each to a group
+ *   using generateText + Output.object for structured output.
+ * - Any image the AI misses is appended as its own solo group (safety net).
+ */
+export async function groupImagesByProduct(
+  images: { id: number; url: string }[],
+): Promise<ImageGroup[]> {
+  if (images.length <= 1) {
+    return images.map((img) => ({ imageIds: [img.id] }))
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+
+  const { output } = await generateText({
+    model: openai('gpt-5'),
+    output: Output.object({ schema: imageGroupingSchema }),
+    system: `You are a product image analyst for a fashion e-commerce store.
+You will receive multiple product images, each labelled with [Image ID: N].
+Your task is to group the images so that every image of the SAME product ends up in the same group,
+and images of DIFFERENT products are placed in separate groups.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Same product: the same garment or item shown from different angles, on a model vs flat lay,
+  or with/without styling — front view, back view, detail close-up, hanger shot, lifestyle shot
+  of the exact same piece all belong together.
+- Different products: distinct designs, silhouettes, or item types belong in separate groups,
+  even if the price, brand, or colour appears identical.
+- Different colourways of the same base design → put in the SAME group.
+  They will be handled as colour variants when the product is created.
+- Every image ID must appear in exactly one group — no image may be omitted or duplicated.
+- When uncertain whether two images show the same product, prefer splitting into separate groups.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EXAMPLE 1 — Same polo shirt, front and back shot (IDs 10, 11):
+  [Image ID: 10] white Lacoste polo shirt, front view on a model
+  [Image ID: 11] same white Lacoste polo shirt, back view on the same model
+  → groups: [{ imageIds: [10, 11] }]
+  ✓ Same polo, different angles — one product.
+
+EXAMPLE 2 — Four different polo shirts, one image each (IDs 20, 21, 22, 23):
+  [Image ID: 20] plain black polo shirt on a hanger
+  [Image ID: 21] plain white polo shirt on a hanger
+  [Image ID: 22] navy polo shirt with a small embroidered logo on a hanger
+  [Image ID: 23] burgundy striped polo shirt on a hanger
+  → groups: [{ imageIds: [20] }, { imageIds: [21] }, { imageIds: [22] }, { imageIds: [23] }]
+  ✓ All polos, but each is a different design — four separate products.
+  ✗ Do NOT group them just because they are all polo shirts.
+
+EXAMPLE 3 — Same polo in three colourways (IDs 30, 31, 32):
+  [Image ID: 30] slim-fit polo with tipped collar in white
+  [Image ID: 31] the same slim-fit polo with tipped collar in navy
+  [Image ID: 32] the same slim-fit polo with tipped collar in olive
+  → groups: [{ imageIds: [30, 31, 32] }]
+  ✓ Identical design, different colours → one group (colour variants).
+
+EXAMPLE 4 — Three different graphic tees, one with a second shot (IDs 40, 41, 42, 43):
+  [Image ID: 40] black tee with a large dragon print, front view
+  [Image ID: 41] black tee with a large dragon print, back view showing full print detail
+  [Image ID: 42] white tee with a small "NYC" chest graphic, front view
+  [Image ID: 43] grey tee with a washed vintage Nirvana print, front view
+  → groups: [{ imageIds: [40, 41] }, { imageIds: [42] }, { imageIds: [43] }]
+  ✓ Dragon tee has two shots → grouped. The other two tees are different designs → separate.
+
+EXAMPLE 5 — Five different joggers, some with multiple shots (IDs 50, 51, 52, 53, 54):
+  [Image ID: 50] black slim-fit joggers, front view
+  [Image ID: 51] black slim-fit joggers, back view
+  [Image ID: 52] grey marl joggers with side stripe, front view
+  [Image ID: 53] olive cargo joggers with zip pockets, front view
+  [Image ID: 54] olive cargo joggers with zip pockets, close-up of pocket detail
+  → groups: [{ imageIds: [50, 51] }, { imageIds: [52] }, { imageIds: [53, 54] }]
+  ✓ Each distinct jogger design is its own product; multiple shots of the same piece stay together.
+
+EXAMPLE 6 — Same hoodie design in two colourways, each with a front and back shot (IDs 60, 61, 62, 63):
+  [Image ID: 60] oversized grey hoodie, front view
+  [Image ID: 61] oversized grey hoodie, back view
+  [Image ID: 62] same oversized hoodie design in black, front view
+  [Image ID: 63] same oversized hoodie design in black, back view
+  → groups: [{ imageIds: [60, 61, 62, 63] }]
+  ✓ Same base design across both colourways — one product with colour variants.
+  ✗ Do NOT split by colour into two groups; colour is handled as a variant.`,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Group these product images:' },
+          ...images.flatMap((img) => [
+            { type: 'text' as const, text: `[Image ID: ${img.id}]` },
+            { type: 'image' as const, image: img.url },
+          ]),
+        ],
+      },
+    ],
+  })
+
+  if (!output) {
+    throw new Error('AI did not return image grouping data')
+  }
+
+  // Safety net: ensure every image ID is accounted for
+  const grouped = new Set(output.groups.flatMap((g) => g.imageIds))
+  const missed = images.filter((img) => !grouped.has(img.id))
+
+  return [
+    ...output.groups.filter((g) => g.imageIds.length > 0),
+    ...missed.map((img) => ({ imageIds: [img.id] })),
+  ]
 }

@@ -22,7 +22,7 @@ import { getPayload } from 'payload'
 import type { BasePayload } from 'payload'
 import config from '@payload-config'
 import { sendTextMessage, downloadWhatsAppImage } from '@/lib/whatsapp-api'
-import { parseProductFromMessage } from '@/lib/ai/ai'
+import { parseProductFromMessage, groupImagesByProduct } from '@/lib/ai/ai'
 import type { Category } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import type { WhatsAppWebhookPayload } from './types'
@@ -373,126 +373,176 @@ async function processSession(params: {
       title: c.title,
     }))
 
-    // 6. AI extraction — variant type/option discovery handled inside the tool
-    const parsed = await parseProductFromMessage({
-      messageText: allText,
-      categories,
-      images,
-      payload,
-    })
+    // 6. Determine product groups — one group per distinct product
+    let imageGroups: Array<{ id: number; url: string }[]>
 
-    const costPrice = (parsed.costPriceInNGN ?? 0) * 100 // store in kobo
-    const price = (parsed.sellingPriceInNGN ?? 0) * 100 // selling price in kobo (markup already applied by AI)
+    if (images.length <= 1) {
+      // Fast path: single or no image — no grouping needed
+      imageGroups = [images]
+    } else {
+      await sendTextMessage(phone, `🔍 Analysing ${images.length} images…`)
+      try {
+        const groups = await groupImagesByProduct(images)
+        imageGroups = groups
+          .map((g) =>
+            g.imageIds
+              .map((id) => images.find((img) => img.id === id))
+              .filter((img): img is { id: number; url: string } => !!img),
+          )
+          .filter((g) => g.length > 0)
+        if (imageGroups.length === 0) imageGroups = [images]
+      } catch (err) {
+        payload.logger.error(err, '[whatsapp] Image grouping failed, treating all as one product')
+        imageGroups = [images]
+      }
+    }
 
-    // 7. Create any new variant options (parallel per variant type)
-    const needsVariants = parsed.selectedVariants?.length > 0
+    const isMultiProduct = imageGroups.length > 1
 
-    const variantMap = needsVariants
-      ? await Promise.all(
-          parsed.selectedVariants.map(async (variant) => {
-            // Create only the labels the AI flagged as new (parallel)
-            const newOptionIds =
-              variant.newOptionLabels.length > 0
-                ? await Promise.all(
-                    variant.newOptionLabels.map((label) =>
-                      payload
-                        .create({
-                          collection: 'variantOptions',
-                          data: {
-                            variantType: variant.variantTypeId,
-                            label,
-                            value: label.toLowerCase(),
-                          },
-                          req,
-                        })
-                        .then((doc) => doc.id),
-                    ),
-                  )
-                : []
-
-            return {
-              typeId: variant.variantTypeId,
-              optionIds: [...variant.existingOptions.map((o) => o.id), ...newOptionIds],
-              inventory: variant.inventoryPerOption,
-            }
-          }),
-        )
-      : []
-
-    const variantTypeIds = [...new Set(variantMap.map((v) => v.typeId))]
-
-    // 8. Create the draft product using the already-saved media docs
-    const product = await payload.create({
-      collection: 'products',
-      draft: true,
-      data: {
-        title: parsed.title,
-        slug: parsed.slug,
-        description: textToLexical(parsed.description),
-        priceInNGN: price,
-        priceInNGNEnabled: true,
-        enableVariants: needsVariants,
-        ...(needsVariants ? { variantTypes: variantTypeIds } : {}),
-        ...(!needsVariants ? { inventory: parsed.inventory ?? 1 } : {}),
-        categories: parsed.categories.map((c) => c.id),
-        _status: 'draft',
-        isFeatured: parsed.isFeatured,
-        gallery: parsed.images.map((img) => ({
-          image: img.id,
-          ...(img.colorVariantOptionId ? { variantOption: img.colorVariantOptionId } : {}),
-        })),
-        meta: {
-          title: parsed.title,
-          description: parsed.metaDescription,
-          image: parsed.images[0]?.id ?? null,
-        },
-      },
-      req,
-    })
-
-    // 9. Create one variant doc per cartesian combination of options
-    if (needsVariants) {
-      const optionArrays = variantMap.map((v) => v.optionIds)
-      const combinations: number[][] = optionArrays.reduce<number[][]>(
-        (acc, array) => acc.flatMap((x) => array.map((y) => [...x, y])),
-        [[]],
-      )
-      const defaultInventory = Math.min(...variantMap.map((v) => v.inventory))
-
-      await Promise.all(
-        combinations.map((combo) =>
-          payload.create({
-            collection: 'variants',
-            data: {
-              product: product.id,
-              options: combo,
-              inventory: defaultInventory,
-              priceInNGN: price,
-              priceInNGNEnabled: true,
-              costPrice: costPrice,
-              _status: 'published',
-            },
-            req,
-          }),
-        ),
+    if (isMultiProduct) {
+      await sendTextMessage(
+        phone,
+        `📦 Found ${imageGroups.length} separate products. Creating them now…`,
       )
     }
 
-    // 10. Backfill alt text on uploaded images without changing filenames
-    await Promise.allSettled(
-      parsed.images.map((img) => {
-        if (!img.altText?.trim()) return Promise.resolve()
+    // 7. Create one product per image group
+    type CreatedProductSummary = {
+      title: string
+      costPrice: number
+      price: number
+      variantInfo: string
+      categoryCount: number
+      categoryNames: string
+      adminUrl: string
+    }
 
-        return payload.update({
-          collection: 'media',
-          id: img.id,
-          data: { alt: img.altText.trim() },
+    const createdProducts: CreatedProductSummary[] = []
+    let failedGroupCount = 0
+
+    for (const groupImages of imageGroups) {
+      try {
+        const parsed = await parseProductFromMessage({
+          messageText: allText,
+          categories,
+          images: groupImages,
+          payload,
+        })
+
+        const costPrice = (parsed.costPriceInNGN ?? 0) * 100
+        const price = (parsed.sellingPriceInNGN ?? 0) * 100
+
+        const needsVariants = parsed.selectedVariants?.length > 0
+
+        const variantMap = needsVariants
+          ? parsed.selectedVariants.map((variant) => ({
+              typeId: variant.variantTypeId,
+              optionIds: variant.options.map((option) => option.id),
+              inventory: variant.inventoryPerOption,
+              labels: variant.options.map((option) => option.label),
+            }))
+          : []
+
+        const variantTypeIds = [...new Set(variantMap.map((v) => v.typeId))]
+
+        const product = await payload.create({
+          collection: 'products',
+          draft: true,
+          data: {
+            title: parsed.title,
+            slug: parsed.slug,
+            description: textToLexical(parsed.description),
+            priceInNGN: price,
+            priceInNGNEnabled: true,
+            enableVariants: needsVariants,
+            ...(needsVariants ? { variantTypes: variantTypeIds } : {}),
+            ...(!needsVariants ? { inventory: parsed.inventory ?? 1 } : {}),
+            categories: parsed.categories.map((c) => c.id),
+            _status: 'draft',
+            isFeatured: parsed.isFeatured,
+            gallery: parsed.images.map((img) => ({
+              image: img.id,
+              ...(img.colorVariantOptionId ? { variantOption: img.colorVariantOptionId } : {}),
+            })),
+            meta: {
+              title: parsed.title,
+              description: parsed.metaDescription,
+              image: parsed.images[0]?.id ?? null,
+            },
+          },
           req,
         })
-      }),
-    )
 
-    // 11. Mark session done
+        if (needsVariants) {
+          const optionArrays = variantMap.map((v) => v.optionIds)
+          const combinations: number[][] = optionArrays.reduce<number[][]>(
+            (acc, array) => acc.flatMap((x) => array.map((y) => [...x, y])),
+            [[]],
+          )
+          const defaultInventory = Math.min(...variantMap.map((v) => v.inventory))
+
+          await Promise.all(
+            combinations.map((combo) =>
+              payload.create({
+                collection: 'variants',
+                data: {
+                  product: product.id,
+                  options: combo,
+                  inventory: defaultInventory,
+                  priceInNGN: price,
+                  priceInNGNEnabled: true,
+                  costPrice: costPrice,
+                  _status: 'published',
+                },
+                req,
+              }),
+            ),
+          )
+        }
+
+        await Promise.allSettled(
+          parsed.images.map((img) => {
+            if (!img.altText?.trim()) return Promise.resolve()
+            return payload.update({
+              collection: 'media',
+              id: img.id,
+              data: { alt: img.altText.trim() },
+              req,
+            })
+          }),
+        )
+
+        const adminUrl = `${getServerSideURL()}/admin/collections/products/${product.id}`
+        const categoryNames = parsed.categories.map((c) => c.name).join(', ')
+        const variantInfo = needsVariants
+          ? parsed.selectedVariants
+              .map(
+                (v) =>
+                  `📏 ${v.variantTypeName}: ${v.options.map((o) => o.label).join(', ')} (${v.inventoryPerOption} each)`,
+              )
+              .join('\n')
+          : `📦 Inventory: ${parsed.inventory ?? 1}`
+
+        createdProducts.push({
+          title: product.title,
+          costPrice,
+          price,
+          variantInfo,
+          categoryCount: parsed.categories.length,
+          categoryNames,
+          adminUrl,
+        })
+      } catch (err) {
+        payload.logger.error(err, '[whatsapp] Failed to create product for image group')
+        failedGroupCount++
+      }
+    }
+
+    if (createdProducts.length === 0) {
+      throw new Error('All product groups failed to process')
+    }
+
+    // 8. Mark session done
     await payload.update({
       collection: 'whatsapp-sessions',
       id: sessionId,
@@ -500,33 +550,40 @@ async function processSession(params: {
       req,
     })
 
-    // 12. Notify user with a rich summary
-    const adminUrl = `${getServerSideURL()}/admin/collections/products/${product.id}`
-    const categoryNames = parsed.categories.map((c) => c.name).join(', ')
-
-    const variantInfo = needsVariants
-      ? parsed.selectedVariants
-          .map((v) => {
-            const allLabels = [...v.existingOptions.map((o) => o.label), ...v.newOptionLabels]
-            return `📏 ${v.variantTypeName}: ${allLabels.join(', ')} (${v.inventoryPerOption} each)`
-          })
-          .join('\n')
-      : `📦 Inventory: ${parsed.inventory ?? 1}`
-
-    await sendTextMessage(
-      phone,
-      [
-        '✅ Product created successfully!\n',
-        `📦 *${product.title}*`,
-        `💰 Cost Price: ₦${formatCurrency(costPrice)}`,
-        `💰 Selling Price: ₦${formatCurrency(price)}`,
-        variantInfo,
-        `📁 ${parsed.categories.length === 1 ? 'Category' : 'Categories'}: ${categoryNames}`,
-        `📝 Status: Draft (review & publish in admin)\n`,
-        `🔗 Edit in admin:`,
-        adminUrl,
-      ].join('\n'),
-    )
+    // 9. Notify user with a rich summary
+    if (createdProducts.length === 1) {
+      const p = createdProducts[0]
+      await sendTextMessage(
+        phone,
+        [
+          '✅ Product created successfully!\n',
+          `📦 *${p.title}*`,
+          `💰 Cost Price: ₦${formatCurrency(p.costPrice)}`,
+          `💰 Selling Price: ₦${formatCurrency(p.price)}`,
+          p.variantInfo,
+          `📁 ${p.categoryCount === 1 ? 'Category' : 'Categories'}: ${p.categoryNames}`,
+          `📝 Status: Draft (review & publish in admin)\n`,
+          `🔗 Edit in admin:`,
+          p.adminUrl,
+        ].join('\n'),
+      )
+    } else {
+      const lines = [`✅ ${createdProducts.length} products created successfully!\n`]
+      createdProducts.forEach((p, i) => {
+        lines.push(
+          `*${i + 1}. ${p.title}*`,
+          `   💰 ₦${formatCurrency(p.costPrice)} cost · ₦${formatCurrency(p.price)} selling`,
+          `   ${p.variantInfo.split('\n').join('\n   ')}`,
+          `   🔗 ${p.adminUrl}`,
+          '',
+        )
+      })
+      lines.push(`📝 All drafts — review & publish in admin`)
+      if (failedGroupCount > 0) {
+        lines.push(`\n⚠️ ${failedGroupCount} product(s) could not be created.`)
+      }
+      await sendTextMessage(phone, lines.join('\n'))
+    }
   } catch (err) {
     console.error(`[whatsapp] Processing error for session ${sessionId}:`, err)
 
