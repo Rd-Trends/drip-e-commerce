@@ -254,12 +254,15 @@ async function handleImageMessage(params: {
 
   if (session) {
     const existing = normalizeMessages(session.messages ?? [])
+    const updatedMessages = [...existing, imageMessage]
     await payload.update({
       collection: 'whatsapp-sessions',
       id: session.id,
-      data: { messages: [...existing, imageMessage] },
+      data: { messages: updatedMessages },
       req,
     })
+    const total = updatedMessages.length
+    await sendTextMessage(phone, `📸 Message ${total}/${total} processed`)
   } else {
     await payload.create({
       collection: 'whatsapp-sessions',
@@ -376,9 +379,8 @@ async function processSession(params: {
       payload,
     })
 
-    const DEFAULT_MARKUP = 0.4
-    const costPrice = (parsed.priceInNGN ?? 0) * 100 // store in kobo
-    const price = costPrice + costPrice * DEFAULT_MARKUP // selling price in kobo
+    const costPrice = (parsed.costPriceInNGN ?? 0) * 100 // store in kobo
+    const price = (parsed.sellingPriceInNGN ?? 0) * 100 // selling price in kobo (markup already applied by AI)
 
     // 7. Create any new variant options (parallel per variant type)
     const needsVariants = parsed.selectedVariants?.length > 0
@@ -432,7 +434,10 @@ async function processSession(params: {
         categories: parsed.categories.map((c) => c.id),
         _status: 'draft',
         isFeatured: parsed.isFeatured,
-        gallery: images.map((img: { id: number; url: string }) => ({ image: img.id })),
+        gallery: parsed.images.map((img) => ({
+          image: img.id,
+          ...(img.colorVariantOptionId ? { variantOption: img.colorVariantOptionId } : {}),
+        })),
         meta: {
           title: parsed.title,
           description: parsed.metaDescription,
@@ -470,18 +475,25 @@ async function processSession(params: {
       )
     }
 
-    // 10. Backfill alt-text on uploaded images (best-effort, non-blocking)
+    // 10. Backfill alt-text and filenames on uploaded images (best-effort, non-blocking)
     await Promise.allSettled(
-      parsed.images
-        .filter((img) => !!img.altText)
-        .map((img) =>
-          payload.update({
-            collection: 'media',
-            id: img.id,
-            data: { alt: img.altText },
-            req,
-          }),
-        ),
+      parsed.images.map((img) => {
+        const updateData: Record<string, unknown> = {}
+        if (img.altText) updateData.alt = img.altText
+        if (img.imageName) {
+          // Get the original extension from the session image
+          const originalMedia = sessionImages.find((si) => si.id === img.id)
+          const ext = originalMedia?.filename?.split('.').pop() ?? 'jpg'
+          updateData.filename = `${img.imageName}.${ext}`
+        }
+        if (Object.keys(updateData).length === 0) return Promise.resolve()
+        return payload.update({
+          collection: 'media',
+          id: img.id,
+          data: updateData,
+          req,
+        })
+      }),
     )
 
     // 11. Mark session done
