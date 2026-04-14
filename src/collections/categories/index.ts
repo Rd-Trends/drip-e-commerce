@@ -1,19 +1,21 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
   access: {
-    create: canManageContent,
+    create: requirePermission(PERMISSIONS.CATEGORIES_MANAGE),
     read: () => true,
-    update: canManageContent,
-    delete: canManageContent,
+    update: requirePermission(PERMISSIONS.CATEGORIES_MANAGE),
+    delete: requirePermission(PERMISSIONS.CATEGORIES_MANAGE),
   },
   admin: {
     useAsTitle: 'title',
     group: 'Content',
+    defaultColumns: ['title', 'slug', 'image', 'updatedAt'],
   },
   hooks: {
     afterChange: [revalidateAfterChange],

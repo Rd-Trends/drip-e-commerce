@@ -176,9 +176,38 @@ export interface User {
   id: number;
   name?: string | null;
   /**
-   * Assign user roles to control access permissions. Admin: full system access | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management
+   * Assign a single role to this user. Saving seeds the permissions array below. Admin: full system bypass | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management
    */
-  roles?: ('admin' | 'customer' | 'order-manager' | 'content-manager')[] | null;
+  role?: ('admin' | 'customer' | 'order-manager' | 'content-manager') | null;
+  /**
+   * Fine-grained permissions for this user. Auto-seeded when the role is first assigned or changed (replacing any previous value — no merging). Admins can override individual permissions here after the seed. Note: the admin role bypasses these checks entirely.
+   */
+  permissions?:
+    | (
+        | 'products:read'
+        | 'products:write'
+        | 'categories:manage'
+        | 'pages:read'
+        | 'pages:write'
+        | 'media:manage'
+        | 'variants:manage'
+        | 'forms:manage'
+        | 'banner:manage'
+        | 'header:manage'
+        | 'footer:manage'
+        | 'home:manage'
+        | 'shipping:manage'
+        | 'orders:read'
+        | 'orders:write'
+        | 'transactions:read'
+        | 'transactions:write'
+        | 'coupons:read'
+        | 'coupons:write'
+        | 'users:manage'
+        | 'analytics:view'
+        | 'whatsapp:manage'
+      )[]
+    | null;
   orders?: {
     docs?: (string | Order)[];
     hasNextPage?: boolean;
@@ -1183,7 +1212,8 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  roles?: T;
+  role?: T;
+  permissions?: T;
   orders?: T;
   cart?: T;
   addresses?: T;

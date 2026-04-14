@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { formatDateTime } from '@/utils/format-date-time'
 import { formatCurrency } from '@/utils/format-currency'
+import { queryKeys } from '@/lib/query-keys'
 import type { Order } from '@/payload-types'
-import type { TimelineRange } from '../timeline-filter'
+import type { TimelineRange } from './timeline-filter'
+import { buildTimelineParams, analyticsFetcher } from './utils'
 
 interface RecentOrdersProps {
   timelineRange: TimelineRange
@@ -22,57 +25,28 @@ const getStatusBadge = (status: NonNullable<Order['status']>) => {
 }
 
 export function RecentOrders({ timelineRange }: RecentOrdersProps) {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = buildTimelineParams(timelineRange)
+  params.append('limit', '10')
 
-  useEffect(() => {
-    const fetchRecentOrders = async () => {
-      setLoading(true)
-      setError(null)
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.analytics.recentOrders(params.toString()),
+    queryFn: () =>
+      analyticsFetcher<{ docs: Order[] }>(`/api/analytics/recent-orders?${params.toString()}`),
+  })
 
-      try {
-        // Build query params
-        const params = new URLSearchParams()
+  const orders = data?.docs ?? []
 
-        if (timelineRange.period && timelineRange.period !== 'custom') {
-          const periodMap = { '24h': '1', '7d': '7', '30d': '30' }
-          params.append('period', periodMap[timelineRange.period] || '30')
-        } else if (timelineRange.startDate && timelineRange.endDate) {
-          params.append('startDate', timelineRange.startDate.toISOString())
-          params.append('endDate', timelineRange.endDate.toISOString())
-        }
-
-        params.append('limit', '10')
-
-        const response = await fetch(`/api/analytics/recent-orders?${params.toString()}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch recent orders')
-        }
-
-        const result = await response.json()
-        setOrders(result.docs)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load recent orders')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchRecentOrders()
-  }, [timelineRange])
-
-  if (loading) {
+  if (isLoading) {
     return <RecentOrdersLoading />
   }
 
   if (error) {
     return (
       <div className="error-state">
-        <p>Error: {error}</p>
+        <p>Error: {error.message}</p>
+        <button className="error-state__retry" onClick={() => refetch()}>
+          Retry
+        </button>
       </div>
     )
   }
@@ -138,11 +112,11 @@ export function RecentOrders({ timelineRange }: RecentOrdersProps) {
 export function RecentOrdersLoading() {
   return (
     <div className="analytics-section">
-      <div className="section-header">
-        <div className="skeleton" style={{ width: '180px', height: '24px' }} />
+      <div className="analytics-section-header">
+        <div className="skeleton skeleton--md" />
       </div>
       <div className="table-container">
-        <div className="skeleton" style={{ width: '100%', height: '400px' }} />
+        <div className="skeleton skeleton--full" />
       </div>
     </div>
   )

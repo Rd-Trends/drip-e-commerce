@@ -3,13 +3,14 @@ import { link } from '@/fields/link'
 import { revalidateTag } from 'next/cache'
 import { Home as THome } from '@/payload-types'
 import { queryKeys } from '@/lib/query-keys'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 export const Home: GlobalConfig = {
   slug: 'home',
   access: {
     read: () => true,
-    update: canManageContent,
+    update: requirePermission(PERMISSIONS.HOME_MANAGE),
   },
   hooks: {
     afterChange: [

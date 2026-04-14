@@ -2,8 +2,8 @@ import type { Endpoint } from 'payload'
 import { subDays } from 'date-fns'
 import { Where } from 'payload'
 import { z } from 'zod'
-import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 const querySchema = z.object({
   period: z.coerce.number().positive().optional(),
@@ -14,7 +14,7 @@ const querySchema = z.object({
 
 export const getRecentOrdersHandler: Endpoint['handler'] = async (req) => {
   try {
-    if (!req.user || !checkRole(STAFF_ROLES, req.user)) {
+    if (!req.user || !hasPermission(req.user, PERMISSIONS.ORDERS_READ)) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

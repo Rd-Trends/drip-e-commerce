@@ -69,7 +69,7 @@ export const seed = async ({
         name: 'Admin User',
         email: 'admin@drip.com',
         password: 'admin123',
-        roles: ['admin'],
+        role: 'admin',
       },
     })
 
@@ -80,7 +80,7 @@ export const seed = async ({
         name: 'Order Manager',
         email: 'order@drip.com',
         password: 'order123',
-        roles: ['order-manager'],
+        role: 'order-manager',
       },
     })
 
@@ -90,7 +90,7 @@ export const seed = async ({
         name: 'Content Manager',
         email: 'content@drip.com',
         password: 'content123',
-        roles: ['content-manager'],
+        role: 'content-manager',
       },
     })
   }

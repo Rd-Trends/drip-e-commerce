@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import { canManageOrders } from '@/access/can-manage-orders'
 import { isDocumentOwner } from '@/access/is-document-owner'
-import { accessOR } from '@/access/utilities'
+import { accessOR, requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { hasCartSecretAccess } from './hooks/has-cart-secret-access'
 import { cartItemsField } from '../../fields/cart-item-field'
 import { beforeChangeCart } from './hooks/before-change'
@@ -13,12 +13,25 @@ export const Carts: CollectionConfig = {
   slug: 'carts',
   access: {
     create: () => true, // Allow authenticated users and guest users
-    delete: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
-    read: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
-    update: accessOR(canManageOrders, isDocumentOwner, hasCartSecretAccess(true)),
+    delete: accessOR(
+      requirePermission(PERMISSIONS.ORDERS_WRITE),
+      isDocumentOwner,
+      hasCartSecretAccess(true),
+    ),
+    read: accessOR(
+      requirePermission(PERMISSIONS.ORDERS_READ),
+      isDocumentOwner,
+      hasCartSecretAccess(true),
+    ),
+    update: accessOR(
+      requirePermission(PERMISSIONS.ORDERS_READ),
+      isDocumentOwner,
+      hasCartSecretAccess(true),
+    ),
   },
   admin: {
     group: 'Shop',
+    defaultColumns: ['customer', 'status', 'subtotal', 'purchasedAt', 'updatedAt'],
     useAsTitle: 'createdAt',
     description: 'Customer shopping carts',
   },

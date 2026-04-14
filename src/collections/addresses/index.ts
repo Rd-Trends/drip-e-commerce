@@ -1,23 +1,30 @@
 import type { CollectionConfig } from 'payload'
-import { canManageOrders } from '@/access/can-manage-orders'
-import { isDocumentOwner } from '@/access/is-document-owner'
+import { permissionOrOwner } from '@/access/utilities'
 import { addressFields } from '@/fields/adress-fields'
-import { accessOR } from '@/access/utilities'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 import { beforeChange } from './hooks/before-change'
+import { PERMISSIONS } from '@/lib/permissions'
 
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
   access: {
+    /**
+     * Any authenticated user can create an address for themselves.
+     * The beforeChange hook enforces the customer field for non-staff.
+     */
     create: ({ req }) => !!req.user,
-    delete: accessOR(canManageOrders, isDocumentOwner),
-    read: accessOR(canManageOrders, isDocumentOwner),
-    update: accessOR(canManageOrders, isDocumentOwner),
+    /**
+     * ORDERS_READ holders (order managers, admins) see all addresses.
+     * Customers see only addresses where customer === user.id.
+     */
+    delete: permissionOrOwner(PERMISSIONS.ORDERS_WRITE),
+    read: permissionOrOwner(PERMISSIONS.ORDERS_READ),
+    update: permissionOrOwner(PERMISSIONS.ORDERS_WRITE),
   },
   admin: {
     group: 'Users',
-    defaultColumns: ['customer', 'addressLine1', 'city', 'state'],
-    useAsTitle: 'createdAt',
+    defaultColumns: ['customer', 'addressLine1', 'city', 'state', 'phone', 'updatedAt'],
+    useAsTitle: 'addressLine1',
     description: 'Customer addresses for shipping and billing purposes',
     hidden: true,
   },

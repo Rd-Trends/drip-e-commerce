@@ -1,7 +1,11 @@
 import type { CollectionConfig, DefaultDocumentIDType, Where } from 'payload'
-import { canManageContent } from '@/access/can-manage-content'
-import { canManageContentOrPublishedStatus } from '@/access/can-manage-content-or-published-status'
+import {
+  requirePermission,
+  requirePermissionOrPublished,
+  requireFieldPermission,
+} from '@/access/utilities'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
+import { PERMISSIONS } from '@/lib/permissions'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { pricesField } from '../../fields/prices-field'
 import { inventoryField } from '../../fields/inventory-field'
@@ -29,10 +33,15 @@ import { Product as TProduct } from '@/payload-types'
 export const Products: CollectionConfig = {
   slug: 'products',
   access: {
-    create: canManageContent,
-    delete: canManageContent,
-    read: canManageContentOrPublishedStatus,
-    update: canManageContent,
+    /** Create and delete products requires PRODUCTS_WRITE (content managers + admins). */
+    create: requirePermission(PERMISSIONS.PRODUCTS_WRITE),
+    delete: requirePermission(PERMISSIONS.PRODUCTS_WRITE),
+    /**
+     * PRODUCTS_READ holders see all docs including unpublished drafts.
+     * Everyone else (customers, guests) only sees published documents.
+     */
+    read: requirePermissionOrPublished(PERMISSIONS.PRODUCTS_READ),
+    update: requirePermission(PERMISSIONS.PRODUCTS_WRITE),
   },
   hooks: {
     afterChange: [revalidateAfterChange],
@@ -40,7 +49,7 @@ export const Products: CollectionConfig = {
   },
   admin: {
     group: 'Shop',
-    defaultColumns: ['title', 'enableVariants', '_status', 'inventory', 'priceInNGN'],
+    defaultColumns: ['title', '_status', 'priceInNGN', 'inventory', 'categories', 'isFeatured', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({

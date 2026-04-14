@@ -1,5 +1,5 @@
-import { checkRole } from '@/access/utilities'
-import { USER_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import type { PayloadHandler } from 'payload'
 
 interface BulkVariantRequest {
@@ -22,7 +22,7 @@ export const bulkCreateVariants: PayloadHandler = async (req) => {
       return Response.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!checkRole([USER_ROLES.ADMIN, USER_ROLES.CONTENT_MANAGER], req.user)) {
+    if (!hasPermission(req.user, PERMISSIONS.VARIANTS_MANAGE)) {
       return Response.json({ success: false, message: 'Forbidden' }, { status: 403 })
     }
 

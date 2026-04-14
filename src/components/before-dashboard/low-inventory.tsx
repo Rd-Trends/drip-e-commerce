@@ -1,8 +1,11 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Pagination } from '@payloadcms/ui'
 import { AlertTriangle } from 'lucide-react'
+import { analyticsFetcher } from './utils'
+import { queryKeys } from '@/lib/query-keys'
 
 interface InventoryItem {
   id: string
@@ -17,53 +20,30 @@ interface LowInventoryResponse {
 }
 
 export function LowInventory() {
-  const [data, setData] = useState<LowInventoryResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const itemsPerPage = 10
 
-  useEffect(() => {
-    const fetchLowInventory = async () => {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const params = new URLSearchParams()
-        params.append('threshold', '10')
-
-        const response = await fetch(`/api/analytics/low-inventory?${params.toString()}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch low inventory')
-        }
-
-        const result = await response.json()
-        setData(result)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load low inventory')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLowInventory()
-  }, [])
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.analytics.lowInventory(),
+    queryFn: () =>
+      analyticsFetcher<LowInventoryResponse>('/api/analytics/low-inventory?threshold=10'),
+  })
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
   }
 
-  if (loading) {
+  if (isLoading) {
     return <LowInventoryLoading />
   }
 
   if (error) {
     return (
       <div className="error-state">
-        <p>Error: {error}</p>
+        <p>Error: {error.message}</p>
+        <button className="error-state__retry" onClick={() => refetch()}>
+          Retry
+        </button>
       </div>
     )
   }
@@ -155,11 +135,11 @@ export function LowInventory() {
 function LowInventoryLoading() {
   return (
     <div className="analytics-section">
-      <div className="section-header">
-        <div className="skeleton" style={{ width: '180px', height: '24px' }} />
+      <div className="analytics-section-header">
+        <div className="skeleton skeleton--md" />
       </div>
       <div className="table-container">
-        <div className="skeleton" style={{ width: '100%', height: '200px' }} />
+        <div className="skeleton skeleton--full" />
       </div>
     </div>
   )

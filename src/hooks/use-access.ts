@@ -1,68 +1,135 @@
 'use client'
 
 import type { User } from '@/payload-types'
-import { USER_ROLES } from '@/lib/constants'
-import { checkRole } from '@/access/utilities'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS, type Permission } from '@/lib/permissions'
 import { useUser } from './use-auth'
 
 /**
- * Permission flags derived from user roles
+ * Granular permission flags derived from the user's `permissions` array.
+ * The admin role bypasses all checks (hasPermission returns true for admins).
  */
 export interface Permissions {
-  /** Full admin access - can do everything */
+  // ── Identity ──────────────────────────────────────────────────────────────
   isAdmin: boolean
-  /** Can manage products, categories, pages, media, coupons */
-  canManageContent: boolean
-  /** Can manage orders, transactions, and fulfillment */
-  canManageOrders: boolean
-  /** Is any staff member (admin, content manager, or order manager) */
   isStaff: boolean
-  /** Is a regular customer */
   isCustomer: boolean
+
+  // ── Products ──────────────────────────────────────────────────────────────
+  canReadProducts: boolean
+  canWriteProducts: boolean
+
+  // ── Categories ────────────────────────────────────────────────────────────
+  canManageCategories: boolean
+
+  // ── Pages ─────────────────────────────────────────────────────────────────
+  canReadPages: boolean
+  canWritePages: boolean
+
+  // ── Media ─────────────────────────────────────────────────────────────────
+  canManageMedia: boolean
+
+  // ── Variants ──────────────────────────────────────────────────────────────
+  canManageVariants: boolean
+
+  // ── Forms ─────────────────────────────────────────────────────────────────
+  canManageForms: boolean
+
+  // ── Site globals ──────────────────────────────────────────────────────────
+  canManageBanner: boolean
+  canManageHeader: boolean
+  canManageFooter: boolean
+  canManageHome: boolean
+  canManageShipping: boolean
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  canReadOrders: boolean
+  canWriteOrders: boolean
+
+  // ── Transactions ──────────────────────────────────────────────────────────
+  canReadTransactions: boolean
+  canWriteTransactions: boolean
+
+  // ── Coupons ───────────────────────────────────────────────────────────────
+  canReadCoupons: boolean
+  canWriteCoupons: boolean
+
+  // ── Users ─────────────────────────────────────────────────────────────────
+  canManageUsers: boolean
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  canViewAnalytics: boolean
+
+  // ── WhatsApp ──────────────────────────────────────────────────────────────
+  canManageWhatsApp: boolean
 }
 
 /**
- * Calculate permissions based on user roles
- * @param user - Current authenticated user
- * @returns Permission flags object
+ * Returns a fully-resolved Permissions object for a given user.
+ * All checks delegate to `hasPermission` so the admin bypass is automatic.
  */
 export const calculatePermissions = (user: User | null | undefined): Permissions => {
-  if (!user) {
-    return {
-      isAdmin: false,
-      canManageContent: false,
-      canManageOrders: false,
-      isStaff: false,
-      isCustomer: false,
-    }
-  }
+  const check = (p: Permission) => hasPermission(user, p)
 
-  const isAdmin = checkRole([USER_ROLES.ADMIN], user)
-  const canManageContent = isAdmin || checkRole([USER_ROLES.CONTENT_MANAGER], user)
-  const canManageOrders = isAdmin || checkRole([USER_ROLES.ORDER_MANAGER], user)
-  const isStaff = isAdmin || checkRole([USER_ROLES.CONTENT_MANAGER, USER_ROLES.ORDER_MANAGER], user)
-  const isCustomer = checkRole([USER_ROLES.CUSTOMER], user)
+  const isAdmin = check(PERMISSIONS.USERS_MANAGE) && user?.role === 'admin'
+  const canReadProducts = check(PERMISSIONS.PRODUCTS_READ)
+  const canWriteProducts = check(PERMISSIONS.PRODUCTS_WRITE)
+  const canReadOrders = check(PERMISSIONS.ORDERS_READ)
+  const canWriteOrders = check(PERMISSIONS.ORDERS_WRITE)
+
+  // isStaff: any user who has at least one non-customer permission
+  const isStaff = user
+    ? user.role === 'admin' || user.role === 'order-manager' || user.role === 'content-manager'
+    : false
+  const isCustomer = !!user && user.role === 'customer'
 
   return {
     isAdmin,
-    canManageContent,
-    canManageOrders,
     isStaff,
     isCustomer,
+
+    canReadProducts,
+    canWriteProducts,
+
+    canManageCategories: check(PERMISSIONS.CATEGORIES_MANAGE),
+
+    canReadPages: check(PERMISSIONS.PAGES_READ),
+    canWritePages: check(PERMISSIONS.PAGES_WRITE),
+
+    canManageMedia: check(PERMISSIONS.MEDIA_MANAGE),
+    canManageVariants: check(PERMISSIONS.VARIANTS_MANAGE),
+    canManageForms: check(PERMISSIONS.FORMS_MANAGE),
+
+    canManageBanner: check(PERMISSIONS.BANNER_MANAGE),
+    canManageHeader: check(PERMISSIONS.HEADER_MANAGE),
+    canManageFooter: check(PERMISSIONS.FOOTER_MANAGE),
+    canManageHome: check(PERMISSIONS.HOME_MANAGE),
+    canManageShipping: check(PERMISSIONS.SHIPPING_MANAGE),
+
+    canReadOrders,
+    canWriteOrders,
+
+    canReadTransactions: check(PERMISSIONS.TRANSACTIONS_READ),
+    canWriteTransactions: check(PERMISSIONS.TRANSACTIONS_WRITE),
+
+    canReadCoupons: check(PERMISSIONS.COUPONS_READ),
+    canWriteCoupons: check(PERMISSIONS.COUPONS_WRITE),
+
+    canManageUsers: check(PERMISSIONS.USERS_MANAGE),
+    canViewAnalytics: check(PERMISSIONS.ANALYTICS_VIEW),
+    canManageWhatsApp: check(PERMISSIONS.WHATSAPP_MANAGE),
   }
 }
 
 /**
- * Hook to check user permissions based on their roles
+ * React hook that exposes granular permission flags for the current user.
  *
  * @example
- * const { canManageContent, canManageOrders, isAdmin } = usePermissions()
+ * const { canWriteProducts, canReadOrders, isAdmin } = usePermissions()
  *
- * if (canManageContent) {
- *   // Show product creation button
+ * if (canWriteProducts) {
+ *   // show product creation button
  * }
- *
- * @returns Permission flags and user loading state
  */
 export const usePermissions = () => {
   const { data: user, isLoading } = useUser()

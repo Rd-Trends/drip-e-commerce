@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '@/access/is-admin'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { addressFields } from '@/fields/adress-fields'
 import { cartItemsField } from '../fields/cart-item-field'
 import { statusField } from '../fields/status-field'
@@ -10,14 +11,16 @@ import { currenciesConfig } from '@/lib/constants'
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
   access: {
-    create: isAdmin,
-    delete: isAdmin,
-    read: isAdmin,
-    update: isAdmin,
+    /** Only users with TRANSACTIONS_WRITE (admins) can create or delete transaction records. */
+    create: requirePermission(PERMISSIONS.TRANSACTIONS_WRITE),
+    delete: requirePermission(PERMISSIONS.TRANSACTIONS_WRITE),
+    /** TRANSACTIONS_READ holders (admins + order managers) can view transactions. */
+    read: requirePermission(PERMISSIONS.TRANSACTIONS_READ),
+    update: requirePermission(PERMISSIONS.TRANSACTIONS_WRITE),
   },
   admin: {
     group: 'Shop',
-    defaultColumns: ['createdAt', 'customer', 'order', 'amount', 'status'],
+    defaultColumns: ['createdAt', 'customer', 'customerEmail', 'order', 'paymentMethod', 'amount', 'status'],
     description: 'Payment transactions',
   },
   fields: [

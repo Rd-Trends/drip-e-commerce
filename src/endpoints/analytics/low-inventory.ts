@@ -1,8 +1,8 @@
 import type { Endpoint } from 'payload'
 import type { Product, Variant } from '@/payload-types'
 import { z } from 'zod'
-import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 interface InventoryItem {
   id: string
@@ -18,7 +18,7 @@ const querySchema = z.object({
 export const getLowInventoryHandler: Endpoint['handler'] = async (req) => {
   try {
     const payload = req.payload
-    if (!req.user || !checkRole(STAFF_ROLES, req.user)) {
+    if (!req.user || !hasPermission(req.user, PERMISSIONS.PRODUCTS_READ)) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -29,6 +29,7 @@ export const getLowInventoryHandler: Endpoint['handler'] = async (req) => {
     const { docs: products } = await payload.find({
       collection: 'products',
       where: {
+        _status: { equals: 'published' },
         enableVariants: { equals: false },
         inventory: { less_than_equal: thresholdNum, greater_than: 0 },
       },

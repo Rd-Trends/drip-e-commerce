@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { canManageContent } from '@/access/can-manage-content'
-import { canManageContentOrPublishedStatus } from '@/access/can-manage-content-or-published-status'
+import { requirePermission, requirePermissionOrPublished } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { pricesField } from '../../fields/prices-field'
 import { inventoryField } from '../../fields/inventory-field'
@@ -13,14 +13,15 @@ import { revalidateAfterChange, revalidateDelete } from './hooks/revalidate'
 export const Variants: CollectionConfig = {
   slug: 'variants',
   access: {
-    create: canManageContent,
-    delete: canManageContent,
-    read: canManageContentOrPublishedStatus,
-    update: canManageContent,
+    create: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
+    delete: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
+    read: requirePermissionOrPublished(PERMISSIONS.VARIANTS_MANAGE),
+    update: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
   },
   admin: {
     group: false,
     useAsTitle: 'title',
+    defaultColumns: ['title', 'product', 'options', 'priceInNGN', 'inventory', '_status', 'updatedAt'],
   },
   fields: [
     {

@@ -1,21 +1,21 @@
 import type { CollectionConfig } from 'payload'
 import { amountField } from '@payloadcms/plugin-ecommerce'
-import { canManageContent } from '@/access/can-manage-content'
-import { isStaff } from '@/access/is-staff'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { currenciesConfig } from '@/lib/constants'
 import type { Coupon } from '@/payload-types'
 
 export const Coupons: CollectionConfig = {
   slug: 'coupons',
   access: {
-    create: canManageContent,
-    read: isStaff,
-    update: canManageContent,
-    delete: canManageContent,
+    create: requirePermission(PERMISSIONS.COUPONS_WRITE),
+    read: requirePermission(PERMISSIONS.COUPONS_READ),
+    update: requirePermission(PERMISSIONS.COUPONS_WRITE),
+    delete: requirePermission(PERMISSIONS.COUPONS_WRITE),
   },
   admin: {
     useAsTitle: 'code',
-    defaultColumns: ['code', 'type', 'value', 'active', 'validFrom', 'validUntil'],
+    defaultColumns: ['code', 'type', 'value', 'fixedAmount', 'active', 'validUntil', 'updatedAt'],
     group: 'Shop',
   },
   fields: [

@@ -6,7 +6,8 @@ import { Plugin } from 'payload'
 import { Product } from '@/payload-types'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { getServerSideURL } from '@/utils/get-url'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 const generateTitle: GenerateTitle<Product> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Drip` : 'Drip Fashion'
@@ -33,9 +34,9 @@ export const plugins: Plugin[] = [
       },
       access: {
         create: () => true, // Anyone can submit a form
-        read: canManageContent, // Only admins and content managers can read submissions
-        update: canManageContent,
-        delete: canManageContent,
+        read: requirePermission(PERMISSIONS.FORMS_MANAGE),
+        update: requirePermission(PERMISSIONS.FORMS_MANAGE),
+        delete: requirePermission(PERMISSIONS.FORMS_MANAGE),
       },
     },
     formOverrides: {
@@ -43,10 +44,10 @@ export const plugins: Plugin[] = [
         group: 'Content',
       },
       access: {
-        create: canManageContent,
+        create: requirePermission(PERMISSIONS.FORMS_MANAGE),
         read: () => true, // Everyone can read forms (for public form display)
-        update: canManageContent,
-        delete: canManageContent,
+        update: requirePermission(PERMISSIONS.FORMS_MANAGE),
+        delete: requirePermission(PERMISSIONS.FORMS_MANAGE),
       },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {

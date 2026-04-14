@@ -1,9 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { DollarSign, ShoppingBag, Users, Activity } from 'lucide-react'
 import { formatCurrency } from '@/utils/format-currency'
-import type { TimelineRange } from '../timeline-filter'
+import { queryKeys } from '@/lib/query-keys'
+import { buildTimelineParams, analyticsFetcher } from './utils'
+import type { TimelineRange } from './timeline-filter'
 
 interface MetricsData {
   totalRevenue: number
@@ -20,57 +23,29 @@ interface MetricsOverviewProps {
 }
 
 export function MetricsOverview({ timelineRange }: MetricsOverviewProps) {
-  const [metrics, setMetrics] = useState<MetricsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = buildTimelineParams(timelineRange)
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setLoading(true)
-      setError(null)
+  const {
+    data: metrics,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.analytics.metrics(params.toString()),
+    queryFn: () => analyticsFetcher<MetricsData>(`/api/analytics/metrics?${params.toString()}`),
+  })
 
-      try {
-        // Build query params
-        const params = new URLSearchParams()
-
-        if (timelineRange.period && timelineRange.period !== 'custom') {
-          const periodMap = { '24h': '1', '7d': '7', '30d': '30' }
-          params.append('period', periodMap[timelineRange.period] || '30')
-        } else if (timelineRange.startDate && timelineRange.endDate) {
-          params.append('startDate', timelineRange.startDate.toISOString())
-          params.append('endDate', timelineRange.endDate.toISOString())
-        } else {
-          params.append('period', '30')
-        }
-
-        const response = await fetch(`/api/analytics/metrics?${params.toString()}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch metrics')
-        }
-
-        const data = await response.json()
-        setMetrics(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load metrics')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchMetrics()
-  }, [timelineRange])
-
-  if (loading) {
+  if (isLoading) {
     return <MetricsLoading />
   }
 
   if (error) {
     return (
       <div className="error-state">
-        <p>Error: {error}</p>
+        <p>Error: {error.message}</p>
+        <button className="error-state__retry" onClick={() => refetch()}>
+          Retry
+        </button>
       </div>
     )
   }
@@ -156,14 +131,14 @@ function MetricsLoading() {
         <div key={i} className="metric-card loading">
           <div className="metric-header">
             <div className="metric-icon-wrapper skeleton" />
-            <div className="metric-growth skeleton" style={{ width: '60px', height: '20px' }} />
-          </div>
-          <div className="metric-content">
             <div
               className="skeleton"
-              style={{ width: '120px', height: '36px', marginBottom: '8px' }}
+              style={{ width: '60px', height: '20px', borderRadius: '4px' }}
             />
-            <div className="skeleton" style={{ width: '80px', height: '16px' }} />
+          </div>
+          <div className="metric-content">
+            <div className="skeleton skeleton--lg" />
+            <div className="skeleton skeleton--sm" />
           </div>
         </div>
       ))}

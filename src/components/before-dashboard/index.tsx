@@ -1,51 +1,33 @@
-'use client'
+import React from 'react'
+import { headers as getHeaders } from 'next/headers'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
-import React, { useState } from 'react'
-import { subDays } from 'date-fns'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
+import { BeforeDashboardClient, type DashboardPermissions } from './client'
 
-import './index.scss'
-import '../analytics/styles.css'
-import {
-  MetricsOverview,
-  RevenueChart,
-  RecentOrders,
-  TopProducts,
-  LowInventory,
-} from '../analytics'
-import { TimelineFilter, type TimelineRange } from '../analytics/timeline-filter'
-import { SeedButton } from './seed-button'
+export const BeforeDashboard: React.FC = async () => {
+  const headersList = await getHeaders()
+  const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers: headersList })
 
-export const BeforeDashboard: React.FC = () => {
-  const [timelineRange, setTimelineRange] = useState<TimelineRange>({
-    period: '30d',
-    startDate: subDays(new Date(), 30),
-    endDate: new Date(),
-  })
+  const permissions: DashboardPermissions = {
+    // High-level business intelligence — admins and roles granted analytics:view
+    showMetrics: hasPermission(user, PERMISSIONS.ANALYTICS_VIEW),
+    showRevenue: hasPermission(user, PERMISSIONS.ANALYTICS_VIEW),
 
-  return (
-    <div className="analytics-dashboard">
-      <div className="analytics-header">
-        <h1 className="analytics-title">Analytics Dashboard</h1>
-        <p className="analytics-description">Quick overview of your store performance</p>
-      </div>
+    // Operational order data — order managers and above
+    showRecentOrders: hasPermission(user, PERMISSIONS.ORDERS_READ),
 
-      {/* Timeline Filter */}
-      <TimelineFilter value={timelineRange} onChange={setTimelineRange} />
+    // Product / inventory data — content managers and order managers
+    showTopProducts: hasPermission(user, PERMISSIONS.PRODUCTS_READ),
+    showLowInventory: hasPermission(user, PERMISSIONS.PRODUCTS_READ),
+  }
 
-      {/* Metrics Overview */}
-      <MetricsOverview timelineRange={timelineRange} />
+  // Nothing to show — don't render the dashboard shell at all
+  const hasAnyAccess = Object.values(permissions).some(Boolean)
+  if (!hasAnyAccess) return null
 
-      {/* Revenue Chart */}
-      <RevenueChart timelineRange={timelineRange} />
-
-      {/* Two Column Layout */}
-      <div className="analytics-grid">
-        <TopProducts timelineRange={timelineRange} />
-        <LowInventory />
-      </div>
-
-      {/* Recent Orders */}
-      <RecentOrders timelineRange={timelineRange} />
-    </div>
-  )
+  return <BeforeDashboardClient permissions={permissions} />
 }

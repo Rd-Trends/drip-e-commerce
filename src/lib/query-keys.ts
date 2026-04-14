@@ -32,6 +32,17 @@ export const queryKeys = {
     detail: () => [...queryKeys.shippingConfig.all, 'detail'] as const,
   },
 
+  analytics: {
+    all: ['analytics'] as const,
+    metrics: (params: string) => [...queryKeys.analytics.all, 'metrics', params] as const,
+    revenue: (params: string) => [...queryKeys.analytics.all, 'revenue', params] as const,
+    recentOrders: (params: string) =>
+      [...queryKeys.analytics.all, 'recent-orders', params] as const,
+    topProducts: (params: string, page: number) =>
+      [...queryKeys.analytics.all, 'top-products', params, page] as const,
+    lowInventory: () => [...queryKeys.analytics.all, 'low-inventory'] as const,
+  },
+
   // revalidation tags
   revalidation: {
     products: 'products' as const,

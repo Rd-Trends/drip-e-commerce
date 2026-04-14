@@ -73,7 +73,7 @@ async function CategoryList({ currentPage }: { currentPage: number }) {
         </EmptyHeader>
         <EmptyContent>
           <AdminActionButton
-            permission="canManageContent"
+            permission="canManageCategories"
             href="/admin/collections/categories/create"
           >
             Create Category

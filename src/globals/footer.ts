@@ -1,7 +1,8 @@
 import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { queryKeys } from '@/lib/query-keys'
 import { revalidateTag } from 'next/cache'
 
@@ -9,7 +10,7 @@ export const Footer: GlobalConfig = {
   slug: 'footer',
   access: {
     read: () => true,
-    update: canManageContent,
+    update: requirePermission(PERMISSIONS.FOOTER_MANAGE),
   },
   fields: [
     {

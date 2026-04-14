@@ -1,7 +1,15 @@
 import type { CollectionConfig } from 'payload'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 export const WhatsappSessions: CollectionConfig = {
   slug: 'whatsapp-sessions',
+  access: {
+    create: requirePermission(PERMISSIONS.WHATSAPP_MANAGE),
+    read: requirePermission(PERMISSIONS.WHATSAPP_MANAGE),
+    update: requirePermission(PERMISSIONS.WHATSAPP_MANAGE),
+    delete: requirePermission(PERMISSIONS.WHATSAPP_MANAGE),
+  },
   admin: {
     group: 'WhatsApp',
     useAsTitle: 'phone',

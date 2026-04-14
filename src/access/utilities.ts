@@ -1,18 +1,120 @@
-import type { Access, Where } from 'payload'
+import type { Access, FieldAccess, Where } from 'payload'
 import { combineWhereConstraints } from 'payload/shared'
 import type { User } from '@/payload-types'
+import { USER_ROLES, type UserRole } from '@/lib/constants'
+import type { Permission } from '@/lib/permissions'
 
-export const checkRole = (allRoles: User['roles'] = [], user?: User | null): boolean => {
-  if (user && allRoles) {
-    return allRoles.some((role) => {
-      return user?.roles?.some((individualRole) => {
-        return individualRole === role
-      })
-    })
+// ─────────────────────────────────────────────────────────────────────────────
+// Role helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns true if the user has any of the given roles.
+ * Works with the single `role` field on the User document.
+ */
+export const checkRole = (allRoles: UserRole[], user?: User | null): boolean => {
+  if (user && allRoles.length > 0) {
+    return allRoles.some((role) => user.role === role)
   }
-
   return false
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Permission helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns true if the user has the given permission.
+ *
+ * The `admin` role is a hard bypass — admins always have access regardless of
+ * what is stored in `permissions`. All other roles rely solely on the
+ * `permissions` array that was seeded when the role was assigned.
+ */
+export const hasPermission = (user: User | null | undefined, permission: Permission): boolean => {
+  if (!user) return false
+  // Admin role bypasses all permission checks
+  if (user.role === USER_ROLES.ADMIN) return true
+  return Array.isArray(user.permissions) && user.permissions.includes(permission)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Access factories
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Access factory: grants access when the requesting user holds the given
+ * permission (or is an admin).
+ *
+ * @example
+ * create: requirePermission(PERMISSIONS.ORDERS_WRITE)
+ */
+export const requirePermission = (permission: Permission): Access => {
+  return ({ req }) => hasPermission(req.user, permission)
+}
+
+/**
+ * Access factory: grants *full* access when the user holds the permission;
+ * otherwise restricts reads to published documents only.
+ * Use this on draft-enabled collections (products, pages, variants, etc.).
+ *
+ * @example
+ * read: requirePermissionOrPublished(PERMISSIONS.PRODUCTS_READ)
+ */
+export const requirePermissionOrPublished = (permission: Permission): Access => {
+  return ({ req: { user } }) => {
+    if (hasPermission(user, permission)) return true
+    return { _status: { equals: 'published' } }
+  }
+}
+
+/**
+ * Access factory: grants full access when the user holds the permission;
+ * otherwise restricts to documents where `id` matches the requesting user.
+ * Useful for the users collection (staff can read all, customers read only self).
+ *
+ * @example
+ * read: permissionOrSelf(PERMISSIONS.USERS_MANAGE)
+ */
+export const permissionOrSelf = (permission: Permission): Access => {
+  return ({ req: { user } }) => {
+    if (!user) return false
+    if (hasPermission(user, permission)) return true
+    return { id: { equals: user.id } }
+  }
+}
+
+/**
+ * Access factory: grants full access when the user holds the permission;
+ * otherwise restricts to documents owned by the requesting user via the
+ * `customer` relationship field.
+ * Useful for orders, carts, addresses, and similar ownership-filtered collections.
+ *
+ * @example
+ * read: permissionOrOwner(PERMISSIONS.ORDERS_READ)
+ */
+export const permissionOrOwner = (permission: Permission): Access => {
+  return ({ req }) => {
+    if (!req.user) return false
+    if (hasPermission(req.user, permission)) return true
+    if (req.user.id) return { customer: { equals: req.user.id } }
+    return false
+  }
+}
+
+/**
+ * Field-level access factory: grants field access when the requesting user
+ * holds the given permission (or is an admin).
+ *
+ * @example
+ * access: { read: requireFieldPermission(PERMISSIONS.TRANSACTIONS_READ) }
+ */
+export const requireFieldPermission = (permission: Permission): FieldAccess => {
+  return ({ req: { user } }) => hasPermission(user, permission)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Combinator utilities
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Combines multiple access functions with OR logic.
@@ -23,13 +125,11 @@ export const checkRole = (allRoles: User['roles'] = [], user?: User | null): boo
  * - If any functions return `Where` queries → combine them with OR logic
  *
  * @example
- * ```ts
- * const canCreate = or(
- *   isAdmin,
- *   isAuthenticated,
- *   conditional(allowGuestAccess, isGuest)
+ * const canRead = accessOR(
+ *   requirePermission(PERMISSIONS.ORDERS_READ),
+ *   isDocumentOwner,
+ *   hasCartSecretAccess(true)
  * )
- * ```
  */
 export const accessOR = (...accessFunctions: Access[]): Access => {
   return async (args) => {
@@ -68,12 +168,10 @@ export const accessOR = (...accessFunctions: Access[]): Access => {
  * - If any functions return `Where` queries → combine them with AND logic
  *
  * @example
- * ```ts
- * const canUpdate = and(
+ * const canUpdate = accessAND(
  *   isAuthenticated,
  *   isDocumentOwner
  * )
- * ```
  */
 export const accessAND = (...accessFunctions: Access[]): Access => {
   return async (args) => {
@@ -109,16 +207,14 @@ export const accessAND = (...accessFunctions: Access[]): Access => {
  * Useful for feature flags and plugin configuration.
  *
  * @param condition - Boolean or function to determine which function to use
- * @param checker - Access function to use if condition is true
+ * @param accessFunction - Access function to use if condition is true
  * @param fallback - Access function to use if condition is false (defaults to denying access)
  *
  * @example
- * ```ts
- * const canCreate = or(
+ * const canCreate = accessOR(
  *   isAdmin,
  *   conditional(allowGuestCarts, isGuest)
  * )
- * ```
  */
 export const conditional = (
   condition: ((args: any) => boolean) | boolean,

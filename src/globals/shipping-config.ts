@@ -1,7 +1,8 @@
 import type { GlobalConfig } from 'payload'
 
 import { revalidateTag } from 'next/cache'
-import { adminOnly } from '@/access/admin-only'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 import { currenciesConfig } from '@/lib/constants'
 import { amountField } from '@/fields/ammount-field'
@@ -11,7 +12,7 @@ export const ShippingConfig: GlobalConfig = {
   slug: 'shipping-config',
   access: {
     read: () => true,
-    update: adminOnly,
+    update: requirePermission(PERMISSIONS.SHIPPING_MANAGE),
   },
   fields: [
     amountField({

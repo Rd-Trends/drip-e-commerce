@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 import { revalidateTag } from 'next/cache'
-import { adminOnly } from '@/access/admin-only'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { link } from '@/fields/link'
 import { Banner as TBanner } from '@/payload-types'
 import { queryKeys } from '@/lib/query-keys'
@@ -9,7 +10,7 @@ export const Banner: GlobalConfig = {
   slug: 'banner',
   access: {
     read: () => true,
-    update: adminOnly,
+    update: requirePermission(PERMISSIONS.BANNER_MANAGE),
   },
   fields: [
     {

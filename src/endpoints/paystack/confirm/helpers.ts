@@ -180,7 +180,7 @@ export async function sendOrderConfirmationEmail(order: Order, payload: BasePayl
     const orderManagers = await payload.find({
       collection: 'users',
       where: {
-        roles: {
+        role: {
           in: [USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER],
         },
       },
@@ -189,7 +189,6 @@ export async function sendOrderConfirmationEmail(order: Order, payload: BasePayl
       select: {
         email: true,
         name: true,
-        roles: true,
       },
       limit: 0, // Fetch all matching users
     })

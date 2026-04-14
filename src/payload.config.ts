@@ -148,6 +148,7 @@ export default buildConfig({
     apiKey: process.env.RESEND_API_KEY || '',
   }),
   secret: process.env.PAYLOAD_SECRET || '',
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

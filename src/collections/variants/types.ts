@@ -1,18 +1,20 @@
 import type { CollectionConfig } from 'payload'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { revalidateAfterTypeChange, revalidateTypeDelete } from './hooks/revalidate-types'
 
 export const VariantTypes: CollectionConfig = {
   slug: 'variantTypes',
   access: {
-    create: canManageContent,
-    delete: canManageContent,
+    create: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
+    delete: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
     read: () => true,
-    update: canManageContent,
+    update: requirePermission(PERMISSIONS.VARIANTS_MANAGE),
   },
   admin: {
     group: false,
     useAsTitle: 'label',
+    defaultColumns: ['label', 'name', 'updatedAt'],
   },
   hooks: {
     afterChange: [revalidateAfterTypeChange],

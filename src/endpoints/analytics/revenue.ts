@@ -2,8 +2,8 @@ import type { Endpoint } from 'payload'
 import { subDays, format, eachDayOfInterval } from 'date-fns'
 import type { Order } from '@/payload-types'
 import { z } from 'zod'
-import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 const querySchema = z.object({
   period: z.coerce.number().positive().default(30),
@@ -13,7 +13,7 @@ const querySchema = z.object({
 
 export const getRevenueHandler: Endpoint['handler'] = async (req) => {
   try {
-    if (!req.user || !checkRole(STAFF_ROLES, req.user)) {
+    if (!req.user || !hasPermission(req.user, PERMISSIONS.ANALYTICS_VIEW)) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

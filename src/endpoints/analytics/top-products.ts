@@ -2,8 +2,8 @@ import type { Endpoint } from 'payload'
 import { subDays } from 'date-fns'
 import type { Order } from '@/payload-types'
 import { z } from 'zod'
-import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 interface ProductData {
   id: string
@@ -22,7 +22,7 @@ const querySchema = z.object({
 
 export const getTopProductsHandler: Endpoint['handler'] = async (req) => {
   try {
-    if (!req.user || !checkRole(STAFF_ROLES, req.user)) {
+    if (!req.user || !hasPermission(req.user, PERMISSIONS.PRODUCTS_READ)) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -50,7 +50,7 @@ export const getTopProductsHandler: Endpoint['handler'] = async (req) => {
       startDate = subDays(endDate, period)
     }
 
-    // Fetch completed orders
+    // Fetch ALL completed orders in the period (limit: 0 returns all)
     const data = await payload.find({
       collection: 'orders',
       where: {
@@ -60,8 +60,7 @@ export const getTopProductsHandler: Endpoint['handler'] = async (req) => {
           less_than_equal: endDate.toISOString(),
         },
       },
-      limit,
-      page,
+      limit: 0,
       depth: 2,
       sort: 'createdAt',
     })
@@ -94,9 +93,21 @@ export const getTopProductsHandler: Endpoint['handler'] = async (req) => {
     // Sort by revenue
     const allProducts = Array.from(productMap.values()).sort((a, b) => b.revenue - a.revenue)
 
+    // Paginate the aggregated product list
+    const startIndex = (page - 1) * limit
+    const paginatedProducts = allProducts.slice(startIndex, startIndex + limit)
+    const totalDocs = allProducts.length
+    const totalPages = Math.ceil(totalDocs / limit)
+
     return Response.json({
-      ...data,
-      docs: allProducts,
+      docs: paginatedProducts,
+      totalDocs,
+      totalPages,
+      page,
+      limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      pagingCounter: startIndex + 1,
     })
   } catch (error) {
     console.error('Error fetching top products:', error)

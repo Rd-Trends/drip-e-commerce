@@ -6,7 +6,8 @@ import {
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -14,13 +15,14 @@ const dirname = path.dirname(filename)
 export const Media: CollectionConfig = {
   admin: {
     group: 'Content',
+    defaultColumns: ['filename', 'alt', 'mimeType', 'filesize', 'updatedAt'],
   },
   slug: 'media',
   access: {
-    create: canManageContent,
+    create: requirePermission(PERMISSIONS.MEDIA_MANAGE),
     read: () => true,
-    update: canManageContent,
-    delete: canManageContent,
+    update: requirePermission(PERMISSIONS.MEDIA_MANAGE),
+    delete: requirePermission(PERMISSIONS.MEDIA_MANAGE),
   },
   fields: [
     {

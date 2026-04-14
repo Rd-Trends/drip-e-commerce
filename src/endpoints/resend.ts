@@ -29,8 +29,8 @@ export const resendWebhook: Endpoint['handler'] = async (req) => {
       const userDocs = await req.payload.find({
         collection: 'users',
         where: {
-          roles: {
-            in: [USER_ROLES.ADMIN],
+          role: {
+            equals: USER_ROLES.ADMIN,
           },
         },
         select: {

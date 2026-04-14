@@ -1,9 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '@/access/is-admin'
-import { isDocumentOwner } from '@/access/is-document-owner'
-import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
+import { requirePermission, permissionOrOwner, requireFieldPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { addressFields } from '@/fields/adress-fields'
-import { accessOR } from '@/access/utilities'
 import { cartItemsField } from '../fields/cart-item-field'
 import { amountField } from '../fields/ammount-field'
 import { currencyField } from '../fields/currency-field'
@@ -13,14 +11,19 @@ import { currenciesConfig } from '@/lib/constants'
 export const Orders: CollectionConfig = {
   slug: 'orders',
   access: {
-    create: isAdmin,
-    delete: isAdmin,
-    read: accessOR(isAdmin, isDocumentOwner),
-    update: isAdmin,
+    /** Order managers and admins can create orders (e.g. manual orders). */
+    create: requirePermission(PERMISSIONS.ORDERS_WRITE),
+    /** Only order managers / admins can delete orders. */
+    delete: requirePermission(PERMISSIONS.ORDERS_WRITE),
+    /** ORDERS_READ holders see all orders; customers see only their own. */
+    read: permissionOrOwner(PERMISSIONS.ORDERS_READ),
+    /** Updating order status / fields requires ORDERS_WRITE. */
+    update: requirePermission(PERMISSIONS.ORDERS_WRITE),
   },
   admin: {
     group: 'Shop',
-    useAsTitle: 'createdAt',
+    defaultColumns: ['id', 'createdAt', 'status', 'grandTotal', 'transactions'],
+    useAsTitle: 'id',
     description: 'Customer orders',
   },
   fields: [
@@ -113,9 +116,11 @@ export const Orders: CollectionConfig = {
       hasMany: true,
       label: 'Transactions',
       access: {
-        create: adminOnlyFieldAccess,
-        read: adminOnlyFieldAccess,
-        update: adminOnlyFieldAccess,
+        /** Linking a transaction to an order requires TRANSACTIONS_WRITE. */
+        create: requireFieldPermission(PERMISSIONS.TRANSACTIONS_WRITE),
+        /** Reading the transactions field requires TRANSACTIONS_READ. */
+        read: requireFieldPermission(PERMISSIONS.TRANSACTIONS_READ),
+        update: requireFieldPermission(PERMISSIONS.TRANSACTIONS_WRITE),
       },
       admin: {
         position: 'sidebar',

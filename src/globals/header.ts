@@ -3,14 +3,15 @@ import type { GlobalConfig } from 'payload'
 import { link } from '@/fields/link'
 import { revalidateTag } from 'next/cache'
 import { Header as THeader } from '@/payload-types'
-import { canManageContent } from '@/access/can-manage-content'
+import { requirePermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import { queryKeys } from '@/lib/query-keys'
 
 export const Header: GlobalConfig = {
   slug: 'header',
   access: {
     read: () => true,
-    update: canManageContent,
+    update: requirePermission(PERMISSIONS.HEADER_MANAGE),
   },
   fields: [
     {

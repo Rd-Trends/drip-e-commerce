@@ -281,6 +281,33 @@
   color: var(--theme-elevation-600);
 }
 
+/* Error State */
+.error-state {
+  padding: 2rem;
+  text-align: center;
+  background: var(--theme-error-50);
+  border-radius: 8px;
+  color: var(--theme-error-700);
+}
+
+.error-state__retry {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--theme-error-500);
+  background: var(--theme-error-100);
+  color: var(--theme-error-700);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.error-state__retry:hover {
+  background: var(--theme-error-200);
+  border-color: var(--theme-error-600);
+}
+
 /* Skeleton Loading */
 .skeleton {
   background: linear-gradient(
@@ -301,6 +328,35 @@
   100% {
     background-position: -200% 0;
   }
+}
+
+.metric-content .skeleton + .skeleton {
+  margin-top: 8px;
+}
+
+.skeleton--sm {
+  width: 80px;
+  height: 16px;
+}
+
+.skeleton--md {
+  width: 120px;
+  height: 24px;
+}
+
+.skeleton--lg {
+  width: 200px;
+  height: 36px;
+}
+
+.skeleton--full {
+  width: 100%;
+  height: 150px;
+}
+
+.skeleton--chart {
+  width: 100%;
+  height: 350px;
 }
 
 /* Two Column Layout */
@@ -325,40 +381,30 @@
   flex-wrap: wrap;
 }
 
-.timeline-filter__button {
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--theme-elevation-200);
-  background: var(--theme-elevation-0);
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--theme-elevation-800);
-  cursor: pointer;
-  transition: all 0.2s;
+.timeline-filter__popup-wrapper {
+  position: relative;
 }
 
-.timeline-filter__button:hover {
-  border-color: var(--theme-elevation-400);
-  background: var(--theme-elevation-50);
-}
-
-.timeline-filter__button--active {
-  background: var(--theme-success-500);
-  color: white;
-  border-color: var(--theme-success-500);
-}
-
-.timeline-filter__button--active:hover {
-  background: var(--theme-success-600);
-  border-color: var(--theme-success-600);
-}
-
-.timeline-filter__custom {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+.timeline-filter__custom-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  padding: 1.25rem;
+  min-width: 300px;
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.timeline-filter__custom-popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--theme-elevation-150);
 }
 

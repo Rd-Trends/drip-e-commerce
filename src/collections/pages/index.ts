@@ -1,7 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { slugField } from 'payload'
-import { adminOrPublishedStatus } from '@/access/admin-or-published-status'
+import { requirePermission, requirePermissionOrPublished } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -10,7 +11,7 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 import { revalidatePage, revalidateDelete } from './hooks/revalidate-page'
-import { canManageContent } from '@/access/can-manage-content'
+
 import { generatePreviewPath } from '@/utils/generate-preview-path'
 import { Content } from '@/blocks/content/config'
 import { CallToAction } from '@/blocks/call-to-action/config'
@@ -20,14 +21,14 @@ import { FormBlock } from '@/blocks/forms/config'
 export const Pages: CollectionConfig = {
   slug: 'pages',
   access: {
-    create: canManageContent,
-    delete: canManageContent,
-    read: adminOrPublishedStatus,
-    update: canManageContent,
+    create: requirePermission(PERMISSIONS.PAGES_WRITE),
+    delete: requirePermission(PERMISSIONS.PAGES_WRITE),
+    read: requirePermissionOrPublished(PERMISSIONS.PAGES_READ),
+    update: requirePermission(PERMISSIONS.PAGES_WRITE),
   },
   admin: {
     group: 'Content',
-    defaultColumns: ['title', 'slug', 'updatedAt'],
+    defaultColumns: ['title', 'slug', '_status', 'publishedOn', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({

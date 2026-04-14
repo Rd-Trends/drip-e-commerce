@@ -61,7 +61,7 @@ export function NoProductFound({ searchQuery, categories }: ProductListEmptyProp
             </LinkButton>
           )}
           <AdminActionButton
-            permission="canManageContent"
+            permission="canWriteProducts"
             href="/admin/collections/products/create"
             variant={showClearButton ? 'default' : 'default'}
           >

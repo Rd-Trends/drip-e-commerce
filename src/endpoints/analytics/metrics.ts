@@ -2,8 +2,8 @@ import type { Endpoint } from 'payload'
 import { subDays } from 'date-fns'
 import type { Transaction } from '@/payload-types'
 import { z } from 'zod'
-import { checkRole } from '@/access/utilities'
-import { STAFF_ROLES } from '@/lib/constants'
+import { hasPermission } from '@/access/utilities'
+import { PERMISSIONS } from '@/lib/permissions'
 
 interface MetricsData {
   totalRevenue: number
@@ -23,7 +23,7 @@ const querySchema = z.object({
 
 export const getMetricsHandler: Endpoint['handler'] = async (req) => {
   try {
-    if (!req.user || !checkRole(STAFF_ROLES, req.user)) {
+    if (!req.user || !hasPermission(req.user, PERMISSIONS.ANALYTICS_VIEW)) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -52,7 +52,10 @@ export const getMetricsHandler: Endpoint['handler'] = async (req) => {
       collection: 'orders',
       where: {
         status: { equals: 'completed' },
-        createdAt: { greater_than_equal: startDate.toISOString() },
+        createdAt: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: endDate.toISOString(),
+        },
       },
       limit: 0,
     })
@@ -61,8 +64,11 @@ export const getMetricsHandler: Endpoint['handler'] = async (req) => {
     const { docs: processingOrders } = await payload.find({
       collection: 'orders',
       where: {
-        status: { equals: 'completed' },
-        createdAt: { greater_than_equal: startDate.toISOString() },
+        status: { equals: 'processing' },
+        createdAt: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: endDate.toISOString(),
+        },
       },
       limit: 0,
     })
@@ -118,7 +124,7 @@ export const getMetricsHandler: Endpoint['handler'] = async (req) => {
     const { docs: previousProcessingOrders } = await payload.find({
       collection: 'orders',
       where: {
-        status: { equals: 'completed' },
+        status: { equals: 'processing' },
         createdAt: {
           greater_than_equal: previousStartDate.toISOString(),
           less_than: startDate.toISOString(),

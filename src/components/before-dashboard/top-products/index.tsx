@@ -1,9 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Pagination } from '@payloadcms/ui'
 import { PaginatedDocs } from 'payload'
 import { formatCurrency } from '@/utils/format-currency'
+import { queryKeys } from '@/lib/query-keys'
+import { buildTimelineParams, analyticsFetcher } from '../utils'
 import type { TimelineRange } from '../timeline-filter'
 
 interface ProductData {
@@ -20,65 +23,34 @@ interface TopProductsProps {
 }
 
 export function TopProducts({ timelineRange }: TopProductsProps) {
-  const [data, setData] = useState<TopProductsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
-  useEffect(() => {
-    const fetchTopProducts = async () => {
-      setLoading(true)
-      setError(null)
+  const params = buildTimelineParams(timelineRange)
+  params.append('page', page.toString())
+  params.append('limit', '10')
 
-      try {
-        // Build query params
-        const params = new URLSearchParams()
-
-        if (timelineRange.period && timelineRange.period !== 'custom') {
-          const periodMap = { '24h': '1', '7d': '7', '30d': '30' }
-          params.append('period', periodMap[timelineRange.period] || '30')
-        } else if (timelineRange.startDate && timelineRange.endDate) {
-          params.append('startDate', timelineRange.startDate.toISOString())
-          params.append('endDate', timelineRange.endDate.toISOString())
-        } else {
-          params.append('period', '30')
-        }
-
-        params.append('page', page.toString())
-        params.append('limit', '10')
-
-        const response = await fetch(`/api/analytics/top-products?${params.toString()}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch top products')
-        }
-
-        const result = await response.json()
-        setData(result)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load top products')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchTopProducts()
-  }, [timelineRange, page])
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.analytics.topProducts(params.toString(), page),
+    queryFn: () =>
+      analyticsFetcher<TopProductsResponse>(`/api/analytics/top-products?${params.toString()}`),
+    placeholderData: (prev: TopProductsResponse | undefined) => prev,
+  })
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
   }
 
-  if (loading) {
+  if (isLoading) {
     return <TopProductsLoading />
   }
 
   if (error) {
     return (
       <div className="error-state">
-        <p>Error: {error}</p>
+        <p>Error: {error.message}</p>
+        <button className="error-state__retry" onClick={() => refetch()}>
+          Retry
+        </button>
       </div>
     )
   }
@@ -114,7 +86,7 @@ export function TopProducts({ timelineRange }: TopProductsProps) {
           <tbody>
             {data.docs.map((product, index) => (
               <tr key={product.id}>
-                <td>{index + 1}</td>
+                <td>{((data?.page ?? 1) - 1) * 10 + index + 1}</td>
                 <td>
                   <a href={`/admin/collections/products/${product.id}`} className="table-link">
                     {product.title}
@@ -146,11 +118,11 @@ export function TopProducts({ timelineRange }: TopProductsProps) {
 function TopProductsLoading() {
   return (
     <div className="analytics-section">
-      <div className="section-header">
-        <div className="skeleton" style={{ width: '180px', height: '24px' }} />
+      <div className="analytics-section-header">
+        <div className="skeleton skeleton--md" />
       </div>
       <div className="table-container">
-        <div className="skeleton" style={{ width: '100%', height: '300px' }} />
+        <div className="skeleton skeleton--full" />
       </div>
     </div>
   )

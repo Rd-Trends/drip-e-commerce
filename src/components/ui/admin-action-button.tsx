@@ -12,7 +12,7 @@ interface AdminActionButtonProps
     VariantProps<typeof buttonVariants> {
   /**
    * The permission required to see this button
-   * @example "canManageContent" | "canManageOrders" | "isAdmin"
+   * @example "canWriteProduct" | "canManageOrders" | "isAdmin"
    */
   permission: PermissionKey
   /**
@@ -33,7 +33,7 @@ interface AdminActionButtonProps
  * @example
  * // Only visible to users who can manage content
  * <AdminActionButton
- *   permission="canManageContent"
+ *   permission="canManageOrder"
  *   href="/admin/collections/products/create"
  * >
  *   Create Product
