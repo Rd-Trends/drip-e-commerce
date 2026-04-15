@@ -141,9 +141,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
     )
 
     const createdProducts = results
-      .filter(
-        (r): r is PromiseFulfilledResult<CreatedProductSummary> => r.status === 'fulfilled',
-      )
+      .filter((r): r is PromiseFulfilledResult<CreatedProductSummary> => r.status === 'fulfilled')
       .map((r) => r.value)
     const failedGroupCount = results.filter((r) => r.status === 'rejected').length
 
@@ -161,10 +159,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
         data: { status: 'failed' },
         req,
       })
-      await sendTextMessage(
-        phone,
-        '❌ Sorry, we couldn\'t create any products. Please try again.',
-      )
+      await sendTextMessage(phone, "❌ Sorry, we couldn't create any products. Please try again.")
       return { state: 'failed' as const, errorMessage: 'All product groups failed to process' }
     }
 
@@ -185,8 +180,8 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
           [
             '✅ Product created successfully!\n',
             `📦 *${p.title}*`,
-            `💰 Cost Price: ₦${formatCurrency(p.costPrice)}`,
-            `💰 Selling Price: ₦${formatCurrency(p.price)}`,
+            `💰 Cost Price: ${formatCurrency(p.costPrice)}`,
+            `💰 Selling Price: ${formatCurrency(p.price)}`,
             p.variantInfo,
             `📁 ${p.categoryCount === 1 ? 'Category' : 'Categories'}: ${p.categoryNames}`,
             `📝 Status: Draft (review & publish in admin)\n`,
@@ -199,7 +194,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
         createdProducts.forEach((p, i) => {
           lines.push(
             `*${i + 1}. ${p.title}*`,
-            `   💰 ₦${formatCurrency(p.costPrice)} cost · ₦${formatCurrency(p.price)} selling`,
+            `   💰 ${formatCurrency(p.costPrice)} cost · ${formatCurrency(p.price)} selling`,
             `   ${p.variantInfo.split('\n').join('\n   ')}`,
             `   🔗 ${p.adminUrl}`,
             '',

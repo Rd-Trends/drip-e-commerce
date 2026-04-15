@@ -97,6 +97,8 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
 
       const contacts = value.contacts ?? []
 
+      console.log(value.messages)
+
       for (const message of value.messages) {
         if (message.type !== 'text' && message.type !== 'image') continue
 
@@ -115,6 +117,7 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
               phone,
               senderName,
               textBody: message.text.body,
+              req,
             })
           } else if (message.type === 'image' && message.image?.id) {
             await handleImageMessage({
@@ -124,6 +127,7 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
               imageId: message.image.id,
               mimeType: message.image.mime_type ?? 'image/jpeg',
               caption: message.image.caption,
+              req,
             })
           }
         } catch (err) {
@@ -146,6 +150,7 @@ async function handleTextMessage(params: {
   phone: string
   senderName: string
   textBody: string
+  req: Request
 }): Promise<void> {
   const { payload, phone, senderName, textBody } = params
   const trimmed = textBody.trim()
@@ -185,6 +190,7 @@ async function handleTextMessage(params: {
       collection: 'whatsapp-sessions',
       id: session.id,
       data: { messages: [...existing, { type: 'text', text: trimmed }] },
+      req,
     })
   } else {
     await payload.create({
@@ -195,6 +201,7 @@ async function handleTextMessage(params: {
         status: 'pending',
         messages: [{ type: 'text', text: trimmed }],
       },
+      req,
     })
     await sendTextMessage(
       phone,
@@ -216,6 +223,7 @@ async function handleImageMessage(params: {
   imageId: string
   mimeType: string
   caption?: string
+  req: Request
 }): Promise<void> {
   const { payload, phone, senderName, imageId, mimeType, caption } = params
 
@@ -238,6 +246,7 @@ async function handleImageMessage(params: {
       name: `drip-fashion-product-${Date.now()}.${extension}`,
       size: imageBuffer.length,
     },
+    req,
   })
 
   if (!mediaDoc.id) {
@@ -258,11 +267,14 @@ async function handleImageMessage(params: {
   if (session) {
     const existing = normalizeMessages(session.messages ?? [])
     const updatedMessages = [...existing, imageMessage]
-    await payload.update({
-      collection: 'whatsapp-sessions',
-      id: session.id,
-      data: { messages: updatedMessages },
-    })
+    await payload.update(
+      {
+        collection: 'whatsapp-sessions',
+        id: session.id,
+        data: { messages: updatedMessages },
+      },
+      req,
+    )
     const total = updatedMessages.length
     await sendTextMessage(phone, `📸 Message ${total}/${total} processed`)
   } else {
@@ -274,6 +286,7 @@ async function handleImageMessage(params: {
         status: 'pending',
         messages: [imageMessage],
       },
+      req,
     })
     await sendTextMessage(
       phone,
