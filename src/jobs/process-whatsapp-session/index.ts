@@ -19,8 +19,8 @@ import type { Category } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import { formatCurrency } from '@/utils/format-currency'
 import type { Media } from '@/payload-types'
-import type { CreatedProductSummary } from '@/lib/whatsapp/utils'
-import { createProductFromGroup } from '@/jobs/createProductFromGroup'
+import { CONFIRMATION_RE, type CreatedProductSummary } from '@/lib/whatsapp/utils'
+import { createProductFromGroup } from '@/jobs/process-whatsapp-session/create-product-from-group'
 
 type TaskIO = {
   input: { sessionId: number; phone: string }
@@ -40,20 +40,23 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       req,
     })
 
-    // ── 2. Re-fetch with depth:1 so image fields are hydrated Media objects ─
-    const session = await payload.findByID({
-      collection: 'whatsapp-sessions',
-      id: sessionId,
+    // ── 2. Fetch the conversation's ordered inbound messages ────────────────
+    const messagesResult = await payload.find({
+      collection: 'whatsapp-messages',
       depth: 1,
+      limit: 0,
+      pagination: false,
+      sort: 'orderIndex',
+      where: { conversation: { equals: sessionId } },
       req,
     })
 
     const serverUrl = getServerSideURL()
-    const messages = session.messages ?? []
+    const messages = messagesResult.docs
 
     // Collect text from text messages AND image captions
     const allText = messages
-      .filter((msg) => !!msg.text)
+      .filter((msg) => !!msg.text && !CONFIRMATION_RE.test(msg.text.trim()))
       .map((msg) => msg.text as string)
       .join('\n')
 
@@ -128,9 +131,10 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
     // ── 5. Create products sequentially to avoid concurrent local API writes
     // sharing the same Payload request transaction context.
-    const results: PromiseSettledResult<CreatedProductSummary>[] = []
+    const createdProducts: CreatedProductSummary[] = []
+    let failedGroupCount = 0
 
-    for (const groupImages of imageGroups) {
+    for (const [index, groupImages] of imageGroups.entries()) {
       try {
         const createdProduct = await createProductFromGroup({
           groupImages,
@@ -141,29 +145,34 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
           serverUrl,
         })
 
-        results.push({
-          status: 'fulfilled',
-          value: createdProduct,
-        })
+        createdProducts.push(createdProduct)
+
+        try {
+          await sendTextMessage(
+            phone,
+            [
+              `✅ Product ${index + 1}/${imageGroups.length} created successfully!\n`,
+              `📦 *${createdProduct.title}*`,
+              `💰 Cost Price: ${formatCurrency(createdProduct.costPrice)}`,
+              `💰 Selling Price: ${formatCurrency(createdProduct.price)}`,
+              createdProduct.variantInfo,
+              `📁 ${createdProduct.categoryCount === 1 ? 'Category' : 'Categories'}: ${createdProduct.categoryNames}`,
+              `📝 Status: Draft (review & publish in admin)\n`,
+              `🔗 Edit in admin:`,
+              createdProduct.adminUrl,
+            ].join('\n'),
+          )
+        } catch (notifyErr) {
+          payload.logger.error(
+            notifyErr,
+            `[whatsapp] Failed to send success update for group ${index + 1}`,
+          )
+        }
       } catch (reason) {
-        results.push({
-          status: 'rejected',
-          reason,
-        })
+        failedGroupCount += 1
+        payload.logger.error(reason, `[whatsapp] Failed to create product for group ${index + 1}`)
       }
     }
-
-    const createdProducts = results
-      .filter((r): r is PromiseFulfilledResult<CreatedProductSummary> => r.status === 'fulfilled')
-      .map((r) => r.value)
-    const failedGroupCount = results.filter((r) => r.status === 'rejected').length
-
-    // Log failures
-    results.forEach((r, i) => {
-      if (r.status === 'rejected') {
-        payload.logger.error(r.reason, `[whatsapp] Failed to create product for group ${i + 1}`)
-      }
-    })
 
     if (createdProducts.length === 0) {
       await payload.update({
@@ -186,39 +195,13 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
     // ── 7. Send summary ─────────────────────────────────────────────────────
     try {
-      if (createdProducts.length === 1) {
-        const p = createdProducts[0]
-        await sendTextMessage(
-          phone,
-          [
-            '✅ Product created successfully!\n',
-            `📦 *${p.title}*`,
-            `💰 Cost Price: ${formatCurrency(p.costPrice)}`,
-            `💰 Selling Price: ${formatCurrency(p.price)}`,
-            p.variantInfo,
-            `📁 ${p.categoryCount === 1 ? 'Category' : 'Categories'}: ${p.categoryNames}`,
-            `📝 Status: Draft (review & publish in admin)\n`,
-            `🔗 Edit in admin:`,
-            p.adminUrl,
-          ].join('\n'),
-        )
-      } else {
-        const lines = [`✅ ${createdProducts.length} products created successfully!\n`]
-        createdProducts.forEach((p, i) => {
-          lines.push(
-            `*${i + 1}. ${p.title}*`,
-            `   💰 ${formatCurrency(p.costPrice)} cost · ${formatCurrency(p.price)} selling`,
-            `   ${p.variantInfo.split('\n').join('\n   ')}`,
-            `   🔗 ${p.adminUrl}`,
-            '',
-          )
-        })
-        lines.push(`📝 All drafts — review & publish in admin`)
-        if (failedGroupCount > 0) {
-          lines.push(`\n⚠️ ${failedGroupCount} product(s) could not be created.`)
-        }
-        await sendTextMessage(phone, lines.join('\n'))
+      const summaryLines = [`✅ Successfully created ${createdProducts.length} product(s).`]
+
+      if (failedGroupCount > 0) {
+        summaryLines.push(`⚠️ ${failedGroupCount} product(s) failed during creation.`)
       }
+
+      await sendTextMessage(phone, summaryLines.join('\n'))
     } catch (notifyErr) {
       payload.logger.error(notifyErr, '[whatsapp] Failed to send summary to user')
     }

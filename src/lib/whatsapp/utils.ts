@@ -1,12 +1,8 @@
 /**
- * Shared utilities for WhatsApp product-creation sessions.
- *
- * Extracted from the webhook route so that both the route handler
- * and the background job can reuse the same logic.
+ * Shared utilities for WhatsApp product-creation conversations.
  */
 
 import type { BasePayload, PayloadRequest } from 'payload'
-import type { WhatsappSession } from '@/payload-types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -25,9 +21,9 @@ export type CreatedProductSummary = {
   adminUrl: string
 }
 
-// ─── Session helpers ──────────────────────────────────────────────────────────
+// ─── Conversation helpers ────────────────────────────────────────────────────
 
-/** Returns the most recent `pending` session for a given phone number, or `null`. */
+/** Returns the most recent `pending` conversation for a given phone number, or `null`. */
 export async function findPendingSession(
   payload: BasePayload,
   phone: string,
@@ -38,29 +34,10 @@ export async function findPendingSession(
     where: { and: [{ phone: { equals: phone } }, { status: { equals: 'pending' } }] },
     sort: '-createdAt',
     limit: 1,
+    overrideAccess: true,
     ...(req ? { req } : {}),
   })
   return result.docs[0] ?? null
-}
-
-/**
- * Normalises an existing messages array so it is safe to spread when
- * appending new entries. Handles both hydrated (depth > 0) and bare-ID
- * image references.
- */
-export function normalizeMessages(messages: WhatsappSession['messages']) {
-  return (
-    messages?.map((msg) => ({
-      type: msg.type,
-      text: msg.text || undefined,
-      image:
-        msg.type === 'image'
-          ? typeof msg.image === 'object' && !!msg.image
-            ? msg.image.id
-            : msg.image
-          : undefined,
-    })) ?? []
-  )
 }
 
 // ─── Rich-text / media helpers ────────────────────────────────────────────────

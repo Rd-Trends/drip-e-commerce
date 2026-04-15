@@ -37,8 +37,9 @@ import { ShippingConfig } from './globals/shipping-config'
 import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
 import { Pages } from './collections/pages'
+import { WhatsappMessages } from '@/collections/whatsapp-messages'
 import { WhatsappSessions } from '@/collections/whatsapp-sessions'
-import { handler as processWhatsappSessionHandler } from '@/jobs/processWhatsappSession'
+import { handler as processWhatsappSessionHandler } from '@/jobs/process-whatsapp-session'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -93,6 +94,7 @@ export default buildConfig({
     Transactions,
     Pages,
     WhatsappSessions,
+    WhatsappMessages,
   ],
   globals: [Header, Footer, Home, ShippingConfig, Banner],
 

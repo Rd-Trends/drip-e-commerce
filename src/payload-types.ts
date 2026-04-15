@@ -81,6 +81,7 @@ export interface Config {
     transactions: Transaction;
     pages: Page;
     'whatsapp-sessions': WhatsappSession;
+    'whatsapp-messages': WhatsappMessage;
     forms: Form;
     'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
@@ -101,6 +102,9 @@ export interface Config {
     variantTypes: {
       options: 'variantOptions';
     };
+    'whatsapp-sessions': {
+      messages: 'whatsapp-messages';
+    };
   };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
@@ -117,6 +121,7 @@ export interface Config {
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     'whatsapp-sessions': WhatsappSessionsSelect<false> | WhatsappSessionsSelect<true>;
+    'whatsapp-messages': WhatsappMessagesSelect<false> | WhatsappMessagesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -1051,19 +1056,30 @@ export interface WhatsappSession {
   senderName?: string | null;
   status: 'pending' | 'processing' | 'done' | 'failed';
   /**
-   * Chronological log of all messages received in this session
+   * Chronological log of all messages linked to this conversation
    */
-  messages?:
-    | {
-        type: 'text' | 'image';
-        /**
-         * Message text content or image caption
-         */
-        text?: string | null;
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
+  messages?: {
+    docs?: (number | WhatsappMessage)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-messages".
+ */
+export interface WhatsappMessage {
+  id: number;
+  conversation: number | WhatsappSession;
+  type: 'text' | 'image';
+  /**
+   * Message text content or image caption
+   */
+  text?: string | null;
+  image?: (number | null) | Media;
+  sourceMessageId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1255,6 +1271,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'whatsapp-sessions';
         value: number | WhatsappSession;
+      } | null)
+    | ({
+        relationTo: 'whatsapp-messages';
+        value: number | WhatsappMessage;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1705,14 +1725,20 @@ export interface WhatsappSessionsSelect<T extends boolean = true> {
   phone?: T;
   senderName?: T;
   status?: T;
-  messages?:
-    | T
-    | {
-        type?: T;
-        text?: T;
-        image?: T;
-        id?: T;
-      };
+  messages?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-messages_select".
+ */
+export interface WhatsappMessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  type?: T;
+  text?: T;
+  image?: T;
+  sourceMessageId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

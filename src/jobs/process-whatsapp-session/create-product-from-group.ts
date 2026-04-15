@@ -99,33 +99,37 @@ export async function createProductFromGroup(params: {
     )
     const defaultInventory = Math.min(...variantMap.map((v) => v.inventory))
 
-    for (const combo of combinations) {
-      await payload.create({
-        collection: 'variants',
-        data: {
-          product: product.id,
-          options: combo,
-          inventory: defaultInventory,
-          priceInNGN: price,
-          priceInNGNEnabled: true,
-          costPrice: costPrice,
-          _status: 'published',
-        },
-        req,
-      })
-    }
+    await Promise.all(
+      combinations.map((combo) =>
+        payload.create({
+          collection: 'variants',
+          data: {
+            product: product.id,
+            options: combo,
+            inventory: defaultInventory,
+            priceInNGN: price,
+            priceInNGNEnabled: true,
+            costPrice: costPrice,
+            _status: 'published',
+          },
+          req,
+        }),
+      ),
+    )
   }
 
-  for (const img of parsed.images) {
-    if (!img.altText?.trim()) continue
-
-    await payload.update({
-      collection: 'media',
-      id: img.id,
-      data: { alt: img.altText.trim() },
-      req,
-    })
-  }
+  await Promise.all(
+    parsed.images
+      .filter((img) => !!img.altText.trim())
+      .map((img) =>
+        payload.update({
+          collection: 'media',
+          id: img.id,
+          data: { alt: img.altText.trim() },
+          req,
+        }),
+      ),
+  )
 
   const adminUrl = `${serverUrl}/admin/collections/products/${product.id}`
   const categoryNames = parsed.categories.map((c) => c.name).join(', ')

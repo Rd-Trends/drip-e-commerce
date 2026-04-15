@@ -38,35 +38,22 @@ export const WhatsappSessions: CollectionConfig = {
       ],
     },
 
-    // chat-style message log
     {
       name: 'messages',
-      type: 'array',
+      type: 'join',
+      collection: 'whatsapp-messages',
+      on: 'conversation',
       admin: {
-        description: 'Chronological log of all messages received in this session',
+        allowCreate: false,
+        defaultColumns: ['orderIndex', 'type', 'text', 'image', 'updatedAt'],
+        description: 'Chronological log of all messages linked to this conversation',
       },
-      fields: [
-        {
-          name: 'type',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'Text', value: 'text' },
-            { label: 'Image', value: 'image' },
-          ],
-        },
-        {
-          name: 'text',
-          type: 'textarea',
-          admin: { description: 'Message text content or image caption' },
-        },
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          admin: { condition: (_, siblingData) => siblingData?.type === 'image' },
-        },
-      ],
+      defaultLimit: 100,
+      maxDepth: 1,
     },
   ],
+  labels: {
+    singular: 'WhatsApp Conversation',
+    plural: 'WhatsApp Conversations',
+  },
 }
