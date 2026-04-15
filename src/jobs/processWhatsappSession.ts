@@ -126,19 +126,32 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       )
     }
 
-    // ── 5. Create products — parallel when multiple groups ──────────────────
-    const results = await Promise.allSettled(
-      imageGroups.map((groupImages) =>
-        createProductFromGroup({
+    // ── 5. Create products sequentially to avoid concurrent local API writes
+    // sharing the same Payload request transaction context.
+    const results: PromiseSettledResult<CreatedProductSummary>[] = []
+
+    for (const groupImages of imageGroups) {
+      try {
+        const createdProduct = await createProductFromGroup({
           groupImages,
           allText,
           categories,
           payload,
           req,
           serverUrl,
-        }),
-      ),
-    )
+        })
+
+        results.push({
+          status: 'fulfilled',
+          value: createdProduct,
+        })
+      } catch (reason) {
+        results.push({
+          status: 'rejected',
+          reason,
+        })
+      }
+    }
 
     const createdProducts = results
       .filter((r): r is PromiseFulfilledResult<CreatedProductSummary> => r.status === 'fulfilled')

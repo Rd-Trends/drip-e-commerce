@@ -99,37 +99,33 @@ export async function createProductFromGroup(params: {
     )
     const defaultInventory = Math.min(...variantMap.map((v) => v.inventory))
 
-    await Promise.all(
-      combinations.map((combo) =>
-        payload.create({
-          collection: 'variants',
-          data: {
-            product: product.id,
-            options: combo,
-            inventory: defaultInventory,
-            priceInNGN: price,
-            priceInNGNEnabled: true,
-            costPrice: costPrice,
-            _status: 'published',
-          },
-          req,
-        }),
-      ),
-    )
-  }
-
-  // Update media alt text in parallel (non-blocking)
-  await Promise.allSettled(
-    parsed.images.map((img) => {
-      if (!img.altText?.trim()) return Promise.resolve()
-      return payload.update({
-        collection: 'media',
-        id: img.id,
-        data: { alt: img.altText.trim() },
+    for (const combo of combinations) {
+      await payload.create({
+        collection: 'variants',
+        data: {
+          product: product.id,
+          options: combo,
+          inventory: defaultInventory,
+          priceInNGN: price,
+          priceInNGNEnabled: true,
+          costPrice: costPrice,
+          _status: 'published',
+        },
         req,
       })
-    }),
-  )
+    }
+  }
+
+  for (const img of parsed.images) {
+    if (!img.altText?.trim()) continue
+
+    await payload.update({
+      collection: 'media',
+      id: img.id,
+      data: { alt: img.altText.trim() },
+      req,
+    })
+  }
 
   const adminUrl = `${serverUrl}/admin/collections/products/${product.id}`
   const categoryNames = parsed.categories.map((c) => c.name).join(', ')

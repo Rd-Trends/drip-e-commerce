@@ -75,7 +75,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // Schedule lightweight dispatch after the 200 response is sent
   after(async () => {
-    await processWebhook(body)
+    await processWebhook({ body, req: request })
   })
 
   return new Response('OK', { status: 200 })
@@ -87,7 +87,13 @@ export async function POST(request: Request): Promise<Response> {
  * Fans out all messages in a webhook payload to the appropriate handler.
  * Runs after the 200 response has already been sent to Meta.
  */
-async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
+async function processWebhook({
+  body,
+  req,
+}: {
+  body: WhatsAppWebhookPayload
+  req: Request
+}): Promise<void> {
   const payload = await getPayload({ config })
 
   for (const entry of body.entry ?? []) {
@@ -152,7 +158,7 @@ async function handleTextMessage(params: {
   textBody: string
   req: Request
 }): Promise<void> {
-  const { payload, phone, senderName, textBody } = params
+  const { payload, phone, senderName, textBody, req } = params
   const trimmed = textBody.trim()
   const isKeyword = CONFIRMATION_RE.test(trimmed)
 
@@ -225,7 +231,7 @@ async function handleImageMessage(params: {
   caption?: string
   req: Request
 }): Promise<void> {
-  const { payload, phone, senderName, imageId, mimeType, caption } = params
+  const { payload, phone, senderName, imageId, mimeType, caption, req } = params
 
   // 1. Download from WhatsApp CDN — must happen immediately (URLs expire in ~5 min)
   const imageBuffer = await downloadWhatsAppImage(imageId, mimeType)
@@ -267,14 +273,12 @@ async function handleImageMessage(params: {
   if (session) {
     const existing = normalizeMessages(session.messages ?? [])
     const updatedMessages = [...existing, imageMessage]
-    await payload.update(
-      {
-        collection: 'whatsapp-sessions',
-        id: session.id,
-        data: { messages: updatedMessages },
-      },
+    await payload.update({
+      collection: 'whatsapp-sessions',
+      id: session.id,
+      data: { messages: updatedMessages },
       req,
-    )
+    })
     const total = updatedMessages.length
     await sendTextMessage(phone, `📸 Message ${total}/${total} processed`)
   } else {
