@@ -1,103 +1,333 @@
 /**
- * Creates a single draft product (with optional variants) from an AI-parsed
- * image group. Designed to be called from the `processWhatsappSession` job
- * so that each product group can be processed independently.
+ * Creates a single draft product from one AI-extracted product payload.
+ * Variant option creation and slug uniqueness are handled deterministically here,
+ * outside the model.
  */
 
 import { nanoid } from 'nanoid'
 import type { BasePayload, PayloadRequest } from 'payload'
-import { parseProductFromMessage } from '@/lib/ai/ai'
-import type { Category } from '@/lib/ai/ai'
+import type { ParsedSessionProduct, VariantCatalogOption, VariantCatalogType } from '@/lib/ai/ai'
 import { textToLexical, type CreatedProductSummary } from '@/lib/whatsapp/utils'
 
+type ResolvedVariantOption = {
+  id: number
+  label: string
+}
+
+type ResolvedVariant = {
+  inventoryPerOption: number
+  options: ResolvedVariantOption[]
+  variantTypeId: number
+  variantTypeName: string
+}
+
+function normalizeKey(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function normalizeOptionLabel(value: string): string {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
+function findOptionInCatalog(
+  variantType: VariantCatalogType,
+  candidate: { id: number | null; label: string | null | undefined },
+): VariantCatalogOption | undefined {
+  if (candidate.id != null) {
+    const optionById = variantType.options.find((option) => option.id === candidate.id)
+    if (optionById) return optionById
+  }
+
+  const normalizedLabel = normalizeKey(candidate.label ?? '')
+  if (!normalizedLabel) return undefined
+
+  return variantType.options.find(
+    (option) =>
+      normalizeKey(option.label) === normalizedLabel || normalizeKey(option.value) === normalizedLabel,
+  )
+}
+
+async function ensureVariantTypeOptionsLoaded(params: {
+  payload: BasePayload
+  req: PayloadRequest
+  variantType: VariantCatalogType
+}): Promise<void> {
+  const { payload, req, variantType } = params
+
+  if (variantType.optionsLoaded) {
+    return
+  }
+
+  const result = await payload.find({
+    collection: 'variantOptions',
+    where: { variantType: { equals: variantType.id } },
+    limit: 0,
+    pagination: false,
+    req,
+  })
+
+  variantType.options = result.docs.map((option) => ({
+    id: option.id,
+    label: option.label,
+    value: option.value,
+  }))
+  variantType.optionsLoaded = true
+}
+
+async function resolveVariantOption(params: {
+  candidate: { id: number | null; label: string | null | undefined }
+  payload: BasePayload
+  req: PayloadRequest
+  variantType: VariantCatalogType
+}): Promise<ResolvedVariantOption> {
+  const { candidate, payload, req, variantType } = params
+
+  await ensureVariantTypeOptionsLoaded({ payload, req, variantType })
+
+  const existing = findOptionInCatalog(variantType, candidate)
+  if (existing) {
+    return { id: existing.id, label: existing.label }
+  }
+
+  const cleanLabel = normalizeOptionLabel(candidate.label ?? '')
+  if (!cleanLabel) {
+    throw new Error(`Missing option label for variant type ${variantType.label}`)
+  }
+
+  const created = await payload.create({
+    collection: 'variantOptions',
+    data: {
+      variantType: variantType.id,
+      label: cleanLabel,
+      value: normalizeKey(cleanLabel),
+    },
+    req,
+  })
+
+  variantType.options.push({
+    id: created.id,
+    label: created.label,
+    value: created.value,
+  })
+
+  return { id: created.id, label: created.label }
+}
+
+async function resolveSelectedVariants(params: {
+  payload: BasePayload
+  parsedProduct: ParsedSessionProduct
+  req: PayloadRequest
+  variantCatalog: VariantCatalogType[]
+}): Promise<ResolvedVariant[]> {
+  const { payload, parsedProduct, req, variantCatalog } = params
+  const variantCatalogById = new Map(variantCatalog.map((variantType) => [variantType.id, variantType]))
+  const resolvedByType = new Map<number, ResolvedVariant>()
+
+  for (const selectedVariant of parsedProduct.selectedVariants) {
+    const variantType = variantCatalogById.get(selectedVariant.variantTypeId)
+    if (!variantType) {
+      throw new Error(`Unknown variant type ID ${selectedVariant.variantTypeId} returned by AI`)
+    }
+
+    const current =
+      resolvedByType.get(selectedVariant.variantTypeId) ??
+      ({
+        inventoryPerOption: selectedVariant.inventoryPerOption,
+        options: [],
+        variantTypeId: selectedVariant.variantTypeId,
+        variantTypeName: variantType.label,
+      } satisfies ResolvedVariant)
+
+    current.inventoryPerOption = Math.min(current.inventoryPerOption, selectedVariant.inventoryPerOption)
+
+    for (const option of selectedVariant.options) {
+      const resolvedOption = await resolveVariantOption({
+        candidate: option,
+        payload,
+        req,
+        variantType,
+      })
+
+      if (!current.options.some((existing) => existing.id === resolvedOption.id)) {
+        current.options.push(resolvedOption)
+      }
+    }
+
+    if (current.options.length > 0) {
+      resolvedByType.set(selectedVariant.variantTypeId, current)
+    }
+  }
+
+  return [...resolvedByType.values()]
+}
+
+async function buildImageVariantMap(params: {
+  imageVariantTypeIds: Set<number>
+  parsedProduct: ParsedSessionProduct
+  payload: BasePayload
+  req: PayloadRequest
+  variantCatalog: VariantCatalogType[]
+}): Promise<Map<number, number>> {
+  const { imageVariantTypeIds, parsedProduct, payload, req, variantCatalog } = params
+  const variantCatalogById = new Map(variantCatalog.map((variantType) => [variantType.id, variantType]))
+  const imageVariantMap = new Map<number, number>()
+
+  for (const image of parsedProduct.images) {
+    if (image.variantTypeId == null || !imageVariantTypeIds.has(image.variantTypeId)) {
+      continue
+    }
+
+    if (image.variantOptionId == null && !image.variantOptionLabel?.trim()) {
+      continue
+    }
+
+    const variantType = variantCatalogById.get(image.variantTypeId)
+    if (!variantType) continue
+
+    const resolvedOption = await resolveVariantOption({
+      candidate: {
+        id: image.variantOptionId,
+        label: image.variantOptionLabel,
+      },
+      payload,
+      req,
+      variantType,
+    })
+
+    imageVariantMap.set(image.id, resolvedOption.id)
+  }
+
+  return imageVariantMap
+}
+
+async function slugExists(payload: BasePayload, slug: string, req: PayloadRequest): Promise<boolean> {
+  const existing = await payload.find({
+    collection: 'products',
+    where: { slug: { equals: slug } },
+    limit: 1,
+    pagination: false,
+    req,
+  })
+
+  return existing.docs.length > 0
+}
+
+async function generateUniqueSlug(
+  payload: BasePayload,
+  req: PayloadRequest,
+  title: string,
+): Promise<string> {
+  const baseSlug = normalizeKey(title) || `product-${nanoid(6)}`
+
+  if (!(await slugExists(payload, baseSlug, req))) {
+    return baseSlug
+  }
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = `${baseSlug}-${nanoid(4)}`
+    if (!(await slugExists(payload, candidate, req))) {
+      return candidate
+    }
+  }
+
+  return `${baseSlug}-${nanoid(6)}`
+}
+
 export async function createProductFromGroup(params: {
-  groupImages: Array<{ id: number; url: string }>
-  allText: string
-  categories: Category[]
+  parsedProduct: ParsedSessionProduct
   payload: BasePayload
   req: PayloadRequest
   serverUrl: string
+  variantCatalog: VariantCatalogType[]
 }): Promise<CreatedProductSummary> {
-  const { groupImages, allText, categories, payload, req, serverUrl } = params
+  const { parsedProduct, payload, req, serverUrl, variantCatalog } = params
 
-  const parsed = await parseProductFromMessage({
-    messageText: allText,
-    categories,
-    images: groupImages,
+  const costPrice = (parsedProduct.costPriceInNGN ?? 0) * 100
+  const price = (parsedProduct.sellingPriceInNGN ?? 0) * 100
+
+  const resolvedVariants = await resolveSelectedVariants({
     payload,
+    parsedProduct,
+    req,
+    variantCatalog,
   })
 
-  const costPrice = (parsed.costPriceInNGN ?? 0) * 100
-  const price = (parsed.sellingPriceInNGN ?? 0) * 100
+  const needsVariants = resolvedVariants.length > 0
+  const imageVariantTypeIds = new Set(resolvedVariants.map((variant) => variant.variantTypeId))
+  const imageVariantMap = await buildImageVariantMap({
+    imageVariantTypeIds,
+    parsedProduct,
+    payload,
+    req,
+    variantCatalog,
+  })
 
-  const needsVariants = parsed.selectedVariants?.length > 0
+  const variantTypeIds = [...new Set(resolvedVariants.map((variant) => variant.variantTypeId))]
+  const initialSlug = await generateUniqueSlug(payload, req, parsedProduct.title)
 
-  const variantMap = needsVariants
-    ? parsed.selectedVariants.map((variant) => ({
-        typeId: variant.variantTypeId,
-        optionIds: variant.options.map((option) => option.id),
-        inventory: variant.inventoryPerOption,
-        labels: variant.options.map((option) => option.label),
-      }))
-    : []
-
-  const variantTypeIds = [...new Set(variantMap.map((v) => v.typeId))]
-
-  // Retry with a suffixed slug on unique-constraint collision
-  // (parallel groups may race on the same AI-generated slug)
   const createDraftProduct = (slug: string) =>
     payload.create({
       collection: 'products',
       draft: true,
       data: {
-        title: parsed.title,
+        title: parsedProduct.title,
         slug,
-        description: textToLexical(parsed.description),
+        description: textToLexical(parsedProduct.description),
         priceInNGN: price,
         priceInNGNEnabled: true,
         enableVariants: needsVariants,
         ...(needsVariants ? { variantTypes: variantTypeIds } : {}),
-        ...(!needsVariants ? { inventory: parsed.inventory ?? 1 } : {}),
-        categories: parsed.categories.map((c) => c.id),
+        ...(!needsVariants ? { inventory: parsedProduct.inventory ?? 1 } : {}),
+        categories: parsedProduct.categories.map((category) => category.id),
         _status: 'draft',
-        isFeatured: parsed.isFeatured,
-        gallery: parsed.images.map((img) => ({
-          image: img.id,
-          ...(img.colorVariantOptionId ? { variantOption: img.colorVariantOptionId } : {}),
+        isFeatured: parsedProduct.isFeatured,
+        gallery: parsedProduct.images.map((image) => ({
+          image: image.id,
+          ...(imageVariantMap.has(image.id) ? { variantOption: imageVariantMap.get(image.id) } : {}),
         })),
         meta: {
-          title: parsed.title,
-          description: parsed.metaDescription,
-          image: parsed.images[0]?.id ?? null,
+          title: parsedProduct.title,
+          description: parsedProduct.metaDescription,
+          image: parsedProduct.images[0]?.id ?? null,
         },
       },
       req,
     })
 
   let product: Awaited<ReturnType<typeof createDraftProduct>> | undefined
+
   for (let attempt = 0; attempt <= 2; attempt++) {
     try {
-      product = await createDraftProduct(
-        attempt === 0 ? parsed.slug : `${parsed.slug}-${nanoid(3)}`,
-      )
+      product = await createDraftProduct(attempt === 0 ? initialSlug : `${initialSlug}-${nanoid(4)}`)
       break
     } catch (err) {
       const isSlugConflict =
         err instanceof Error &&
         (err.message.includes('duplicate') || err.message.includes('unique'))
-      if (!isSlugConflict || attempt >= 2) throw err
+
+      if (!isSlugConflict || attempt >= 2) {
+        throw err
+      }
     }
   }
 
-  if (!product) throw new Error('Product creation failed after slug retries')
+  if (!product) {
+    throw new Error('Product creation failed after slug retries')
+  }
 
   if (needsVariants) {
-    const optionArrays = variantMap.map((v) => v.optionIds)
-    const combinations: number[][] = optionArrays.reduce<number[][]>(
-      (acc, array) => acc.flatMap((x) => array.map((y) => [...x, y])),
+    const optionArrays = resolvedVariants.map((variant) => variant.options.map((option) => option.id))
+    const combinations = optionArrays.reduce<number[][]>(
+      (acc, array) => acc.flatMap((combo) => array.map((optionId) => [...combo, optionId])),
       [[]],
     )
-    const defaultInventory = Math.min(...variantMap.map((v) => v.inventory))
+    const defaultInventory = Math.min(...resolvedVariants.map((variant) => variant.inventoryPerOption))
 
     await Promise.all(
       combinations.map((combo) =>
@@ -109,7 +339,7 @@ export async function createProductFromGroup(params: {
             inventory: defaultInventory,
             priceInNGN: price,
             priceInNGNEnabled: true,
-            costPrice: costPrice,
+            costPrice,
             _status: 'published',
           },
           req,
@@ -119,35 +349,35 @@ export async function createProductFromGroup(params: {
   }
 
   await Promise.all(
-    parsed.images
-      .filter((img) => !!img.altText.trim())
-      .map((img) =>
+    parsedProduct.images
+      .filter((image) => Boolean(image.altText.trim()))
+      .map((image) =>
         payload.update({
           collection: 'media',
-          id: img.id,
-          data: { alt: img.altText.trim() },
+          id: image.id,
+          data: { alt: image.altText.trim() },
           req,
         }),
       ),
   )
 
   const adminUrl = `${serverUrl}/admin/collections/products/${product.id}`
-  const categoryNames = parsed.categories.map((c) => c.name).join(', ')
+  const categoryNames = parsedProduct.categories.map((category) => category.name).join(', ')
   const variantInfo = needsVariants
-    ? parsed.selectedVariants
+    ? resolvedVariants
         .map(
-          (v) =>
-            `📏 ${v.variantTypeName}: ${v.options.map((o) => o.label).join(', ')} (${v.inventoryPerOption} each)`,
+          (variant) =>
+            `📏 ${variant.variantTypeName}: ${variant.options.map((option) => option.label).join(', ')} (${variant.inventoryPerOption} each)`,
         )
         .join('\n')
-    : `📦 Inventory: ${parsed.inventory ?? 1}`
+    : `📦 Inventory: ${parsedProduct.inventory ?? 1}`
 
   return {
     title: product.title,
     costPrice,
     price,
     variantInfo,
-    categoryCount: parsed.categories.length,
+    categoryCount: parsedProduct.categories.length,
     categoryNames,
     adminUrl,
   }

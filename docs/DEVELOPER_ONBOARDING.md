@@ -96,6 +96,7 @@ Copy `.env.example` to `.env` and set values for the following keys.
 | `RESEND_API_KEY`                  | For email          | Sends forgot password and order notification emails            |
 | `EMAIL_FROM_NAME`                 | Recommended        | Display name for outgoing emails                               |
 | `EMAIL_FROM_ADDRESS`              | Recommended        | Sender address for outgoing emails                             |
+| `OPENAI_MODEL`                    | Optional           | Model used for WhatsApp product extraction, defaults to `gpt-4.1-mini` |
 
 ### First-Time Boot
 

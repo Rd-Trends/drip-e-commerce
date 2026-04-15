@@ -4,8 +4,8 @@
  * Handles the heavy-lifting pipeline when a user sends the "done" keyword:
  *   1. Mark session as `processing`
  *   2. Fetch & hydrate session data (images, text, captions)
- *   3. Group images by product using AI vision
- *   4. For each group, run AI extraction + create draft product with variants
+ *   3. Run one AI extraction pass for the whole session
+ *   4. Create draft products with deterministic variant / slug resolution
  *   5. Send a rich summary back via WhatsApp
  *   6. Mark session `done` (or `failed`)
  *
@@ -14,8 +14,7 @@
 
 import type { TaskHandler } from 'payload'
 import { sendTextMessage } from '@/lib/whatsapp-api'
-import { groupImagesByProduct } from '@/lib/ai/ai'
-import type { Category } from '@/lib/ai/ai'
+import { parseProductsFromSession, type Category, type VariantCatalogType } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import { formatCurrency } from '@/utils/format-currency'
 import type { Media } from '@/payload-types'
@@ -84,14 +83,21 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       return { output: { productsCreated: 0 } }
     }
 
-    // ── 3. Notify user and fetch categories in parallel ─────────────────────
-    const [, categoriesResult] = await Promise.all([
+    // ── 3. Notify user and fetch AI context in parallel ─────────────────────
+    const [, categoriesResult, variantTypesResult] = await Promise.all([
       sendTextMessage(phone, '⏳ Processing your product, please wait…'),
       payload.find({
         collection: 'categories',
         limit: 0,
         pagination: false,
         select: { title: true },
+        req,
+      }),
+      payload.find({
+        collection: 'variantTypes',
+        limit: 0,
+        pagination: false,
+        select: { label: true, name: true },
         req,
       }),
     ])
@@ -101,48 +107,51 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       title: c.title,
     }))
 
-    // ── 4. Group images by product ──────────────────────────────────────────
-    let imageGroups: Array<{ id: number; url: string }[]>
+    const variantCatalog: VariantCatalogType[] = variantTypesResult.docs.map((variantType) => ({
+      id: variantType.id,
+      label: variantType.label,
+      name: variantType.name,
+      options: [],
+      optionsLoaded: false,
+    }))
 
-    if (images.length <= 1) {
-      imageGroups = [images]
-    } else {
-      await sendTextMessage(phone, `🔍 Analysing ${images.length} images…`)
-      const groups = await groupImagesByProduct(images)
-      imageGroups = groups.map((group) =>
-        group.imageIds.map((imageId) => {
-          const image = images.find((img) => img.id === imageId)
-          if (!image) {
-            throw new Error(`Grouped image ${imageId} was not found in the session payload`)
-          }
-          return image
-        }),
-      )
-    }
+    // ── 4. Extract products in a single AI pass ─────────────────────────────
+    await sendTextMessage(
+      phone,
+      images.length > 0
+        ? `🔍 Analysing ${images.length} image(s) and extracting products…`
+        : '🔍 Analysing your product details…',
+    )
 
-    const isMultiProduct = imageGroups.length > 1
+    const extractedSession = await parseProductsFromSession({
+      messageText: allText,
+      categories,
+      images,
+      payload,
+      variantCatalog,
+    })
+
+    const isMultiProduct = extractedSession.products.length > 1
 
     if (isMultiProduct) {
       await sendTextMessage(
         phone,
-        `📦 Found ${imageGroups.length} separate products. Creating them now…`,
+        `📦 Found ${extractedSession.products.length} separate products. Creating them now…`,
       )
     }
 
-    // ── 5. Create products sequentially to avoid concurrent local API writes
-    // sharing the same Payload request transaction context.
+    // ── 5. Create products sequentially to avoid concurrent local API writes ─
     const createdProducts: CreatedProductSummary[] = []
-    let failedGroupCount = 0
+    let failedProductCount = 0
 
-    for (const [index, groupImages] of imageGroups.entries()) {
+    for (const [index, parsedProduct] of extractedSession.products.entries()) {
       try {
         const createdProduct = await createProductFromGroup({
-          groupImages,
-          allText,
-          categories,
+          parsedProduct,
           payload,
           req,
           serverUrl,
+          variantCatalog,
         })
 
         createdProducts.push(createdProduct)
@@ -151,7 +160,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
           await sendTextMessage(
             phone,
             [
-              `✅ Product ${index + 1}/${imageGroups.length} created successfully!\n`,
+              `✅ Product ${index + 1}/${extractedSession.products.length} created successfully!\n`,
               `📦 *${createdProduct.title}*`,
               `💰 Cost Price: ${formatCurrency(createdProduct.costPrice)}`,
               `💰 Selling Price: ${formatCurrency(createdProduct.price)}`,
@@ -169,8 +178,8 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
           )
         }
       } catch (reason) {
-        failedGroupCount += 1
-        payload.logger.error(reason, `[whatsapp] Failed to create product for group ${index + 1}`)
+        failedProductCount += 1
+        payload.logger.error(reason, `[whatsapp] Failed to create product ${index + 1}`)
       }
     }
 
@@ -197,8 +206,8 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
     try {
       const summaryLines = [`✅ Successfully created ${createdProducts.length} product(s).`]
 
-      if (failedGroupCount > 0) {
-        summaryLines.push(`⚠️ ${failedGroupCount} product(s) failed during creation.`)
+      if (failedProductCount > 0) {
+        summaryLines.push(`⚠️ ${failedProductCount} product(s) failed during creation.`)
       }
 
       await sendTextMessage(phone, summaryLines.join('\n'))
