@@ -619,7 +619,7 @@ export type ImageGroup = {
  * - Single or zero images → returned immediately as one group, no API call.
  * - Multiple images → GPT-5 vision inspects them and assigns each to a group
  *   using generateText + Output.object for structured output.
- * - Any image the AI misses is appended as its own solo group (safety net).
+ * - Invalid grouping output fails fast so the caller can abort the workflow.
  */
 export async function groupImagesByProduct(
   images: { id: number; url: string }[],
@@ -723,12 +723,35 @@ EXAMPLE 6 — Same hoodie design in two colourways, each with a front and back s
     throw new Error('AI did not return image grouping data')
   }
 
-  // Safety net: ensure every image ID is accounted for
-  const grouped = new Set(output.groups.flatMap((g) => g.imageIds))
-  const missed = images.filter((img) => !grouped.has(img.id))
+  const groups = output.groups.filter((g) => g.imageIds.length > 0)
+  if (groups.length === 0) {
+    throw new Error('AI returned no image groups')
+  }
 
-  return [
-    ...output.groups.filter((g) => g.imageIds.length > 0),
-    ...missed.map((img) => ({ imageIds: [img.id] })),
-  ]
+  const validImageIds = new Set(images.map((img) => img.id))
+  const seenImageIds = new Set<number>()
+
+  for (const group of groups) {
+    for (const imageId of group.imageIds) {
+      if (!validImageIds.has(imageId)) {
+        throw new Error(`AI returned unknown image ID: ${imageId}`)
+      }
+
+      if (seenImageIds.has(imageId)) {
+        throw new Error(`AI returned duplicate image ID: ${imageId}`)
+      }
+
+      seenImageIds.add(imageId)
+    }
+  }
+
+  const missingImageIds = images
+    .map((img) => img.id)
+    .filter((imageId) => !seenImageIds.has(imageId))
+
+  if (missingImageIds.length > 0) {
+    throw new Error(`AI omitted image IDs: ${missingImageIds.join(', ')}`)
+  }
+
+  return groups
 }

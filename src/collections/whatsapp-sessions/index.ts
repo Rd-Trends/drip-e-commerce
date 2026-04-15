@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { requirePermission } from '@/access/utilities'
 import { PERMISSIONS } from '@/lib/permissions'
+import { retryFailedSession } from './hooks/retryFailedSession'
 
 export const WhatsappSessions: CollectionConfig = {
   slug: 'whatsapp-sessions',
@@ -14,6 +15,9 @@ export const WhatsappSessions: CollectionConfig = {
     group: 'WhatsApp',
     useAsTitle: 'phone',
     defaultColumns: ['phone', 'senderName', 'status', 'updatedAt'],
+  },
+  hooks: {
+    afterChange: [retryFailedSession],
   },
   fields: [
     // phone — indexed for fast per-sender lookup

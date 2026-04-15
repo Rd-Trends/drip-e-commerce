@@ -105,20 +105,16 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       imageGroups = [images]
     } else {
       await sendTextMessage(phone, `🔍 Analysing ${images.length} images…`)
-      try {
-        const groups = await groupImagesByProduct(images)
-        imageGroups = groups
-          .map((g) =>
-            g.imageIds
-              .map((id) => images.find((img) => img.id === id))
-              .filter((img): img is { id: number; url: string } => !!img),
-          )
-          .filter((g) => g.length > 0)
-        if (imageGroups.length === 0) imageGroups = [images]
-      } catch (err) {
-        payload.logger.error(err, '[whatsapp] Image grouping failed, treating all as one product')
-        imageGroups = [images]
-      }
+      const groups = await groupImagesByProduct(images)
+      imageGroups = groups.map((group) =>
+        group.imageIds.map((imageId) => {
+          const image = images.find((img) => img.id === imageId)
+          if (!image) {
+            throw new Error(`Grouped image ${imageId} was not found in the session payload`)
+          }
+          return image
+        }),
+      )
     }
 
     const isMultiProduct = imageGroups.length > 1

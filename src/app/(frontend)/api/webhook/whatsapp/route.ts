@@ -108,26 +108,26 @@ async function processWebhook(body: WhatsAppWebhookPayload): Promise<void> {
         const phone = message.from
         const senderName = contact.profile.name
 
-        if (message.type === 'text' && message.text?.body) {
-          handleTextMessage({
-            payload,
-            phone,
-            senderName,
-            textBody: message.text.body,
-          }).catch((err) =>
-            payload.logger.error(err, `[whatsapp] unhandled text error for ${message.id}`),
-          )
-        } else if (message.type === 'image' && message.image?.id) {
-          handleImageMessage({
-            payload,
-            phone,
-            senderName,
-            imageId: message.image.id,
-            mimeType: message.image.mime_type ?? 'image/jpeg',
-            caption: message.image.caption,
-          }).catch((err) =>
-            payload.logger.error(err, `[whatsapp] unhandled image error for ${message.id}`),
-          )
+        try {
+          if (message.type === 'text' && message.text?.body) {
+            await handleTextMessage({
+              payload,
+              phone,
+              senderName,
+              textBody: message.text.body,
+            })
+          } else if (message.type === 'image' && message.image?.id) {
+            await handleImageMessage({
+              payload,
+              phone,
+              senderName,
+              imageId: message.image.id,
+              mimeType: message.image.mime_type ?? 'image/jpeg',
+              caption: message.image.caption,
+            })
+          }
+        } catch (err) {
+          payload.logger.error(err, `[whatsapp] unhandled ${message.type} error for ${message.id}`)
         }
       }
     }
