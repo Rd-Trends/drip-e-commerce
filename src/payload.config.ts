@@ -38,6 +38,7 @@ import { Banner } from './globals/banner'
 import { endpoints } from './endpoints'
 import { Pages } from './collections/pages'
 import { WhatsappSessions } from '@/collections/whatsapp-sessions'
+import { handler as processWhatsappSessionHandler } from '@/jobs/processWhatsappSession'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -141,6 +142,38 @@ export default buildConfig({
     },
   }),
   endpoints,
+  jobs: {
+    tasks: [
+      {
+        slug: 'processWhatsappSession',
+        inputSchema: [
+          { name: 'sessionId', type: 'number' as const, required: true },
+          { name: 'phone', type: 'text' as const, required: true },
+        ],
+        outputSchema: [{ name: 'productsCreated', type: 'number' as const }],
+        handler: processWhatsappSessionHandler,
+        retries: {
+          attempts: 2,
+          backoff: {
+            type: 'exponential' as const,
+            delay: 10_000,
+          },
+        },
+        onFail: async ({ req }) => {
+          req.payload.logger.error('[jobs] processWhatsappSession task failed permanently')
+        },
+        label: 'Process WhatsApp Session',
+      },
+    ],
+    autoRun: [
+      {
+        cron: '*/10 * * * * *',
+        limit: 5,
+        queue: 'whatsapp',
+      },
+    ],
+    deleteJobOnComplete: false,
+  },
   plugins,
   email: resendAdapter({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng',
