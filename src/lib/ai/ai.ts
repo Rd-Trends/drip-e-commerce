@@ -55,9 +55,7 @@ const extractedProductSchema = z.object({
   description: z
     .string()
     .describe('Storefront-ready product description written from the text and images.'),
-  metaDescription: z
-    .string()
-    .describe('SEO meta description, 100-150 characters.'),
+  metaDescription: z.string().describe('SEO meta description, 100-150 characters.'),
   isFeatured: z
     .boolean()
     .describe('True only when the user explicitly asks for the product to be featured.'),
@@ -84,7 +82,9 @@ const extractedProductSchema = z.object({
       z.object({
         variantTypeId: z
           .number()
-          .describe('Variant type ID from the provided catalog. Never invent new variant type IDs.'),
+          .describe(
+            'Variant type ID from the provided catalog. Never invent new variant type IDs.',
+          ),
         variantTypeName: z
           .string()
           .describe('Variant type label from the provided catalog, e.g. "Color".'),
@@ -99,7 +99,9 @@ const extractedProductSchema = z.object({
           .describe('Inventory per option. Default to 1 unless the user specifies otherwise.'),
       }),
     )
-    .describe('Variants selected for this product. Leave empty when the product should not use variants.'),
+    .describe(
+      'Variants selected for this product. Leave empty when the product should not use variants.',
+    ),
 })
 
 const extractedSessionSchema = z.object({
@@ -274,39 +276,6 @@ export async function parseProductsFromSession({
 
   if (!output) {
     throw new Error('AI did not return structured product data')
-  }
-
-  if (images.length === 0) {
-    return output
-  }
-
-  const validImageIds = new Set(images.map((img) => img.id))
-  const seenImageIds = new Set<number>()
-
-  for (const product of output.products) {
-    if (product.images.length === 0) {
-      throw new Error('AI returned a product without any images for an image-based session')
-    }
-
-    for (const image of product.images) {
-      if (!validImageIds.has(image.id)) {
-        throw new Error(`AI returned unknown image ID: ${image.id}`)
-      }
-
-      if (seenImageIds.has(image.id)) {
-        throw new Error(`AI returned duplicate image ID: ${image.id}`)
-      }
-
-      seenImageIds.add(image.id)
-    }
-  }
-
-  const missingImageIds = images
-    .map((img) => img.id)
-    .filter((imageId) => !seenImageIds.has(imageId))
-
-  if (missingImageIds.length > 0) {
-    throw new Error(`AI omitted image IDs: ${missingImageIds.join(', ')}`)
   }
 
   return output
