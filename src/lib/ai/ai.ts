@@ -135,49 +135,63 @@ export type VariantCatalogType = {
 export type ParsedSessionProduct = z.infer<typeof extractedProductSchema>
 export type ParsedProductSession = z.infer<typeof extractedSessionSchema>
 
-function buildSystemPrompt(categories: Category[], variantCatalog: VariantCatalogType[]): string {
+function buildSystemPrompt(
+  categories: Category[],
+  variantTypes: { id: number; name: string }[],
+): string {
   const categoryList = categories.map((c) => `- id: ${c.id}, title: "${c.title}"`).join('\n')
-  const variantTypeList = variantCatalog
-    .map(
-      (variantType) =>
-        `- ${variantType.label} [typeId:${variantType.id}, name:${variantType.name}]`,
-    )
+  const variantTypeList = variantTypes
+    .map((variantType) => `- id: ${variantType.id}, name: "${variantType.name}"`)
     .join('\n')
 
   return `You are a product extraction assistant for a Nigerian fashion e-commerce store.
 Analyze the user's text and all provided images, then return structured product data.
 
+---
+
 GENERAL RULES
 - Return one product object per distinct product design.
 - Different angles, flat lays, detail shots, front/back views, or lifestyle shots of the same item belong to the same product.
 - Different colorways of the same base design belong to the same product, not separate products.
-- Distinct products must be split into separate product objects.
+- Distinct designs — different silhouettes, constructions, or garment types — must be split into separate product objects.
 - If images are provided, every image ID must appear in exactly one product.images array. Do not omit or duplicate any image ID.
 - If no images are provided, return one product unless the text clearly describes multiple separate products.
+
+---
 
 TITLE
 - Detect visible brands from logos, tags, embroidery, or wordmarks when clearly present.
 - If the brand is clear, include it in the title.
 - If the brand is not clear, write a clean descriptive title.
 - Never invent a brand.
-- Never use "Drip" as the brand.
+
+---
 
 DESCRIPTION
-- Write 40-80 words.
+- Write 40–80 words. Count carefully.
 - Be specific about colour, silhouette, fabric feel when visible, notable details, and styling.
-- Avoid generic filler.
+- Do not write generic filler. For example, do not write phrases like "perfect for any occasion" or "a must-have for your wardrobe."
+
+---
 
 FEATURED
+- Default: false.
 - Return true only when the user explicitly asks to feature or highlight the product.
+
+---
 
 PRICING
 - The user-provided price is the cost price.
 - sellingPriceInNGN should usually be costPriceInNGN * 1.4.
 - If no price is provided, both price fields should be null.
 
+---
+
 CATEGORIES
-- Pick 1-3 categories strictly from the provided category list.
+- Pick 1–3 categories strictly from the provided category list.
 - Be precise. One accurate category is better than three weak ones.
+
+---
 
 VARIANTS
 - Use only variant types from this catalog:
@@ -186,28 +200,54 @@ ${variantTypeList}
 - By default, only add Size and Color automatically unless the user explicitly requests another variant dimension.
 - Use the provided variantTypeId values exactly as given. Never invent new variant type IDs.
 - Call getVariantOptions only for the variant types you actually need.
-- When an option already exists in the fetched options for that type, return its real ID.
-- When an option is needed but missing from the catalog, return id as null and still provide the label.
-- Do not create new options yourself.
 - Do not return duplicate variant types for the same product.
 - Do not return duplicate option labels inside a variant type.
 
+When resolving variant options:
+- When an option already exists in the fetched options for that type, return its real id.
+- When an option is needed but does not exist in the catalog, return id as null and still provide the label.
+- Never invent or guess option IDs.
+
+Example variant shape:
+{
+  "variantTypeId": 2,
+  "variantTypeName": "Color",
+  "options": [
+    { "id": 14, "label": "Black" },   // exists in catalog
+    { "id": null, "label": "Olive" }  // missing from catalog
+  ]
+}
+
+---
+
 DEFAULT VARIANT LOGIC
-- Upper-body garments and two-piece sets usually use clothing sizes such as L, XL, XXL.
-- Lower-body garments usually use waist sizes such as 28, 30, 32, 34, 36, 38, 40, 42.
-- Shoes usually use shoe sizes.
-- Bags, caps, jewelry, and similar non-sized products should usually have no automatic size variant.
-- Add Color only when multiple distinct colorways of the same base design are visible.
+- Upper-body garments and two-piece sets → clothing sizes: S, M, L, XL, XXL.
+- Lower-body garments → waist sizes: 28, 30, 32, 34, 36, 38, 40, 42.
+- Shoes → shoe sizes appropriate to the product's market.
+- Bags, caps, jewelry, and similar non-sized products → no automatic size variant.
+- Add Color only when multiple distinct colorways of the same base design are visible in the images or described in the text.
+
+---
 
 IMAGE RESPONSIBILITIES
-- Generate alt text for every image in each product.
-- variantTypeId / variantOptionId / variantOptionLabel on an image should only be used when that image clearly represents one specific variant option.
-- This is usually for Color images.
-- Group shots or images showing multiple colorways should return null for the image variant link fields.
+- Generate descriptive alt text for every image in each product.
+- Only attach variantTypeId / variantOptionId / variantOptionLabel to an image when that image clearly and exclusively represents one specific variant option (most commonly a single colorway).
+- Never add variant details to an image that shows multiple colorways or a general product view.
 
-OUTPUT QUALITY
-- Be conservative. When uncertain whether images are the same product, prefer splitting them into separate products.
-- Use only the provided category IDs and variant type IDs.
+---
+
+PRE-RETURN CHECKLIST
+Before returning your response, verify:
+[ ] Every image ID appears in exactly one product.images array.
+[ ] No category ID or variant type ID was invented — all come from the provided lists.
+[ ] No variant type is duplicated within a product.
+[ ] No option label is duplicated within a variant type.
+[ ] Every description is 40–80 words.
+[ ] featured defaults to false unless the user asked otherwise.
+[ ] Colorway differences did not cause a single product to be split into multiple products.
+[ ] Distinct designs were not merged into one product.
+
+---
 
 Available categories:
 ${categoryList}`
@@ -218,13 +258,13 @@ export async function parseProductsFromSession({
   categories,
   images,
   payload,
-  variantCatalog,
+  variantTypes,
 }: {
   messageText: string
   categories: Category[]
   images: { id: number; url: string }[]
   payload: BasePayload
-  variantCatalog: VariantCatalogType[]
+  variantTypes: { id: number; name: string }[]
 }): Promise<ParsedProductSession> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY is not configured')
@@ -250,7 +290,6 @@ export async function parseProductsFromSession({
           return result.docs.map((option) => ({
             id: option.id,
             label: option.label,
-            value: option.value,
           }))
         },
       }),
@@ -259,7 +298,7 @@ export async function parseProductsFromSession({
       schema: extractedSessionSchema,
     }),
     stopWhen: stepCountIs(8),
-    system: buildSystemPrompt(categories, variantCatalog),
+    system: buildSystemPrompt(categories, variantTypes),
     messages: [
       {
         role: 'user',

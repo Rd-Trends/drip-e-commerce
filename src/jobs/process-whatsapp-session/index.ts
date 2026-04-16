@@ -14,12 +14,12 @@
 
 import type { TaskHandler } from 'payload'
 import { sendTextMessage } from '@/lib/whatsapp-api'
-import { parseProductsFromSession, type Category, type VariantCatalogType } from '@/lib/ai/ai'
+import { parseProductsFromSession, type VariantCatalogType } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import { formatCurrency } from '@/utils/format-currency'
-import type { Media } from '@/payload-types'
 import { CONFIRMATION_RE, type CreatedProductSummary } from '@/lib/whatsapp/utils'
 import { createProductFromGroup } from '@/jobs/process-whatsapp-session/create-product-from-group'
+import { slugify } from '@/utils/slugify'
 
 type TaskIO = {
   input: { sessionId: number; phone: string }
@@ -54,22 +54,24 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
     const messages = messagesResult.docs
 
     // Collect text from text messages AND image captions
-    const allText = messages
+    const sessionMessageTexts = messages
       .filter((msg) => !!msg.text && !CONFIRMATION_RE.test(msg.text.trim()))
       .map((msg) => msg.text as string)
       .join('\n')
 
     // Collect hydrated Media objects attached to image messages
-    const sessionImages = messages
-      .map((msg) => (msg.image && typeof msg.image === 'object' ? msg.image : null))
-      .filter((item): item is Media => item !== null)
+    const images = messages
+      .map(({ image }) => {
+        if (!image || typeof image === 'number') return null
+        if (!image.id || !image.url) return null
+        return {
+          id: image.id,
+          url: image.url.startsWith('http') ? image.url : `${serverUrl}${image.url}`,
+        }
+      })
+      .filter((item) => item !== null)
 
-    const images = sessionImages.map((img) => ({
-      id: img.id,
-      url: img.url?.startsWith('http') ? img.url : `${serverUrl}${img.url}`,
-    }))
-
-    if (!allText.trim() && images.length === 0) {
+    if (!sessionMessageTexts.trim() && images.length === 0) {
       await sendTextMessage(
         phone,
         '❌ No product details found. Please send product info and images, then type *done*.',
@@ -84,7 +86,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
     }
 
     // ── 3. Notify user and fetch AI context in parallel ─────────────────────
-    const [, categoriesResult, variantTypesResult] = await Promise.all([
+    const [, categoriesData, variantTypesData] = await Promise.all([
       sendTextMessage(phone, '⏳ Processing your product, please wait…'),
       payload.find({
         collection: 'categories',
@@ -102,18 +104,8 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       }),
     ])
 
-    const categories: Category[] = categoriesResult.docs.map((c) => ({
-      id: c.id,
-      title: c.title,
-    }))
-
-    const variantCatalog: VariantCatalogType[] = variantTypesResult.docs.map((variantType) => ({
-      id: variantType.id,
-      label: variantType.label,
-      name: variantType.name,
-      options: [],
-      optionsLoaded: false,
-    }))
+    const categories = categoriesData.docs
+    const variantTypes = variantTypesData.docs
 
     // ── 4. Extract products in a single AI pass ─────────────────────────────
     await sendTextMessage(
@@ -123,35 +115,98 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
         : '🔍 Analysing your product details…',
     )
 
-    const extractedSession = await parseProductsFromSession({
-      messageText: allText,
+    const { products = [] } = await parseProductsFromSession({
+      messageText: sessionMessageTexts,
       categories,
       images,
       payload,
-      variantCatalog,
+      variantTypes,
     })
 
-    const isMultiProduct = extractedSession.products.length > 1
-
-    if (isMultiProduct) {
+    if (products.length > 1) {
       await sendTextMessage(
         phone,
-        `📦 Found ${extractedSession.products.length} separate products. Creating them now…`,
+        `📦 Found ${products.length} separate products. Creating them now…`,
       )
     }
+
+    const newVariantOptions = products.flatMap((product) =>
+      product.selectedVariants.flatMap((selectedVariant) =>
+        selectedVariant.options
+          .filter((option) => option.id == null && option.label.trim())
+          .map((option) => {
+            const label = option.label.trim().replace(/\s+/g, ' ')
+
+            return {
+              label,
+              value: slugify(label),
+              variantTypeId: selectedVariant.variantTypeId,
+            }
+          }),
+      ),
+    )
+
+    const uniqueNewVariantOptions = [
+      ...new Map(
+        newVariantOptions.map((option) => [`${option.variantTypeId}:${option.value}`, option]),
+      ).values(),
+    ].filter((option) => option.value)
+
+    const createdVariantOptions = await Promise.all(
+      uniqueNewVariantOptions.map((option) =>
+        payload.create({
+          collection: 'variantOptions',
+          data: {
+            variantType: option.variantTypeId,
+            label: option.label,
+            value: option.value,
+          },
+          req,
+        }),
+      ),
+    )
+
+    const createdVariantOptionsByKey = new Map(
+      createdVariantOptions.map((option) => [
+        `${typeof option.variantType === 'number' ? option.variantType : option.variantType.id}:${option.value}`,
+        option.id,
+      ]),
+    )
 
     // ── 5. Create products sequentially to avoid concurrent local API writes ─
     const createdProducts: CreatedProductSummary[] = []
     let failedProductCount = 0
 
-    for (const [index, parsedProduct] of extractedSession.products.entries()) {
+    for (const [index, product] of products.entries()) {
       try {
         const createdProduct = await createProductFromGroup({
-          parsedProduct,
+          parsedProduct: {
+            ...product,
+            selectedVariants: product.selectedVariants.map((variant) => {
+              return {
+                ...variant,
+                options: variant.options
+                  .map((option) => {
+                    if (!!option.id) return option
+                    const optionKey = `${variant.variantTypeId}${slugify(option.label)}`
+                    if (createdVariantOptionsByKey.has(optionKey)) {
+                      return { ...option, id: createdVariantOptionsByKey.get(optionKey) as number }
+                    } else {
+                      return null
+                    }
+                  })
+                  .filter((option) => option !== null),
+              }
+            }),
+            images: product.images.map((image) => {
+              if (image.variantOptionId) return image
+              const key = `${image.variantTypeId}${slugify(image.variantOptionLabel ?? '')}`
+              return { ...image, variantOptionId: createdVariantOptionsByKey.get(key) ?? null }
+            }),
+          },
           payload,
           req,
           serverUrl,
-          variantCatalog,
         })
 
         createdProducts.push(createdProduct)
@@ -160,7 +215,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
           await sendTextMessage(
             phone,
             [
-              `✅ Product ${index + 1}/${extractedSession.products.length} created successfully!\n`,
+              `✅ Product ${index + 1}/${products.length} created successfully!\n`,
               `📦 *${createdProduct.title}*`,
               `💰 Cost Price: ${formatCurrency(createdProduct.costPrice)}`,
               `💰 Selling Price: ${formatCurrency(createdProduct.price)}`,

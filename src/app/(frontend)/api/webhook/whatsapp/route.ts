@@ -98,8 +98,6 @@ async function processWebhook({
 
       const contacts = value.contacts ?? []
 
-      console.log(value.messages)
-
       for (const message of value.messages) {
         if (message.type !== 'text' && message.type !== 'image') continue
 
