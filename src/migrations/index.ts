@@ -1,11 +1,12 @@
-import * as migration_20260105_022523_init from './20260105_022523_init'
-import * as migration_20260111_100336 from './20260111_100336'
-import * as migration_20260111_110044 from './20260111_110044'
-import * as migration_20260315_194041_order_coupon_attribution from './20260315_194041_order_coupon_attribution'
-import * as migration_20260408_181128_whatsapp_sessions from './20260408_181128_whatsapp_sessions'
-import * as migration_20260414_135242_user_permissions from './20260414_135242_user_permissions'
-import * as migration_20260415_005103_add_payload_jobs from './20260415_005103_add_payload_jobs'
-import * as migration_20260415_044525_whatsapp_message_table from './20260415_044525_whatsapp_message_table'
+import * as migration_20260105_022523_init from './20260105_022523_init';
+import * as migration_20260111_100336 from './20260111_100336';
+import * as migration_20260111_110044 from './20260111_110044';
+import * as migration_20260315_194041_order_coupon_attribution from './20260315_194041_order_coupon_attribution';
+import * as migration_20260408_181128_whatsapp_sessions from './20260408_181128_whatsapp_sessions';
+import * as migration_20260414_135242_user_permissions from './20260414_135242_user_permissions';
+import * as migration_20260415_005103_add_payload_jobs from './20260415_005103_add_payload_jobs';
+import * as migration_20260415_044525_whatsapp_message_table from './20260415_044525_whatsapp_message_table';
+import * as migration_20260416_165926_whatsapp_message_cascade_delete from './20260416_165926_whatsapp_message_cascade_delete';
 
 export const migrations = [
   {
@@ -48,4 +49,9 @@ export const migrations = [
     down: migration_20260415_044525_whatsapp_message_table.down,
     name: '20260415_044525_whatsapp_message_table',
   },
-]
+  {
+    up: migration_20260416_165926_whatsapp_message_cascade_delete.up,
+    down: migration_20260416_165926_whatsapp_message_cascade_delete.down,
+    name: '20260416_165926_whatsapp_message_cascade_delete'
+  },
+];

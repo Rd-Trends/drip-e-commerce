@@ -153,9 +153,16 @@ GENERAL RULES
 - Return one product object per distinct product design.
 - Different angles, flat lays, detail shots, front/back views, or lifestyle shots of the same item belong to the same product.
 - Different colorways of the same base design belong to the same product, not separate products.
-- Distinct designs — different silhouettes, constructions, or garment types — must be split into separate product objects.
+- Distinct designs must be split into separate product objects.
 - If images are provided, every image ID must appear in exactly one product.images array. Do not omit or duplicate any image ID.
 - If no images are provided, return one product unless the text clearly describes multiple separate products.
+
+WHAT MAKES TWO ITEMS THE SAME PRODUCT
+- Two items are the same product only when they share the same silhouette AND the same surface design (graphic, print, embroidery, or text placement).
+- Items with different graphics, prints, or text — even if the cut and colorway are identical — are separate products.
+- Items that differ in silhouette, cut, length, neckline, sleeve type, or garment category are separate products, even if they share the same colorway.
+- Example: A plain raglan tee and a graphic raglan tee are two separate products, even if both come in gray and black colorways.
+- When in doubt about whether two items are the same product, split them into separate products.
 
 ---
 
@@ -213,8 +220,8 @@ Example variant shape:
   "variantTypeId": 2,
   "variantTypeName": "Color",
   "options": [
-    { "id": 14, "label": "Black" },   // exists in catalog
-    { "id": null, "label": "Olive" }  // missing from catalog
+    { "id": 14, "label": "Black" },
+    { "id": null, "label": "Olive" }
   ]
 }
 
@@ -231,21 +238,37 @@ DEFAULT VARIANT LOGIC
 
 IMAGE RESPONSIBILITIES
 - Generate descriptive alt text for every image in each product.
-- Only attach variantTypeId / variantOptionId / variantOptionLabel to an image when that image clearly and exclusively represents one specific variant option (most commonly a single colorway).
-- Never add variant details to an image that shows multiple colorways or a general product view.
+- Each image ID must appear exactly once in the images array — no exceptions, even if the image shows multiple colorways.
+- Only attach variantTypeId / variantOptionId / variantOptionLabel to an image when that image shows exactly one colorway and nothing else.
+- When an image shows two or more colorways side by side, omit all variant fields entirely and leave the image untagged.
+- Never duplicate an image ID to represent multiple variants. If you are tempted to do this, remove the variant fields instead.
+
+Correct — image shows two colorways, so it is left untagged:
+{
+  "id": 162,
+  "altText": "Two long sleeve tees with white body, one with gray sleeves and one with black sleeves."
+}
+
+Wrong — same image ID duplicated once per colorway:
+{ "id": 162, "altText": "...", "variantTypeId": 1, "variantOptionId": 9, "variantOptionLabel": "Gray" },
+{ "id": 162, "altText": "...", "variantTypeId": 1, "variantOptionId": 1, "variantOptionLabel": "Black" }
+
+The wrong example above is a critical error. Never do this.
 
 ---
 
 PRE-RETURN CHECKLIST
-Before returning your response, verify:
-[ ] Every image ID appears in exactly one product.images array.
+Before returning your response, verify every item below:
+[ ] Every image ID appears exactly once across the entire images array — search for duplicate IDs before returning.
+[ ] No image showing multiple colorways has any variant fields attached.
 [ ] No category ID or variant type ID was invented — all come from the provided lists.
 [ ] No variant type is duplicated within a product.
 [ ] No option label is duplicated within a variant type.
 [ ] Every description is 40–80 words.
-[ ] featured defaults to false unless the user asked otherwise.
-[ ] Colorway differences did not cause a single product to be split into multiple products.
-[ ] Distinct designs were not merged into one product.
+[ ] featured defaults to false unless the user explicitly asked otherwise.
+[ ] No two products with different chest graphics, prints, or text placements were merged — different surface design = different product, regardless of shared silhouette or colorway.
+[ ] No two structurally different garments were merged into one product — check silhouette, cut, and garment type for every product that contains more than one image.
+[ ] Colorway differences alone did not cause a single product to be split into multiple products.
 
 ---
 
