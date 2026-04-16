@@ -274,7 +274,9 @@ Example variant shape:
 ---
 
 DEFAULT VARIANT LOGIC
-- Upper-body garments and two-piece sets → clothing sizes: S, M, L, XL, XXL.
+- Upper-body garments and two-piece sets → clothing sizes: X, XL, XXL only by default.
+- If the user explicitly says all sizes are available, use the full standard clothing size run: S, M, L, XL, XXL.
+- If the user provides specific clothing sizes, use those exact sizes instead of the defaults.
 - Lower-body garments → waist sizes: 28, 30, 32, 34, 36, 38, 40, 42.
 - Shoes → shoe sizes appropriate to the product's market.
 - Bags, caps, jewelry, and similar non-sized products → no automatic size variant.
