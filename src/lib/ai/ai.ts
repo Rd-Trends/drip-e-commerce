@@ -5,7 +5,7 @@ import type { BasePayload } from 'payload'
 import { z } from 'zod'
 
 const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
-const DEFAULT_XAI_MODEL = 'grok-4-1-fast-non-reasoning'
+const DEFAULT_XAI_MODEL = 'grok-4-1-fast-reasoning'
 
 type AIProvider = 'openai' | 'xai'
 
