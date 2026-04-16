@@ -200,6 +200,7 @@ GENERAL RULES
 - Different colorways of the same base design belong to the same product, not separate products.
 - Distinct designs must be split into separate product objects.
 - If images are provided, every image ID must appear in exactly one product.images array. Do not omit or duplicate any image ID.
+- The total number of items across all product.images arrays must exactly equal the number of provided images.
 - If no images are provided, return one product unless the text clearly describes multiple separate products.
 
 WHAT MAKES TWO ITEMS THE SAME PRODUCT
@@ -284,9 +285,10 @@ DEFAULT VARIANT LOGIC
 IMAGE RESPONSIBILITIES
 - Generate descriptive alt text for every image in each product.
 - Each image ID must appear exactly once in the images array — no exceptions, even if the image shows multiple colorways.
+- The number of image objects returned for a product must exactly match the number of source images assigned to that product.
 - Only attach variantTypeId / variantOptionId / variantOptionLabel to an image when that image shows exactly one colorway and nothing else.
-- When an image shows two or more colorways side by side, omit all variant fields entirely and leave the image untagged.
-- Never duplicate an image ID to represent multiple variants. If you are tempted to do this, remove the variant fields instead.
+- When an image shows two or more colorways side by side, omit all variant fields entirely, leave the image untagged, and do not duplicate the image for each colorway.
+- Never duplicate an image ID to represent multiple variants. If you are tempted to do this, keep a single image object and remove the variant fields instead.
 
 Correct — image shows two colorways, so it is left untagged:
 {
@@ -305,6 +307,7 @@ The wrong example above is a critical error. Never do this.
 PRE-RETURN CHECKLIST
 Before returning your response, verify every item below:
 [ ] Every image ID appears exactly once across the entire images array — search for duplicate IDs before returning.
+[ ] The total number of returned image objects exactly matches the number of provided images.
 [ ] No image showing multiple colorways has any variant fields attached.
 [ ] No category ID or variant type ID was invented — all come from the provided lists.
 [ ] No variant type is duplicated within a product.
@@ -363,6 +366,7 @@ export async function parseProductsFromSession({
     }),
     stopWhen: stepCountIs(8),
     system: buildSystemPrompt(categories, variantTypes),
+    temperature: 0,
     messages: [
       {
         role: 'user',
