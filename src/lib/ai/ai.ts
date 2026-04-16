@@ -1,9 +1,54 @@
-import { generateText, Output, tool, stepCountIs } from 'ai'
+import { generateText, Output, tool, stepCountIs, type LanguageModel } from 'ai'
 import { openai } from '@ai-sdk/openai'
+import { xai } from '@ai-sdk/xai'
 import type { BasePayload } from 'payload'
 import { z } from 'zod'
 
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini'
+const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
+const DEFAULT_XAI_MODEL = 'grok-4-1-fast-non-reasoning'
+
+type AIProvider = 'openai' | 'xai'
+
+function resolveAIProvider(): AIProvider {
+  const provider = (process.env.AI_PROVIDER || 'openai').trim().toLowerCase()
+
+  if (provider === 'openai' || provider === 'xai') {
+    return provider
+  }
+
+  if (provider === 'grok') {
+    return 'xai'
+  }
+
+  throw new Error(`Unsupported AI_PROVIDER "${provider}". Use "openai" or "xai".`)
+}
+
+function resolveAIModel(provider: AIProvider): string {
+  if (provider === 'xai') {
+    return process.env.XAI_MODEL || DEFAULT_XAI_MODEL
+  }
+
+  return process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
+}
+
+function resolveLanguageModel(): LanguageModel {
+  const provider = resolveAIProvider()
+  const model = resolveAIModel(provider)
+
+  if (provider === 'xai') {
+    if (!process.env.XAI_API_KEY) {
+      throw new Error('XAI_API_KEY is not configured')
+    }
+
+    return xai(model)
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+
+  return openai(model)
+}
 
 const variantOptionSchema = z.object({
   id: z
@@ -289,12 +334,8 @@ export async function parseProductsFromSession({
   payload: BasePayload
   variantTypes: { id: number; name: string }[]
 }): Promise<ParsedProductSession> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured')
-  }
-
   const { output } = await generateText({
-    model: openai(OPENAI_MODEL),
+    model: resolveLanguageModel(),
     tools: {
       getVariantOptions: tool({
         description:
