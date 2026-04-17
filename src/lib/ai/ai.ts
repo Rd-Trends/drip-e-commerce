@@ -271,6 +271,24 @@ Example variant shape:
   ]
 }
 
+
+COLOR VARIANT EXAMPLES
+Scenario A — 1 image showing 2 colorways side by side:
+Return both colors as variants. Leave the image untagged.
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+
+Scenario B — 2 images, each showing exactly one different colorway:
+Return both colors as variants. Tag each image to its colorway.
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+
+Scenario C — 1 image, 1 colorway:
+Return that one color as the only variant. Tag the image to it.
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red" }] }]
+
+Scenario D — 2 images, each showing 2 colorways with one color shared (e.g. Image 1: Red+Black, Image 2: White+Black):
+Collect all distinct colors across both images. Deduplicate — Black appears once even though it appears in both images. Return 3 variants. Both images stay untagged because each shows more than one colorway.
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red" }, { id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+
 ---
 
 DEFAULT VARIANT LOGIC
@@ -303,6 +321,26 @@ Wrong — same image ID duplicated once per colorway:
 { "id": 162, "altText": "...", "variantTypeId": 1, "variantOptionId": 1, "variantOptionLabel": "Black" }
 
 The wrong example above is a critical error. Never do this.
+
+IMAGE TAGGING EXAMPLES BY SCENARIO
+Scenario A — 1 image showing 2 colorways:
+Correct (image untagged — multiple colorways visible):
+{ "id": 10, "altText": "Tee shown in black and tan colorways side by side." }
+
+Scenario B — 2 images, each a single colorway:
+Correct (each image tagged to exactly one color):
+{ "id": 10, "altText": "Tee in black.", "variantTypeId": 2, "variantOptionId": 1, "variantOptionLabel": "Black" }
+{ "id": 11, "altText": "Tee in tan.", "variantTypeId": 2, "variantOptionId": null, "variantOptionLabel": "Tan" }
+
+Scenario C — 1 image, 1 colorway:
+Correct (single image tagged to its one color):
+{ "id": 10, "altText": "Tee in red.", "variantTypeId": 2, "variantOptionId": 5, "variantOptionLabel": "Red" }
+
+Scenario D — 2 images, each showing 2 colorways with overlap (e.g. Red+Black and White+Black):
+Correct (both images untagged — neither shows exactly one colorway):
+{ "id": 10, "altText": "Tee shown in red and black colorways." }
+{ "id": 11, "altText": "Tee shown in white and black colorways." }
+The color variants returned are Red, Black, and White — Black is listed once despite appearing in both images.
 
 ---
 
