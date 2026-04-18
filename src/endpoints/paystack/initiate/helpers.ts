@@ -159,7 +159,7 @@ export async function initializePaystackTransaction({
     if (!customer?.id) {
       customer = (await paystack.customer.create({ email: customerEmail })).data
     }
-  } catch (error) {
+  } catch {
     // Customer doesn't exist, create new one
     customer = (await paystack.customer.create({ email: customerEmail })).data
   }
@@ -214,7 +214,7 @@ export async function initializePaystackTransaction({
   })
 
   // Create transaction record in database
-  // @ts-ignore – Type issue with create method (don't have a draft field)
+  // @ts-expect-error - Type issue with create method (doesn't have a draft field)
   const transaction = await payload.create({
     collection: 'transactions',
     data: {

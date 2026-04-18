@@ -97,8 +97,6 @@ export function Pagination({
       pathname,
       pageParamName,
       router,
-      scrollToTop,
-      scrollTarget,
     ],
   )
 

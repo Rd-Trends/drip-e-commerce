@@ -7,7 +7,7 @@
 
 import { nanoid } from 'nanoid'
 import type { BasePayload, PayloadRequest } from 'payload'
-import type { ParsedSessionProduct, VariantCatalogOption, VariantCatalogType } from '@/lib/ai/ai'
+import type { ParsedSessionProduct } from '@/lib/ai/ai'
 import { textToLexical, type CreatedProductSummary } from '@/lib/whatsapp/utils'
 import { slugify } from '@/utils/slugify'
 

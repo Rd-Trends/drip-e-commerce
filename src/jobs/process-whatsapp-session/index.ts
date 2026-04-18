@@ -14,7 +14,7 @@
 
 import type { TaskHandler } from 'payload'
 import { sendTextMessage } from '@/lib/whatsapp-api'
-import { parseProductsFromSession, type VariantCatalogType } from '@/lib/ai/ai'
+import { parseProductsFromSession } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import { formatCurrency } from '@/utils/format-currency'
 import { CONFIRMATION_RE, type CreatedProductSummary } from '@/lib/whatsapp/utils'

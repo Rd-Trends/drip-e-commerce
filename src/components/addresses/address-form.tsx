@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -13,9 +14,7 @@ import {
 import { Address, Config } from '@/payload-types'
 import { useCreateAddress, useUpdateAddress } from '@/hooks/use-address'
 import { deepMergeSimple } from 'payload/shared'
-import React, { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { supportedCountries } from '@/lib/constants'
 import { NIGERIAN_STATES } from '@/lib/nigerian-states'
 
 const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Mx.', 'Other']
@@ -59,35 +58,32 @@ export const AddressForm: React.FC<Props> = ({
 
   const isPending = createAddress.isPending || updateAddress.isPending
 
-  const onSubmit = useCallback(
-    async (data: AddressFormValues) => {
-      const newData = deepMergeSimple(initialData || {}, data)
+  const onSubmit = async (data: AddressFormValues) => {
+    const newData = deepMergeSimple(initialData || {}, data)
 
-      if (!skipSubmission) {
-        console.log('Submitting address data:', newData)
-        if (addressID) {
-          updateAddress.mutate(
-            { addressID, data: newData },
-            {
-              onSuccess: () => {
-                if (callback) callback(newData)
-              },
-            },
-          )
-        } else {
-          console.log('Creating new address with data:', newData)
-          createAddress.mutate(newData, {
+    if (!skipSubmission) {
+      console.log('Submitting address data:', newData)
+      if (addressID) {
+        updateAddress.mutate(
+          { addressID, data: newData },
+          {
             onSuccess: () => {
               if (callback) callback(newData)
             },
-          })
-        }
+          },
+        )
       } else {
-        if (callback) callback(newData)
+        console.log('Creating new address with data:', newData)
+        createAddress.mutate(newData, {
+          onSuccess: () => {
+            if (callback) callback(newData)
+          },
+        })
       }
-    },
-    [initialData, skipSubmission, callback, addressID, updateAddress.mutate, createAddress.mutate],
-  )
+    } else {
+      if (callback) callback(newData)
+    }
+  }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-10">
@@ -319,7 +315,7 @@ export const AddressForm: React.FC<Props> = ({
                 )}
               />
             </div>
-            {/* 
+            {/*
             <Controller
               name="country"
               control={form.control}

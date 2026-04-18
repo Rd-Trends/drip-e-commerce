@@ -217,7 +217,7 @@ export const accessAND = (...accessFunctions: Access[]): Access => {
  * )
  */
 export const conditional = (
-  condition: ((args: any) => boolean) | boolean,
+  condition: ((args: Parameters<Access>[0]) => boolean) | boolean,
   accessFunction: Access,
   fallback: Access = () => false,
 ): Access => {

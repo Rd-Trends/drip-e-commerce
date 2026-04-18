@@ -40,7 +40,6 @@ export function RevenueClient({ data }: RevenueClientProps) {
               yAxisId="left"
               tick={{ fill: 'var(--theme-elevation-900)', fontSize: 12 }}
               tickFormatter={(value) => {
-                const formattedValue = formatCurrency(value)
                 const numValue = value / Math.pow(10, 2) / 1000
                 return `₦${numValue.toFixed(0)}k`
               }}

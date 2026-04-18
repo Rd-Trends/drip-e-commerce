@@ -57,7 +57,8 @@ type Props = {
 }
 
 export default async function ShopPage({ searchParams }: Props) {
-  const { q: searchValue, sort, category, page, featured } = await searchParams
+  const { q, sort, category, page, featured } = await searchParams
+  const searchValue = Array.isArray(q) ? q[0] : q
   const currentPage = Number(page) || 1
   const payload = await getPayload({ config: configPromise })
 
@@ -152,21 +153,20 @@ export default async function ShopPage({ searchParams }: Props) {
 
   const resultsText = products.totalDocs > 1 ? 'results' : 'result'
   const totalPages = products.totalPages
+  const hasProducts = products.docs.length > 0
 
   return (
     <Fragment>
-      {!!searchValue && !!products.docs?.length && (
+      {!!searchValue && hasProducts && (
         <p className="mb-4">
           {`Showing ${products.docs.length} ${resultsText} for `}
           <span className="font-bold">&quot;{searchValue}&quot;</span>
         </p>
       )}
 
-      {!searchValue && products.docs?.length === 0 && (
-        <NoProductFound searchQuery={searchValue as string} categories={categoryIds} />
-      )}
+      {!hasProducts && <NoProductFound searchQuery={searchValue} categories={categoryIds} />}
 
-      {products?.docs.length > 0 ? (
+      {hasProducts ? (
         <>
           <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
             {products.docs.map((product) => {

@@ -51,7 +51,7 @@ const RATING_DISTRIBUTION = [
 const TOTAL_REVIEWS = 1624
 const AVERAGE_RATING = 4.0
 
-export function ProductReviews({ productId }: { productId: number }) {
+export function ProductReviews({ productId: _productId }: { productId: number }) {
   return (
     <div className="w-full">
       <h2 className="mb-8 text-3xl font-bold">Customer Reviews</h2>

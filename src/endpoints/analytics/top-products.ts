@@ -12,6 +12,10 @@ interface ProductData {
   quantity: number
 }
 
+type OrderItemWithTotal = NonNullable<Order['items']>[number] & {
+  total?: number | null
+}
+
 const querySchema = z.object({
   period: z.coerce.number().positive().default(30),
   startDate: z.iso.datetime().optional(),
@@ -69,10 +73,10 @@ export const getTopProductsHandler: Endpoint['handler'] = async (req) => {
     const productMap = new Map<string, ProductData>()
 
     data.docs.forEach((order: Order) => {
-      order.items?.forEach((item: any) => {
+      order.items?.forEach((item: OrderItemWithTotal) => {
         const product = item.product
         if (typeof product === 'object' && product !== null) {
-          const productId = product.id
+          const productId = String(product.id)
           const existing = productMap.get(productId)
 
           if (existing) {

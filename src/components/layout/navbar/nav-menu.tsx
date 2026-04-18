@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { ActiveStateNavLink, NavLink } from './nav-link'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'

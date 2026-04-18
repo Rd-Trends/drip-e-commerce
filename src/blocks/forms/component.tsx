@@ -159,8 +159,9 @@ export const FormBlock: React.FC<
                 {formFromProps &&
                   formFromProps.fields &&
                   formFromProps.fields?.map((field, index) => {
-                    const Field: React.FC<any> | undefined =
-                      fields?.[field.blockType as keyof typeof fields]
+                    const Field = fields?.[
+                      field.blockType as keyof typeof fields
+                    ] as React.ComponentType<Record<string, unknown>> | undefined
 
                     if (Field) {
                       return (

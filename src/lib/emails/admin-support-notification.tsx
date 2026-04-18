@@ -25,8 +25,6 @@ interface AdminSupportNotificationEmailProps {
   attachmentCount?: number
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-
 // Dummy data for preview purposes
 const dummyData: AdminSupportNotificationEmailProps = {
   emailId: '56761188-7520-42d8-8898-ff6fc54ce618',

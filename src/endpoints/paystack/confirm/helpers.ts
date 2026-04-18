@@ -292,7 +292,6 @@ export async function processOrderConfirmation({
   }
 
   // Create order from verified payment
-  // @ts-ignore – Type issue with create method (don't have a draft field)
   const order = await payload.create({
     collection: 'orders',
     data: {

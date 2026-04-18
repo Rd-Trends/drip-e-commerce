@@ -99,17 +99,6 @@ export default async function ProductPage({ params }: Args) {
       })
     : product.inventory! > 0
 
-  let price = product.priceInNGN
-
-  if (product.enableVariants && product?.variants?.docs?.length) {
-    price = product?.variants?.docs?.reduce((acc, variant) => {
-      if (typeof variant === 'object' && variant?.priceInNGN && acc && variant?.priceInNGN > acc) {
-        return variant.priceInNGN
-      }
-      return acc
-    }, price)
-  }
-
   // Generate product schema for SEO
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
   const mainImage = gallery.length > 0 ? gallery[0]?.image : undefined

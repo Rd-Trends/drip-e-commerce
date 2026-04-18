@@ -634,11 +634,12 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!enableVariants || !variantTypeIDs?.length || !doc.id) {
+      if (!enableVariants || !variantTypeIDsKey || !doc.id) {
         setVariantTypes([])
         setExistingVariants([])
         return
       }
+      const selectedVariantTypeIDs = variantTypeIDsKey.split('|').map(Number)
 
       setIsLoading(true)
       setError(null)
@@ -648,7 +649,7 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
         const variantTypesQuery = qs.stringify({
           where: {
             id: {
-              in: variantTypeIDs,
+              in: selectedVariantTypeIDs,
             },
           },
           ...QUERY_CONFIG,

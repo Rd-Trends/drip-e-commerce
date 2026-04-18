@@ -11,7 +11,7 @@ export interface UseUncontrolledOptions<T> {
   finalValue?: T
 
   /** Controlled state onChange handler */
-  onChange?: (value: T, ...payload: any[]) => void
+  onChange?: (value: T, ...payload: unknown[]) => void
 }
 
 export type UseUncontrolledReturnValue<T> = [
@@ -19,7 +19,7 @@ export type UseUncontrolledReturnValue<T> = [
   T,
 
   /** Handler to update the state, passes `value` and `payload` to `onChange` */
-  (value: T, ...payload: any[]) => void,
+  (value: T, ...payload: unknown[]) => void,
 
   /** True if the state is controlled, false if uncontrolled */
   boolean,
@@ -35,7 +35,7 @@ export function useUncontrolled<T>({
     defaultValue !== undefined ? defaultValue : finalValue,
   )
 
-  const handleUncontrolledChange = (val: T, ...payload: any[]) => {
+  const handleUncontrolledChange = (val: T, ...payload: unknown[]) => {
     setUncontrolledValue(val)
     onChange?.(val, ...payload)
   }

@@ -15,9 +15,6 @@ import { protectAdminRole } from './hooks/protectAdminRole'
 import { seedPermissionsFromRole } from './hooks/seedPermissionsFromRole'
 import { render } from '@react-email/components'
 import { ForgotPasswordEmail } from '@/lib/emails/forgot-password'
-import { OptionObject } from 'payload'
-import { optionIsObject } from 'payload/shared'
-import { ReceiptRussianRubleIcon } from 'lucide-react'
 
 export const Users: CollectionConfig = {
   slug: 'users',
