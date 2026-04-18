@@ -75,10 +75,10 @@ export const requirePermissionOrPublished = (permission: Permission): Access => 
  * @example
  * read: permissionOrSelf(PERMISSIONS.USERS_MANAGE)
  */
-export const permissionOrSelf = (permission: Permission): Access => {
+export const permissionOrSelf = (permissions: Permission[]): Access => {
   return ({ req: { user } }) => {
     if (!user) return false
-    if (hasPermission(user, permission)) return true
+    if (permissions.some((permission) => hasPermission(user, permission))) return true
     return { id: { equals: user.id } }
   }
 }
@@ -108,8 +108,8 @@ export const permissionOrOwner = (permission: Permission): Access => {
  * @example
  * access: { read: requireFieldPermission(PERMISSIONS.TRANSACTIONS_READ) }
  */
-export const requireFieldPermission = (permission: Permission): FieldAccess => {
-  return ({ req: { user } }) => hasPermission(user, permission)
+export const requireFieldPermission = (permissions: Permission[]): FieldAccess => {
+  return ({ req: { user } }) => permissions.some((permission) => hasPermission(user, permission))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

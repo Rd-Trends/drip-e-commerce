@@ -117,10 +117,10 @@ export const Orders: CollectionConfig = {
       label: 'Transactions',
       access: {
         /** Linking a transaction to an order requires TRANSACTIONS_WRITE. */
-        create: requireFieldPermission(PERMISSIONS.TRANSACTIONS_WRITE),
+        create: requireFieldPermission([PERMISSIONS.TRANSACTIONS_WRITE]),
         /** Reading the transactions field requires TRANSACTIONS_READ. */
-        read: requireFieldPermission(PERMISSIONS.TRANSACTIONS_READ),
-        update: requireFieldPermission(PERMISSIONS.TRANSACTIONS_WRITE),
+        read: requireFieldPermission([PERMISSIONS.TRANSACTIONS_READ]),
+        update: requireFieldPermission([PERMISSIONS.TRANSACTIONS_WRITE]),
       },
       admin: {
         position: 'sidebar',

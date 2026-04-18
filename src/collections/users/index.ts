@@ -1,14 +1,23 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
-import { checkRole, hasPermission, permissionOrSelf, requirePermission } from '@/access/utilities'
+import {
+  checkRole,
+  hasPermission,
+  permissionOrSelf,
+  requireFieldPermission,
+} from '@/access/utilities'
 import { USER_ROLES, ROLE_LABELS, STAFF_ROLES } from '@/lib/constants'
 import { PERMISSIONS, PERMISSION_LABELS } from '@/lib/permissions'
 
 import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
+import { protectAdminRole } from './hooks/protectAdminRole'
 import { seedPermissionsFromRole } from './hooks/seedPermissionsFromRole'
 import { render } from '@react-email/components'
 import { ForgotPasswordEmail } from '@/lib/emails/forgot-password'
+import { OptionObject } from 'payload'
+import { optionIsObject } from 'payload/shared'
+import { ReceiptRussianRubleIcon } from 'lucide-react'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -30,19 +39,19 @@ export const Users: CollectionConfig = {
     },
 
     /**
-     * Deleting an account requires USERS_MANAGE.
+     * Deleting a user account requires USERS_MANAGE.
      */
-    delete: requirePermission(PERMISSIONS.USERS_MANAGE),
+    delete: permissionOrSelf([PERMISSIONS.USERS_MANAGE]),
 
     /**
-     * USERS_MANAGE holders see all users; everyone else sees only their own record.
+     * USERS_VIEW *or* USERS_MANAGE holders can list/read all users.
+     * Everyone else sees only their own record.
      */
-    read: permissionOrSelf(PERMISSIONS.USERS_MANAGE),
-
+    read: permissionOrSelf([PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE]),
     /**
      * USERS_MANAGE holders can update any user; everyone else updates only themselves.
      */
-    update: permissionOrSelf(PERMISSIONS.USERS_MANAGE),
+    update: permissionOrSelf([PERMISSIONS.USERS_MANAGE]),
   },
   admin: {
     group: 'Users',
@@ -76,7 +85,7 @@ export const Users: CollectionConfig = {
     },
   },
   hooks: {
-    beforeChange: [seedPermissionsFromRole],
+    beforeChange: [protectAdminRole, seedPermissionsFromRole],
   },
   fields: [
     {
@@ -89,9 +98,19 @@ export const Users: CollectionConfig = {
       name: 'role',
       type: 'select',
       access: {
-        create: adminOnlyFieldAccess,
-        read: adminOnlyFieldAccess,
-        update: adminOnlyFieldAccess,
+        /**
+         * Only USERS_MANAGE holders (and admins, who bypass all checks) can
+         * assign a role when creating or updating a user.
+         * The protectAdminRole hook enforces server-side that the admin role
+         * can never be set by a non-admin, regardless of what is submitted.
+         */
+        create: requireFieldPermission([PERMISSIONS.USERS_MANAGE]),
+        /**
+         * USERS_VIEW *or* USERS_MANAGE holders can read the role field.
+         * Everyone else (e.g. a customer viewing their own record) cannot see it.
+         */
+        read: requireFieldPermission([PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE]),
+        update: requireFieldPermission([PERMISSIONS.USERS_MANAGE]),
       },
       defaultValue: USER_ROLES.CUSTOMER,
       hooks: {
@@ -115,6 +134,24 @@ export const Users: CollectionConfig = {
           value: USER_ROLES.CONTENT_MANAGER,
         },
       ],
+      /**
+       * Hide the `admin` option from non-admin users in the admin UI.
+       * The protectAdminRole hook enforces the same rule server-side so this
+       * UI filter cannot be bypassed via the API.
+       */
+      filterOptions: ({ req, options }) => {
+        if (req.user?.role !== USER_ROLES.ADMIN) {
+          return options.filter((option) => {
+            if (typeof option === 'string') {
+              return option !== USER_ROLES.ADMIN
+            }
+
+            return option.value !== USER_ROLES.ADMIN
+          })
+        }
+
+        return options
+      },
       admin: {
         description:
           'Assign a single role to this user. Saving seeds the permissions array below. ' +
@@ -129,6 +166,11 @@ export const Users: CollectionConfig = {
       type: 'select',
       hasMany: true,
       access: {
+        /**
+         * Permissions are fine-grained overrides — restricted to admin only.
+         * USERS_MANAGE holders can change roles (which auto-seeds permissions),
+         * but they cannot directly override individual permission entries.
+         */
         create: adminOnlyFieldAccess,
         read: adminOnlyFieldAccess,
         update: adminOnlyFieldAccess,

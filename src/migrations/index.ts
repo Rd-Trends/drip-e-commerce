@@ -7,6 +7,7 @@ import * as migration_20260414_135242_user_permissions from './20260414_135242_u
 import * as migration_20260415_005103_add_payload_jobs from './20260415_005103_add_payload_jobs';
 import * as migration_20260415_044525_whatsapp_message_table from './20260415_044525_whatsapp_message_table';
 import * as migration_20260416_165926_whatsapp_message_cascade_delete from './20260416_165926_whatsapp_message_cascade_delete';
+import * as migration_20260418_153719_user_read_permission from './20260418_153719_user_read_permission';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20260416_165926_whatsapp_message_cascade_delete.up,
     down: migration_20260416_165926_whatsapp_message_cascade_delete.down,
-    name: '20260416_165926_whatsapp_message_cascade_delete'
+    name: '20260416_165926_whatsapp_message_cascade_delete',
+  },
+  {
+    up: migration_20260418_153719_user_read_permission.up,
+    down: migration_20260418_153719_user_read_permission.down,
+    name: '20260418_153719_user_read_permission'
   },
 ];

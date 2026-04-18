@@ -178,7 +178,7 @@ export const Coupons: CollectionConfig = {
         position: 'sidebar',
         components: {
           Field: {
-            path: '/src/collections/coupons/usage-summary-field#CouponUsageSummaryField',
+            path: '@/fields/ui/coupon-usage-field#CouponUsageSummaryField',
           },
         },
       },

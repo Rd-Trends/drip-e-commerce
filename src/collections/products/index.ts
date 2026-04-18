@@ -1,9 +1,5 @@
 import type { CollectionConfig, DefaultDocumentIDType, Where } from 'payload'
-import {
-  requirePermission,
-  requirePermissionOrPublished,
-  requireFieldPermission,
-} from '@/access/utilities'
+import { requirePermission, requirePermissionOrPublished } from '@/access/utilities'
 import { adminOnlyFieldAccess } from '@/access/admin-only-field-access'
 import { PERMISSIONS } from '@/lib/permissions'
 import { generatePreviewPath } from '@/utils/generate-preview-path'
@@ -49,7 +45,15 @@ export const Products: CollectionConfig = {
   },
   admin: {
     group: 'Shop',
-    defaultColumns: ['title', '_status', 'priceInNGN', 'inventory', 'categories', 'isFeatured', 'updatedAt'],
+    defaultColumns: [
+      'title',
+      '_status',
+      'priceInNGN',
+      'inventory',
+      'categories',
+      'isFeatured',
+      'updatedAt',
+    ],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({

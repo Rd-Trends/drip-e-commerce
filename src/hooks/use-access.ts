@@ -55,6 +55,7 @@ export interface Permissions {
   canWriteCoupons: boolean
 
   // ── Users ─────────────────────────────────────────────────────────────────
+  canViewUsers: boolean
   canManageUsers: boolean
 
   // ── Analytics ─────────────────────────────────────────────────────────────
@@ -71,7 +72,7 @@ export interface Permissions {
 export const calculatePermissions = (user: User | null | undefined): Permissions => {
   const check = (p: Permission) => hasPermission(user, p)
 
-  const isAdmin = check(PERMISSIONS.USERS_MANAGE) && user?.role === 'admin'
+  const isAdmin = user?.role === 'admin'
   const canReadProducts = check(PERMISSIONS.PRODUCTS_READ)
   const canWriteProducts = check(PERMISSIONS.PRODUCTS_WRITE)
   const canReadOrders = check(PERMISSIONS.ORDERS_READ)
@@ -115,6 +116,7 @@ export const calculatePermissions = (user: User | null | undefined): Permissions
     canReadCoupons: check(PERMISSIONS.COUPONS_READ),
     canWriteCoupons: check(PERMISSIONS.COUPONS_WRITE),
 
+    canViewUsers: check(PERMISSIONS.USERS_VIEW),
     canManageUsers: check(PERMISSIONS.USERS_MANAGE),
     canViewAnalytics: check(PERMISSIONS.ANALYTICS_VIEW),
     canManageWhatsApp: check(PERMISSIONS.WHATSAPP_MANAGE),

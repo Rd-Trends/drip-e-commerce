@@ -216,6 +216,7 @@ export interface User {
         | 'transactions:write'
         | 'coupons:read'
         | 'coupons:write'
+        | 'users:view'
         | 'users:manage'
         | 'analytics:view'
         | 'whatsapp:manage'

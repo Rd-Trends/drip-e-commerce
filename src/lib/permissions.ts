@@ -71,6 +71,8 @@ export const PERMISSIONS = {
   COUPONS_WRITE: 'coupons:write',
 
   // ── Users ─────────────────────────────────────────────────────────────────
+  /** View all user accounts in the admin panel. */
+  USERS_VIEW: 'users:view',
   /** Create, update, delete, and view all user accounts. */
   USERS_MANAGE: 'users:manage',
 
@@ -108,6 +110,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   'transactions:write': 'Manage Transactions',
   'coupons:read': 'View Coupons',
   'coupons:write': 'Manage Coupons',
+  'users:view': 'View Users',
   'users:manage': 'Manage Users',
   'analytics:view': 'View Analytics',
   'whatsapp:manage': 'Manage WhatsApp',
@@ -133,7 +136,7 @@ export const PERMISSION_GROUPS: Record<string, Permission[]> = {
   Orders: [PERMISSIONS.ORDERS_READ, PERMISSIONS.ORDERS_WRITE],
   Transactions: [PERMISSIONS.TRANSACTIONS_READ, PERMISSIONS.TRANSACTIONS_WRITE],
   Coupons: [PERMISSIONS.COUPONS_READ, PERMISSIONS.COUPONS_WRITE],
-  Users: [PERMISSIONS.USERS_MANAGE],
+  Users: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
   Analytics: [PERMISSIONS.ANALYTICS_VIEW],
   WhatsApp: [PERMISSIONS.WHATSAPP_MANAGE],
 }
