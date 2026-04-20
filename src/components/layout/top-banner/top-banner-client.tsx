@@ -101,7 +101,7 @@ export function TopBannerClient({
   return (
     <div
       ref={bannerRef}
-      className={cn('relative w-full py-3 px-4', {
+      className={cn('sticky top-0 z-50 w-full py-3 px-4', {
         'bg-blue-50 text-blue-900 border-b border-blue-200': variant === 'info',
         'bg-green-50 text-green-900 border-b border-green-200': variant === 'success',
         'bg-amber-50 text-amber-900 border-b border-amber-200': variant === 'warning',

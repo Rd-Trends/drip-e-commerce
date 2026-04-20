@@ -22,7 +22,7 @@ export const FilterDropdowns = () => {
     <div
       className={
         'w-full flex items-start justify-between gap-4 md:hidden py-3 px-4 ' +
-        'border-b h-fit sticky top-16 bg-background/95 backdrop-blur-md z-50 '
+        'border-b h-fit sticky top-(--header-height) bg-background/95 backdrop-blur-md z-40 '
       }
     >
       <Suspense fallback={<Skeleton className="flex-1 h-9 rounded-full" />}>

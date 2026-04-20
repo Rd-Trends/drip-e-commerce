@@ -16,13 +16,15 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
 
       <Section paddingY="none">
         <Container className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-4">
-          <ScrollArea className="w-full h-[calc(100lvh-var(--navbar-height)-var(--banner-height))] py-6 hidden md:block basis-1/5">
-            <div className="flex flex-col gap-8 pb-20">
-              <FeaturedList />
-              <SortingList />
-              <CategoryList />
-            </div>
-          </ScrollArea>
+          <div className="hidden md:block sticky top-(--header-height) w-full h-[calc(100lvh-var(--header-height))] basis-1/5">
+            <ScrollArea className="h-full py-6">
+              <div className="flex flex-col gap-8 pb-20">
+                <FeaturedList />
+                <SortingList />
+                <CategoryList />
+              </div>
+            </ScrollArea>
+          </div>
           <div className="min-h-screen w-full py-6 md:py-8 pb-20">{children}</div>
         </Container>
       </Section>

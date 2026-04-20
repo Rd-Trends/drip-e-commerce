@@ -76,6 +76,7 @@
   --radius: 0.625rem;
   --banner-height: 0px;
   --navbar-height: 4rem;
+  --header-height: calc(var(--banner-height) + var(--navbar-height));
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.546 0.245 262.881);

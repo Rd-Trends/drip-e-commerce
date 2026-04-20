@@ -17,7 +17,7 @@ export async function Navbar() {
   return (
     <Section
       paddingY="none"
-      className="top-0 sticky z-50 bg-background/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800"
+      className="sticky top-(--banner-height) z-50 bg-background/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800"
     >
       <Container as="nav" className="h-(--navbar-height) flex items-center justify-between">
         <div className="flex items-center gap-6 w-1/3">
