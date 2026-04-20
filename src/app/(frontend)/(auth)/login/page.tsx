@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { QueryToastListener } from '@/components/query-toast-listener'
 import { Metadata } from 'next'
 import { AuthLayout } from '../_components/auth-layout'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Login',
@@ -40,7 +41,9 @@ export default async function LoginPage() {
 
   return (
     <AuthLayout title="Welcome back" description="Please enter your details to sign in.">
-      <QueryToastListener />
+      <Suspense fallback={null}>
+        <QueryToastListener />
+      </Suspense>
       <LoginForm />
     </AuthLayout>
   )

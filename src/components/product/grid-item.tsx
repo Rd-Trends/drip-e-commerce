@@ -56,7 +56,7 @@ export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
 
       {/* Product Info */}
       <div className="flex flex-col gap-1.5 pt-4">
-        <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary dark:group-hover:text-card-foreground transition-colors">
           {title}
         </h3>
 

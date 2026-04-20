@@ -58,10 +58,18 @@ function LinkButton({
   className,
   variant = 'default',
   size = 'default',
+  scroll,
+  scrollToTop,
   ...props
 }: React.ComponentProps<typeof Link> &
   VariantProps<typeof buttonVariants> & { scrollToTop?: boolean }) {
-  return <Link className={cn(buttonVariants({ variant, size, className }))} {...props} />
+  return (
+    <Link
+      className={cn(buttonVariants({ variant, size, className }))}
+      scroll={scroll ?? scrollToTop}
+      {...props}
+    />
+  )
 }
 
 export { Button, LinkButton, buttonVariants }

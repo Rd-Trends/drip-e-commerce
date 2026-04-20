@@ -58,6 +58,11 @@ const variantOptionSchema = z.object({
       'Existing option ID from the provided variant catalog when available. Return null for new options.',
     ),
   label: z.string().describe('Variant option label, e.g. "XL", "Black", "Slim Fit".'),
+  value: z
+    .string()
+    .describe(
+      'Variant option value. For existing options, copy the catalog value exactly. For new non-color options, use a slug of the label. For new color options, use a CSS background-color value, preferably a hex code.',
+    ),
 })
 
 const productImageSchema = z.object({
@@ -257,8 +262,12 @@ ${variantTypeList}
 - Do not return duplicate option labels inside a variant type.
 
 When resolving variant options:
+- Always return label and value for every option.
 - When an option already exists in the fetched options for that type, return its real id.
-- When an option is needed but does not exist in the catalog, return id as null and still provide the label.
+- When an option already exists in the fetched options for that type, copy its value exactly.
+- When an option is needed but does not exist in the catalog, return id as null and still provide the label and value.
+- For new non-color options, value should be the slugified label, e.g. "Extra Large" -> "extra-large".
+- For new color options, value must be usable as a CSS background-color value. Prefer hex codes for visual colors, e.g. "Black" -> "#000000", "Olive" -> "#808000", "Cream" -> "#FFFDD0".
 - Never invent or guess option IDs.
 
 Example variant shape:
@@ -266,8 +275,8 @@ Example variant shape:
   "variantTypeId": 2,
   "variantTypeName": "Color",
   "options": [
-    { "id": 14, "label": "Black" },
-    { "id": null, "label": "Olive" }
+    { "id": 14, "label": "Black", "value": "black" },
+    { "id": null, "label": "Olive", "value": "#808000" }
   ]
 }
 
@@ -275,19 +284,19 @@ Example variant shape:
 COLOR VARIANT EXAMPLES
 Scenario A — 1 image showing 2 colorways side by side:
 Return both colors as variants. Leave the image untagged.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
 
 Scenario B — 2 images, each showing exactly one different colorway:
 Return both colors as variants. Tag each image to its colorway.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
 
 Scenario C — 1 image, 1 colorway:
 Return that one color as the only variant. Tag the image to it.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red" }] }]
 
 Scenario D — 2 images, each showing 2 colorways with one color shared (e.g. Image 1: Red+Black, Image 2: White+Black):
 Collect all distinct colors across both images. Deduplicate — Black appears once even though it appears in both images. Return 3 variants. Both images stay untagged because each shows more than one colorway.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red" }, { id: 1, label: "Black" }, { id: 2, label: "White" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red" }, { id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
 
 ---
 
@@ -352,6 +361,7 @@ Before returning your response, verify every item below:
 [ ] No category ID or variant type ID was invented — all come from the provided lists.
 [ ] No variant type is duplicated within a product.
 [ ] No option label is duplicated within a variant type.
+[ ] Every variant option includes a value.
 [ ] Every description is 40–80 words.
 [ ] featured defaults to false unless the user explicitly asked otherwise.
 [ ] No two products with different chest graphics, prints, or text placements were merged — different surface design = different product, regardless of shared silhouette or colorway.
@@ -397,6 +407,7 @@ export async function parseProductsFromSession({
           return result.docs.map((option) => ({
             id: option.id,
             label: option.label,
+            value: option.value,
           }))
         },
       }),

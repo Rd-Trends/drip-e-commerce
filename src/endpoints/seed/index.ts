@@ -104,6 +104,7 @@ export const seed = async ({
           title: categoryData.title,
           slug: categoryData.slug,
         },
+        req,
       }),
     ),
   )
@@ -124,6 +125,7 @@ export const seed = async ({
             value: option.value,
             variantType: variantType.id,
           },
+          req,
         })
       }),
     )

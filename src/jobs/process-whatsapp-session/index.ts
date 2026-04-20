@@ -139,7 +139,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
             return {
               label,
-              value: slugify(label),
+              value: option.value,
               variantTypeId: selectedVariant.variantTypeId,
             }
           }),

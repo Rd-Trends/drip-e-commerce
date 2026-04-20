@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import {
   useFormFields,
   ShimmerEffect,
@@ -9,12 +9,18 @@ import {
   Pagination,
   toast,
 } from '@payloadcms/ui'
-import { JoinFieldClientComponent } from 'payload'
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import type { JoinFieldClientComponent } from 'payload'
 import type { VariantOption, VariantType } from '@/payload-types'
 import * as qs from 'qs-esm'
 import { CurrencyInput } from '@/fields/ui/currency-input'
 import { currenciesConfig } from '@/lib/constants'
-import { useRouter } from 'next/navigation'
 import './index.scss'
 
 // ===== Type Definitions =====
@@ -38,6 +44,27 @@ interface VariantCombination {
   costPrice: number
   inventory: number
   selected: boolean
+}
+
+interface PayloadListResponse<T> {
+  docs?: T[]
+}
+
+interface ExistingVariantDoc {
+  id: number | string
+  options?: (number | string | VariantOption)[] | null
+}
+
+interface BulkCreateVariantsResponse {
+  success: boolean
+  created: number
+  skipped: number
+  message?: string
+}
+
+interface CreateVariantsInput {
+  productId: number | string
+  variants: VariantCombination[]
 }
 
 interface VariantOptionSelectorProps {
@@ -81,6 +108,14 @@ const QUERY_CONFIG = {
   },
 } as const
 
+const bulkVariantQueryKeys = {
+  all: ['bulkVariantCreator'] as const,
+  variantTypes: (variantTypeIDsKey: string) =>
+    [...bulkVariantQueryKeys.all, 'variantTypes', variantTypeIDsKey] as const,
+  existingVariants: (productId: number | string) =>
+    [...bulkVariantQueryKeys.all, 'existingVariants', productId] as const,
+}
+
 // ===== Utility Functions =====
 
 const normalizeVariantTypes = (types: VariantType[]): VariantTypeWithOptions[] => {
@@ -95,6 +130,88 @@ const normalizeVariantTypes = (types: VariantType[]): VariantTypeWithOptions[] =
 
 const generateCartesianProduct = <T,>(arrays: T[][]): T[][] => {
   return arrays.reduce<T[][]>((acc, array) => acc.flatMap((x) => array.map((y) => [...x, y])), [[]])
+}
+
+const fetchJSON = async <T,>(url: string, errorMessage: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+  })
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => null)) as { message?: string } | null
+    throw new Error(error?.message || errorMessage)
+  }
+
+  return response.json() as Promise<T>
+}
+
+const fetchVariantTypes = async (
+  selectedVariantTypeIDs: number[],
+): Promise<VariantTypeWithOptions[]> => {
+  const variantTypesQuery = qs.stringify({
+    where: {
+      id: {
+        in: selectedVariantTypeIDs,
+      },
+    },
+    ...QUERY_CONFIG,
+  })
+
+  const data = await fetchJSON<PayloadListResponse<VariantType>>(
+    `/api/variantTypes?${variantTypesQuery}`,
+    'Failed to fetch variant types',
+  )
+
+  return normalizeVariantTypes(data.docs || [])
+}
+
+const fetchExistingVariants = async (productId: number | string): Promise<ExistingVariant[]> => {
+  const variantsQuery = qs.stringify({
+    where: {
+      product: {
+        equals: productId,
+      },
+    },
+    depth: 1,
+    limit: 1000,
+  })
+
+  const data = await fetchJSON<PayloadListResponse<ExistingVariantDoc>>(
+    `/api/variants?${variantsQuery}`,
+    'Failed to fetch variants',
+  )
+
+  return (data.docs || []).map((variant) => ({
+    id: variant.id,
+    options: variant.options || [],
+  }))
+}
+
+const createVariantsRequest = async ({
+  productId,
+  variants,
+}: CreateVariantsInput): Promise<BulkCreateVariantsResponse> => {
+  return fetchJSON<BulkCreateVariantsResponse>(
+    '/api/variants-bulk-create',
+    'Failed to create variants',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        productId: String(productId),
+        variants: variants.map((combo) => ({
+          options: combo.options,
+          priceInNGN: combo.priceInNGN,
+          costPrice: combo.costPrice,
+          inventory: combo.inventory,
+        })),
+      }),
+    },
+  )
 }
 
 // ===== Sub Components =====
@@ -312,8 +429,9 @@ const BulkVariantClient: React.FC<{
   variantTypes: VariantTypeWithOptions[]
   existingVariants: ExistingVariant[]
   productId: number | string
-}> = ({ variantTypes, existingVariants, productId }) => {
-  const router = useRouter()
+  isRefreshingVariants: boolean
+}> = ({ variantTypes, existingVariants, productId, isRefreshingVariants }) => {
+  const queryClient = useQueryClient()
 
   // State
   const [selectedOptions, setSelectedOptions] = useState<Record<string, Set<string>>>({})
@@ -321,9 +439,34 @@ const BulkVariantClient: React.FC<{
   const [baseCostPrice, setBaseCostPrice] = useState<number>(0)
   const [baseInventory, setBaseInventory] = useState<string>('0')
   const [combinations, setCombinations] = useState<VariantCombination[]>([])
-  const [isCreating, setIsCreating] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
+  const selectedCombinationCount = combinations.filter((c) => c.selected).length
+
+  const createVariantsMutation = useMutation({
+    mutationFn: createVariantsRequest,
+    onSuccess: async (result, variables) => {
+      setCombinations([])
+
+      await queryClient.invalidateQueries({
+        queryKey: bulkVariantQueryKeys.existingVariants(variables.productId),
+      })
+
+      const skippedMessage =
+        result.skipped > 0
+          ? ` ${result.skipped} duplicate ${result.skipped === 1 ? 'variant was' : 'variants were'} skipped.`
+          : ''
+
+      toast.success(
+        `Created ${result.created} ${result.created === 1 ? 'variant' : 'variants'} successfully.${skippedMessage} Variant data has been refreshed.`,
+        { duration: 6000 },
+      )
+    },
+    onError: (error) => {
+      console.error('Error creating variants:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create variants')
+    },
+  })
 
   // Handlers
   const toggleOption = (typeId: string, optionId: string) => {
@@ -476,7 +619,7 @@ const BulkVariantClient: React.FC<{
     toast.success(`Updated ${combinations.filter((c) => c.selected).length} selected combinations.`)
   }
 
-  const createVariants = async () => {
+  const createVariants = () => {
     const selectedCombinations = combinations.filter((c) => c.selected)
 
     if (selectedCombinations.length === 0) {
@@ -484,45 +627,10 @@ const BulkVariantClient: React.FC<{
       return
     }
 
-    setIsCreating(true)
-    try {
-      const response = await fetch('/api/variants-bulk-create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId,
-          variants: selectedCombinations.map((combo) => ({
-            options: combo.options,
-            priceInNGN: combo.priceInNGN,
-            costPrice: combo.costPrice,
-            inventory: combo.inventory,
-          })),
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to create variants')
-      }
-
-      const result = await response.json()
-      toast.success(
-        `Created ${result.created} ${result.created === 1 ? 'variant' : 'variants'} successfully! Please reload the page to see the new variants.`,
-        { duration: 6000 },
-      )
-
-      // Clear the combinations after successful creation
-      setCombinations([])
-
-      router.refresh()
-    } catch (error) {
-      console.error('Error creating variants:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create variants')
-    } finally {
-      setIsCreating(false)
-    }
+    createVariantsMutation.mutate({
+      productId,
+      variants: selectedCombinations,
+    })
   }
 
   if (variantTypes.length === 0) {
@@ -542,7 +650,9 @@ const BulkVariantClient: React.FC<{
           <h3 className="bulk-variant-creator__title">Bulk Variant Creator</h3>
           <p className="bulk-variant-creator__description">
             Select multiple variant options and set common price and inventory values. This tool
-            generates all combinations and creates them in bulk.
+            generates all combinations and creates them in bulk. {existingVariants.length} existing{' '}
+            {existingVariants.length === 1 ? 'variant is' : 'variants are'} loaded
+            {isRefreshingVariants ? ' and refreshing' : ''}.
           </p>
         </div>
         <div className="bulk-variant-creator__content">
@@ -598,11 +708,11 @@ const BulkVariantClient: React.FC<{
               margin={false}
               buttonStyle="primary"
               onClick={createVariants}
-              disabled={isCreating || combinations.filter((c) => c.selected).length === 0}
+              disabled={createVariantsMutation.isPending || selectedCombinationCount === 0}
             >
-              {isCreating
+              {createVariantsMutation.isPending
                 ? 'Creating...'
-                : `Create ${combinations.filter((c) => c.selected).length} Variants`}
+                : `Create ${selectedCombinationCount} Variants`}
             </Button>
           </div>
         </div>
@@ -611,10 +721,7 @@ const BulkVariantClient: React.FC<{
   )
 }
 
-// ===== Main Export =====
-
-export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
-  console.log(props)
+const BulkVariantCreatorContent: React.FC = () => {
   const doc = useDocumentInfo()
   const enableVariants = useFormFields(([fields]) => fields['enableVariants']?.value) as
     | boolean
@@ -626,98 +733,30 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
   // Derive a stable string key from the variant type IDs so effect dependencies
   // don't trigger on form re-renders that provide a new array reference
   const variantTypeIDsKey = variantTypeIDs ? [...variantTypeIDs].map(String).sort().join('|') : ''
+  const productId = doc.id
+  const isEnabled = Boolean(enableVariants && variantTypeIDs?.length && productId)
+  const selectedVariantTypeIDs = useMemo(
+    () => (variantTypeIDsKey ? variantTypeIDsKey.split('|').map(Number) : []),
+    [variantTypeIDsKey],
+  )
 
-  const [variantTypes, setVariantTypes] = useState<VariantTypeWithOptions[]>([])
-  const [existingVariants, setExistingVariants] = useState<ExistingVariant[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const variantTypesQuery = useQuery({
+    queryKey: bulkVariantQueryKeys.variantTypes(variantTypeIDsKey),
+    queryFn: () => fetchVariantTypes(selectedVariantTypeIDs),
+    enabled: isEnabled,
+  })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!enableVariants || !variantTypeIDsKey || !doc.id) {
-        setVariantTypes([])
-        setExistingVariants([])
-        return
-      }
-      const selectedVariantTypeIDs = variantTypeIDsKey.split('|').map(Number)
+  const existingVariantsQuery = useQuery({
+    queryKey: bulkVariantQueryKeys.existingVariants(productId || 'new'),
+    queryFn: () => fetchExistingVariants(productId as number | string),
+    enabled: isEnabled,
+  })
 
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // Fetch variant types with options
-        const variantTypesQuery = qs.stringify({
-          where: {
-            id: {
-              in: selectedVariantTypeIDs,
-            },
-          },
-          ...QUERY_CONFIG,
-        })
-
-        const variantTypesResponse = await fetch(`/api/variantTypes?${variantTypesQuery}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!variantTypesResponse.ok) {
-          throw new Error('Failed to fetch variant types')
-        }
-
-        const variantTypesData = await variantTypesResponse.json()
-        const normalizedTypes = normalizeVariantTypes(variantTypesData.docs || [])
-        setVariantTypes(normalizedTypes)
-
-        // Fetch existing variants for this product
-        const variantsQuery = qs.stringify({
-          where: {
-            product: {
-              equals: doc.id,
-            },
-          },
-          depth: 1,
-          // limit: 1000,
-        })
-
-        const variantsResponse = await fetch(`/api/variants?${variantsQuery}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!variantsResponse.ok) {
-          throw new Error('Failed to fetch variants')
-        }
-
-        const variantsData = await variantsResponse.json()
-        const existingVariantDocs = (variantsData.docs || []).map(
-          (variant: { id: number | string; options: (number | string | VariantOption)[] }) => ({
-            id: variant.id,
-            options: variant.options,
-          }),
-        )
-        setExistingVariants(existingVariantDocs)
-      } catch (err) {
-        console.error('Error fetching variant data:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load variant data')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [enableVariants, variantTypeIDsKey, doc.id])
-
-  if (!enableVariants || !variantTypeIDs?.length || !doc.id) {
+  if (!isEnabled) {
     return null
   }
 
-  if (isLoading) {
+  if (variantTypesQuery.isLoading || existingVariantsQuery.isLoading) {
     return (
       <div className="bulk-variant-creator">
         <div className="bulk-variant-creator__card">
@@ -726,6 +765,8 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
       </div>
     )
   }
+
+  const error = variantTypesQuery.error || existingVariantsQuery.error
 
   if (error) {
     return (
@@ -737,8 +778,18 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
               className="bulk-variant-creator__description"
               style={{ color: 'var(--theme-error-500)' }}
             >
-              {error}
+              {error.message}
             </p>
+            <Button
+              margin={false}
+              buttonStyle="secondary"
+              onClick={() => {
+                void variantTypesQuery.refetch()
+                void existingVariantsQuery.refetch()
+              }}
+            >
+              Retry
+            </Button>
           </div>
         </div>
       </div>
@@ -747,9 +798,32 @@ export const BulkVariantCreator: JoinFieldClientComponent = (props) => {
 
   return (
     <BulkVariantClient
-      variantTypes={variantTypes}
-      existingVariants={existingVariants}
-      productId={doc.id}
+      variantTypes={variantTypesQuery.data || []}
+      existingVariants={existingVariantsQuery.data || []}
+      productId={productId as number | string}
+      isRefreshingVariants={existingVariantsQuery.isFetching && !existingVariantsQuery.isLoading}
     />
+  )
+}
+
+// ===== Main Export =====
+
+export const BulkVariantCreator: JoinFieldClientComponent = () => {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BulkVariantCreatorContent />
+    </QueryClientProvider>
   )
 }

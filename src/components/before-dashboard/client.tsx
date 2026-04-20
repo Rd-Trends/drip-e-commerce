@@ -11,6 +11,7 @@ import { RevenueChart } from './revenue-chart'
 import { RecentOrders } from './recent-orders'
 import { TopProducts } from './top-products'
 import { LowInventory } from './low-inventory'
+import { SeedButton } from './seed-button'
 
 export type DashboardPermissions = {
   showMetrics: boolean
@@ -51,6 +52,7 @@ export const BeforeDashboardClient: React.FC<BeforeDashboardClientProps> = ({ pe
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SeedButton />
       <div className="analytics-dashboard">
         <div className="analytics-header">
           <h1 className="analytics-title">Analytics Dashboard</h1>

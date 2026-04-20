@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -26,7 +26,8 @@ export function TopBannerClient({
   showLink,
   bannerHash,
 }: TopBannerClientProps) {
-  const [isVisible, setIsVisible] = useState(false)
+  const bannerRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(!isDismissible)
   const storageKey = `banner-dismissed-${bannerHash}`
 
   useEffect(() => {
@@ -38,8 +39,55 @@ export function TopBannerClient({
       } else {
         setIsVisible(true)
       }
+    } else {
+      setIsVisible(true)
     }
   }, [isDismissible, storageKey])
+
+  useEffect(() => {
+    if (!isVisible) {
+      document.documentElement.style.setProperty('--banner-height', '0px')
+      return
+    }
+
+    const banner = bannerRef.current
+
+    if (!banner) {
+      return
+    }
+
+    let frameId = 0
+
+    const updateBannerHeight = () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId)
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0
+        document.documentElement.style.setProperty('--banner-height', `${banner.offsetHeight}px`)
+      })
+    }
+
+    updateBannerHeight()
+
+    const resizeObserver = new ResizeObserver(updateBannerHeight)
+    resizeObserver.observe(banner)
+
+    window.addEventListener('resize', updateBannerHeight)
+    window.visualViewport?.addEventListener('resize', updateBannerHeight)
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId)
+      }
+
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', updateBannerHeight)
+      window.visualViewport?.removeEventListener('resize', updateBannerHeight)
+      document.documentElement.style.setProperty('--banner-height', '0px')
+    }
+  }, [isVisible])
 
   const handleDismiss = () => {
     setIsVisible(false)
@@ -52,6 +100,7 @@ export function TopBannerClient({
 
   return (
     <div
+      ref={bannerRef}
       className={cn('relative w-full py-3 px-4', {
         'bg-blue-50 text-blue-900 border-b border-blue-200': variant === 'info',
         'bg-green-50 text-green-900 border-b border-green-200': variant === 'success',
