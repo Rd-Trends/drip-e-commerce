@@ -52,7 +52,6 @@ export const BeforeDashboardClient: React.FC<BeforeDashboardClientProps> = ({ pe
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SeedButton />
       <div className="analytics-dashboard">
         <div className="analytics-header">
           <h1 className="analytics-title">Analytics Dashboard</h1>
