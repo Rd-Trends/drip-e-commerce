@@ -25,7 +25,7 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
               </div>
             </ScrollArea>
           </div>
-          <div className="min-h-screen w-full py-6 md:py-8 pb-20">{children}</div>
+          <div className="min-h-screen w-full py-6 md:py-8 mb-20">{children}</div>
         </Container>
       </Section>
     </Fragment>
