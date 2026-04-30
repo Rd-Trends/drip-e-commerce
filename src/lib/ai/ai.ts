@@ -437,6 +437,7 @@ export async function parseProductsFromSession({
       schema: extractedSessionSchema,
     }),
     stopWhen: stepCountIs(AI_EXTRACTION_MAX_STEPS),
+    maxOutputTokens: 5000
     system: buildSystemPrompt(categories, variantTypes),
     temperature: 0,
     messages: [
