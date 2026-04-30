@@ -15,7 +15,7 @@
 import { APICallError, NoObjectGeneratedError } from 'ai'
 import type { TaskHandler } from 'payload'
 import { sendTextMessage } from '@/lib/whatsapp-api'
-import { parseProductsFromSession } from '@/lib/ai/ai'
+import { ParsedSessionProduct, parseProductsFromSession } from '@/lib/ai/ai'
 import { getServerSideURL } from '@/utils/get-url'
 import { formatCurrency } from '@/utils/format-currency'
 import { CONFIRMATION_RE, type CreatedProductSummary } from '@/lib/whatsapp/utils'
@@ -194,18 +194,16 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
         : '🔍 Analysing your product details…',
     )
 
-    let products: Awaited<ReturnType<typeof parseProductsFromSession>>['products'] = []
+    let products: ParsedSessionProduct[]
 
     try {
-      const parsedSession = await parseProductsFromSession({
+      products = await parseProductsFromSession({
         messageText: sessionMessageTexts,
         categories,
         images,
         payload,
         variantTypes,
       })
-
-      products = parsedSession.products ?? []
     } catch (aiError) {
       const aiErrorKind = getAIErrorKind(aiError)
       const aiErrorDetails = NoObjectGeneratedError.isInstance(aiError)

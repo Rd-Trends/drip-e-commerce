@@ -82,27 +82,24 @@ const productImageSchema = z.object({
   variantTypeId: z
     .number()
     .nullable()
-    .default(null)
     .describe(
       'Variant type ID for an image-specific variant link. Usually the Color type ID. Null when the image is not specific to a variant.',
     ),
   variantOptionId: z
     .number()
     .nullable()
-    .default(null)
     .describe(
       'Existing option ID for the linked image variant when available in the provided catalog. Return null when the option is new or the image is not variant-specific.',
     ),
   variantOptionLabel: z
     .string()
     .nullable()
-    .default(null)
     .describe(
       'Variant option label for the linked image variant, e.g. "Black". Null when the image is not variant-specific.',
     ),
 })
 
-const extractedProductSchema = z.object({
+const productSchema = z.object({
   title: z
     .string()
     .describe(
@@ -172,15 +169,6 @@ const extractedProductSchema = z.object({
     ),
 })
 
-const extractedSessionSchema = z.object({
-  products: z
-    .array(extractedProductSchema)
-    .min(1)
-    .describe(
-      'All products found in the session. Split distinct products into separate entries. Keep colorways of the same design in one product.',
-    ),
-})
-
 export type Category = {
   id: number
   title: string
@@ -200,8 +188,7 @@ export type VariantCatalogType = {
   optionsLoaded?: boolean
 }
 
-export type ParsedSessionProduct = z.infer<typeof extractedProductSchema>
-export type ParsedProductSession = z.infer<typeof extractedSessionSchema>
+export type ParsedSessionProduct = z.infer<typeof productSchema>
 
 function buildSystemPrompt(
   categories: Category[],
@@ -407,7 +394,7 @@ export async function parseProductsFromSession({
   images: { id: number; url: string }[]
   payload: BasePayload
   variantTypes: { id: number; name: string }[]
-}): Promise<ParsedProductSession> {
+}): Promise<ParsedSessionProduct[]> {
   const { output } = await generateText({
     model: resolveLanguageModel(),
     tools: {
@@ -433,8 +420,11 @@ export async function parseProductsFromSession({
         },
       }),
     },
-    output: Output.object({
-      schema: extractedSessionSchema,
+    output: Output.array({
+      element: productSchema,
+      name: 'products',
+      description:
+        'All products found in the session. Split distinct products into separate entries. Keep colorways of the same design in one product.',
     }),
     stopWhen: stepCountIs(AI_EXTRACTION_MAX_STEPS),
     maxOutputTokens: 5000,
