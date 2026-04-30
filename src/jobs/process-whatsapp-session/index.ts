@@ -96,6 +96,14 @@ function buildAIProcessingFailureMessage(params: {
   ].join('\n\n')
 }
 
+function getVariantOptionValueKey(variantTypeId: number, value: string): string {
+  return `${variantTypeId}:${value.trim().toLowerCase()}`
+}
+
+function getVariantOptionLabelKey(variantTypeId: number, label: string): string {
+  return `${variantTypeId}:${slugify(label.trim().replace(/\s+/g, ' '))}`
+}
+
 export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
   const { sessionId, phone } = input
   const payload = req.payload
@@ -248,7 +256,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
             return {
               label,
-              value: option.value,
+              value: option.value.trim(),
               variantTypeId: selectedVariant.variantTypeId,
             }
           }),
@@ -257,7 +265,10 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
     const uniqueNewVariantOptions = [
       ...new Map(
-        newVariantOptions.map((option) => [`${option.variantTypeId}:${option.value}`, option]),
+        newVariantOptions.map((option) => [
+          getVariantOptionValueKey(option.variantTypeId, option.value),
+          option,
+        ]),
       ).values(),
     ].filter((option) => option.value)
 
@@ -275,9 +286,21 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
       ),
     )
 
-    const createdVariantOptionsByKey = new Map(
+    const createdVariantOptionsByValueKey = new Map(
       createdVariantOptions.map((option) => [
-        `${typeof option.variantType === 'number' ? option.variantType : option.variantType.id}:${option.value}`,
+        getVariantOptionValueKey(
+          typeof option.variantType === 'number' ? option.variantType : option.variantType.id,
+          option.value,
+        ),
+        option.id,
+      ]),
+    )
+    const createdVariantOptionsByLabelKey = new Map(
+      createdVariantOptions.map((option) => [
+        getVariantOptionLabelKey(
+          typeof option.variantType === 'number' ? option.variantType : option.variantType.id,
+          option.label,
+        ),
         option.id,
       ]),
     )
@@ -288,29 +311,48 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
     for (const [index, product] of products.entries()) {
       try {
+        const selectedVariants = product.selectedVariants.map((variant) => ({
+          ...variant,
+          options: variant.options
+            .map((option) => {
+              if (option.id) return option
+
+              const optionId = createdVariantOptionsByValueKey.get(
+                getVariantOptionValueKey(variant.variantTypeId, option.value),
+              )
+
+              return optionId ? { ...option, id: optionId } : null
+            })
+            .filter((option) => option !== null),
+        }))
+        const variantOptionIdsByLabelKey = new Map(
+          selectedVariants.flatMap((variant) =>
+            variant.options
+              .filter((option) => typeof option.id === 'number')
+              .map((option) => [
+                getVariantOptionLabelKey(variant.variantTypeId, option.label),
+                option.id as number,
+              ]),
+          ),
+        )
+
         const createdProduct = await createProductFromGroup({
           parsedProduct: {
             ...product,
-            selectedVariants: product.selectedVariants.map((variant) => {
-              return {
-                ...variant,
-                options: variant.options
-                  .map((option) => {
-                    if (!!option.id) return option
-                    const optionKey = `${variant.variantTypeId}${slugify(option.label)}`
-                    if (createdVariantOptionsByKey.has(optionKey)) {
-                      return { ...option, id: createdVariantOptionsByKey.get(optionKey) as number }
-                    } else {
-                      return null
-                    }
-                  })
-                  .filter((option) => option !== null),
-              }
-            }),
+            selectedVariants,
             images: product.images.map((image) => {
               if (image.variantOptionId) return image
-              const key = `${image.variantTypeId}${slugify(image.variantOptionLabel ?? '')}`
-              return { ...image, variantOptionId: createdVariantOptionsByKey.get(key) ?? null }
+              if (!image.variantTypeId || !image.variantOptionLabel) return image
+
+              const key = getVariantOptionLabelKey(image.variantTypeId, image.variantOptionLabel)
+
+              return {
+                ...image,
+                variantOptionId:
+                  variantOptionIdsByLabelKey.get(key) ??
+                  createdVariantOptionsByLabelKey.get(key) ??
+                  null,
+              }
             }),
           },
           payload,

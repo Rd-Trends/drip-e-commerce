@@ -7,7 +7,6 @@ import { z } from 'zod'
 const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
 const DEFAULT_XAI_MODEL = 'grok-4-1-fast-reasoning'
 const AI_EXTRACTION_MAX_STEPS = 12
-const AI_EXTRACTION_MAX_OUTPUT_TOKENS = 6000
 
 type AIProvider = 'openai' | 'xai'
 
@@ -65,6 +64,16 @@ const variantOptionSchema = z.object({
     .describe(
       'Variant option value. For existing options, copy the catalog value exactly. For new non-color options, use a slug of the label. For new color options, use a CSS background-color value, preferably a hex code.',
     ),
+  costPriceInNGN: z
+    .number()
+    .describe(
+      'Cost price in Nigerian Naira for this option. Use the option-specific price when provided; otherwise use the general product cost price. Use 0 only when no price is provided anywhere.',
+    ),
+  sellingPriceInNGN: z
+    .number()
+    .describe(
+      'Selling price in Nigerian Naira for this option. Usually costPriceInNGN * 1.4. Use 0 only when no price is provided anywhere.',
+    ),
 })
 
 const productImageSchema = z.object({
@@ -102,11 +111,15 @@ const extractedProductSchema = z.object({
   costPriceInNGN: z
     .number()
     .nullable()
-    .describe('Cost price in Nigerian Naira as a plain number. Null when not provided.'),
+    .describe(
+      'Highest cost price in Nigerian Naira as a plain number across the product and all variant option prices. Null when not provided.',
+    ),
   sellingPriceInNGN: z
     .number()
     .nullable()
-    .describe('Selling price in Nigerian Naira. Usually cost price multiplied by 1.4.'),
+    .describe(
+      'Highest selling price in Nigerian Naira across the product and all variant option prices. Usually the highest applicable cost price multiplied by 1.4.',
+    ),
   description: z
     .string()
     .describe('Storefront-ready product description written from the text and images.'),
@@ -245,8 +258,14 @@ FEATURED
 
 PRICING
 - The user-provided price is the cost price.
-- sellingPriceInNGN should usually be costPriceInNGN * 1.4.
-- If no price is provided, both price fields should be null.
+- costPriceInNGN must be the highest cost price across the product and all variant option prices.
+- sellingPriceInNGN must be the highest selling price across the product and all variant option prices.
+- Every variant option must include costPriceInNGN and sellingPriceInNGN.
+- If a variant option has its own price, use that option-specific price.
+- If a variant option does not have its own price, use the general product price for that option.
+- When combining variants, the effective price is the highest amount among the selected options' prices.
+- Example: "High Quality Luxury Top Available 15k White 16k" means product costPriceInNGN=16000, product sellingPriceInNGN=22400, White option costPriceInNGN=16000, and every other option costPriceInNGN=15000.
+- If no price is provided anywhere, product price fields should be null and variant option price fields should be 0.
 
 ---
 
@@ -283,25 +302,25 @@ Color naming rules:
 - Do not include literal "\\n" or "/n" in any generated string value.
 
 Example variant shape:
-{ "variantTypeId": 2, "variantTypeName": "Color", "options": [{ "id": 14, "label": "Black", "value": "black" }, { "id": null, "label": "Olive", "value": "#808000" }] }
+{ "variantTypeId": 2, "variantTypeName": "Color", "options": [{ "id": 14, "label": "Black", "value": "black", "costPriceInNGN": 15000, "sellingPriceInNGN": 21000 }, { "id": null, "label": "Olive", "value": "#808000", "costPriceInNGN": 16000, "sellingPriceInNGN": 22400 }] }
 
 
 COLOR VARIANT EXAMPLES
 Scenario A — 1 image showing 2 colorways side by side:
 Return both colors as variants. Leave the image untagged.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black", costPriceInNGN: 15000, sellingPriceInNGN: 21000 }, { id: 2, label: "White", value: "white", costPriceInNGN: 16000, sellingPriceInNGN: 22400 }] }]
 
 Scenario B — 2 images, each showing exactly one different colorway:
 Return both colors as variants. Tag each image to its colorway.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 1, label: "Black", value: "black", costPriceInNGN: 15000, sellingPriceInNGN: 21000 }, { id: 2, label: "White", value: "white", costPriceInNGN: 16000, sellingPriceInNGN: 22400 }] }]
 
 Scenario C — 1 image, 1 colorway:
 Return that one color as the only variant. Tag the image to it.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red", costPriceInNGN: 15000, sellingPriceInNGN: 21000 }] }]
 
 Scenario D — 2 images, each showing 2 colorways with one color shared (e.g. Image 1: Red+Black, Image 2: White+Black):
 Collect all distinct colors across both images. Deduplicate — Black appears once even though it appears in both images. Return 3 variants. Both images stay untagged because each shows more than one colorway.
-  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red" }, { id: 1, label: "Black", value: "black" }, { id: 2, label: "White", value: "white" }] }]
+  variants: [{ variantTypeId: 2, variantTypeName: "Color", options: [{ id: 5, label: "Red", value: "red", costPriceInNGN: 15000, sellingPriceInNGN: 21000 }, { id: 1, label: "Black", value: "black", costPriceInNGN: 15000, sellingPriceInNGN: 21000 }, { id: 2, label: "White", value: "white", costPriceInNGN: 16000, sellingPriceInNGN: 22400 }] }]
 
 ---
 
@@ -419,7 +438,6 @@ export async function parseProductsFromSession({
     }),
     stopWhen: stepCountIs(AI_EXTRACTION_MAX_STEPS),
     system: buildSystemPrompt(categories, variantTypes),
-    maxOutputTokens: AI_EXTRACTION_MAX_OUTPUT_TOKENS,
     temperature: 0,
     messages: [
       {
