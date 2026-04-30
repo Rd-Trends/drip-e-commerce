@@ -6,6 +6,8 @@ import { z } from 'zod'
 
 const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
 const DEFAULT_XAI_MODEL = 'grok-4-1-fast-reasoning'
+const AI_EXTRACTION_MAX_STEPS = 12
+const AI_EXTRACTION_MAX_OUTPUT_TOKENS = 6000
 
 type AIProvider = 'openai' | 'xai'
 
@@ -71,18 +73,21 @@ const productImageSchema = z.object({
   variantTypeId: z
     .number()
     .nullable()
+    .default(null)
     .describe(
       'Variant type ID for an image-specific variant link. Usually the Color type ID. Null when the image is not specific to a variant.',
     ),
   variantOptionId: z
     .number()
     .nullable()
+    .default(null)
     .describe(
       'Existing option ID for the linked image variant when available in the provided catalog. Return null when the option is new or the image is not variant-specific.',
     ),
   variantOptionLabel: z
     .string()
     .nullable()
+    .default(null)
     .describe(
       'Variant option label for the linked image variant, e.g. "Black". Null when the image is not variant-specific.',
     ),
@@ -270,15 +275,15 @@ When resolving variant options:
 - For new color options, value must be usable as a CSS background-color value. Prefer hex codes for visual colors, e.g. "Black" -> "#000000", "Olive" -> "#808000", "Cream" -> "#FFFDD0".
 - Never invent or guess option IDs.
 
+Color naming rules:
+- Use simple, common color labels only. Prefer: Black, White, Gray, Navy, Blue, Light Blue, Red, Burgundy, Pink, Purple, Green, Olive, Yellow, Orange, Brown, Tan, Beige, Cream, Gold, Silver.
+- If a color is visually unusual or ambiguous, choose the closest simple color name from the list above instead of inventing a shade name.
+- Avoid descriptive, fashion, fabric, or lighting-based color names such as "heather", "melange", "oatmeal", "midnight", "stonewashed", "washed black", "off-black", "ash", or "charcoal marl"; map them to the closest simple label.
+- Use the same simple color label in selectedVariants.options.label and image.variantOptionLabel.
+- Do not include literal "\\n" or "/n" in any generated string value.
+
 Example variant shape:
-{
-  "variantTypeId": 2,
-  "variantTypeName": "Color",
-  "options": [
-    { "id": 14, "label": "Black", "value": "black" },
-    { "id": null, "label": "Olive", "value": "#808000" }
-  ]
-}
+{ "variantTypeId": 2, "variantTypeName": "Color", "options": [{ "id": 14, "label": "Black", "value": "black" }, { "id": null, "label": "Olive", "value": "#808000" }] }
 
 
 COLOR VARIANT EXAMPLES
@@ -316,14 +321,11 @@ IMAGE RESPONSIBILITIES
 - Each image ID must appear exactly once in the images array — no exceptions, even if the image shows multiple colorways.
 - The number of image objects returned for a product must exactly match the number of source images assigned to that product.
 - Only attach variantTypeId / variantOptionId / variantOptionLabel to an image when that image shows exactly one colorway and nothing else.
-- When an image shows two or more colorways side by side, omit all variant fields entirely, leave the image untagged, and do not duplicate the image for each colorway.
+- When an image shows two or more colorways side by side, set variantTypeId, variantOptionId, and variantOptionLabel to null, leave the image untagged, and do not duplicate the image for each colorway.
 - Never duplicate an image ID to represent multiple variants. If you are tempted to do this, keep a single image object and remove the variant fields instead.
 
 Correct — image shows two colorways, so it is left untagged:
-{
-  "id": 162,
-  "altText": "Two long sleeve tees with white body, one with gray sleeves and one with black sleeves."
-}
+{ "id": 162, "altText": "Two long sleeve tees with white body, one with gray sleeves and one with black sleeves.", "variantTypeId": null, "variantOptionId": null, "variantOptionLabel": null }
 
 Wrong — same image ID duplicated once per colorway:
 { "id": 162, "altText": "...", "variantTypeId": 1, "variantOptionId": 9, "variantOptionLabel": "Gray" },
@@ -334,7 +336,7 @@ The wrong example above is a critical error. Never do this.
 IMAGE TAGGING EXAMPLES BY SCENARIO
 Scenario A — 1 image showing 2 colorways:
 Correct (image untagged — multiple colorways visible):
-{ "id": 10, "altText": "Tee shown in black and tan colorways side by side." }
+{ "id": 10, "altText": "Tee shown in black and tan colorways side by side.", "variantTypeId": null, "variantOptionId": null, "variantOptionLabel": null }
 
 Scenario B — 2 images, each a single colorway:
 Correct (each image tagged to exactly one color):
@@ -347,8 +349,8 @@ Correct (single image tagged to its one color):
 
 Scenario D — 2 images, each showing 2 colorways with overlap (e.g. Red+Black and White+Black):
 Correct (both images untagged — neither shows exactly one colorway):
-{ "id": 10, "altText": "Tee shown in red and black colorways." }
-{ "id": 11, "altText": "Tee shown in white and black colorways." }
+{ "id": 10, "altText": "Tee shown in red and black colorways.", "variantTypeId": null, "variantOptionId": null, "variantOptionLabel": null }
+{ "id": 11, "altText": "Tee shown in white and black colorways.", "variantTypeId": null, "variantOptionId": null, "variantOptionLabel": null }
 The color variants returned are Red, Black, and White — Black is listed once despite appearing in both images.
 
 ---
@@ -415,8 +417,9 @@ export async function parseProductsFromSession({
     output: Output.object({
       schema: extractedSessionSchema,
     }),
-    stopWhen: stepCountIs(8),
+    stopWhen: stepCountIs(AI_EXTRACTION_MAX_STEPS),
     system: buildSystemPrompt(categories, variantTypes),
+    maxOutputTokens: AI_EXTRACTION_MAX_OUTPUT_TOKENS,
     temperature: 0,
     messages: [
       {

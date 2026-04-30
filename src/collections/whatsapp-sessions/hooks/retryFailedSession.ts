@@ -13,9 +13,9 @@ export const retryFailedSession: CollectionAfterChangeHook<WhatsappSession> = as
   }
 
   const wasFailed = previousDoc?.status === 'failed'
-  const isPending = doc.status === 'pending'
+  const isRetryStatus = doc.status === 'pending' || doc.status === 'processing'
 
-  if (!wasFailed || !isPending) {
+  if (!wasFailed || !isRetryStatus) {
     return doc
   }
 

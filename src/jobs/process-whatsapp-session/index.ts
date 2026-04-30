@@ -12,6 +12,7 @@
  * Runs as a Payload background task with automatic retries.
  */
 
+import { APICallError, NoObjectGeneratedError } from 'ai'
 import type { TaskHandler } from 'payload'
 import { sendTextMessage } from '@/lib/whatsapp-api'
 import { parseProductsFromSession } from '@/lib/ai/ai'
@@ -24,6 +25,75 @@ import { slugify } from '@/utils/slugify'
 type TaskIO = {
   input: { sessionId: number; phone: string }
   output: { productsCreated: number }
+}
+
+type AIErrorKind = 'billing' | 'technical'
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
+function isBillingAIError(error: unknown): boolean {
+  const billingHints = [
+    'billing',
+    'quota',
+    'insufficient_quota',
+    'insufficient quota',
+    'credit',
+    'credits',
+    'balance',
+    'payment',
+    '402',
+  ]
+
+  const messages = [getErrorMessage(error)]
+
+  if (error instanceof Error && error.cause) {
+    messages.push(getErrorMessage(error.cause))
+  }
+
+  if (APICallError.isInstance(error)) {
+    if (error.statusCode === 402) return true
+
+    const responseBody = error.responseBody
+
+    if (
+      typeof responseBody === 'string' &&
+      billingHints.some((hint) => responseBody.toLowerCase().includes(hint))
+    ) {
+      return true
+    }
+  }
+
+  return messages.some((message) => {
+    const normalized = message.toLowerCase()
+    return billingHints.some((hint) => normalized.includes(hint))
+  })
+}
+
+function getAIErrorKind(error: unknown): AIErrorKind {
+  return isBillingAIError(error) ? 'billing' : 'technical'
+}
+
+function buildAIProcessingFailureMessage(params: {
+  kind: AIErrorKind
+  sessionAdminUrl: string
+}): string {
+  const { kind, sessionAdminUrl } = params
+
+  const reasonLine =
+    kind === 'billing'
+      ? '❌ We could not process this session because the AI service billing or quota needs attention.'
+      : '❌ We could not extract your product details because of a temporary AI processing issue.'
+
+  return [
+    reasonLine,
+    'Your WhatsApp session has been marked as failed.',
+    'You do not need to resend the session.',
+    'To retry it yourself, open this link and change the status to *Processing*:',
+    sessionAdminUrl,
+  ].join('\n\n')
 }
 
 export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
@@ -52,6 +122,7 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
 
     const serverUrl = getServerSideURL()
     const messages = messagesResult.docs
+    const sessionAdminUrl = `${serverUrl}/admin/collections/whatsapp-sessions/${sessionId}`
 
     // Collect text from text messages AND image captions
     const sessionMessageTexts = messages
@@ -115,13 +186,51 @@ export const handler: TaskHandler<TaskIO> = async ({ input, req }) => {
         : '🔍 Analysing your product details…',
     )
 
-    const { products = [] } = await parseProductsFromSession({
-      messageText: sessionMessageTexts,
-      categories,
-      images,
-      payload,
-      variantTypes,
-    })
+    let products: Awaited<ReturnType<typeof parseProductsFromSession>>['products'] = []
+
+    try {
+      const parsedSession = await parseProductsFromSession({
+        messageText: sessionMessageTexts,
+        categories,
+        images,
+        payload,
+        variantTypes,
+      })
+
+      products = parsedSession.products ?? []
+    } catch (aiError) {
+      const aiErrorKind = getAIErrorKind(aiError)
+      const aiErrorDetails = NoObjectGeneratedError.isInstance(aiError)
+        ? ` finishReason=${aiError.finishReason ?? 'unknown'}`
+        : ''
+
+      payload.logger.error(
+        aiError,
+        `[whatsapp] AI extraction failed for session ${sessionId}.${aiErrorDetails}`,
+      )
+
+      await payload.update({
+        collection: 'whatsapp-sessions',
+        id: sessionId,
+        data: { status: 'failed' },
+        req,
+      })
+
+      await sendTextMessage(
+        phone,
+        buildAIProcessingFailureMessage({
+          kind: aiErrorKind,
+          sessionAdminUrl,
+        }),
+      ).catch((notifyErr) =>
+        payload.logger.error(
+          notifyErr,
+          `[whatsapp] Failed to send AI failure message for session ${sessionId}`,
+        ),
+      )
+
+      return { output: { productsCreated: 0 } }
+    }
 
     if (products.length > 1) {
       await sendTextMessage(
