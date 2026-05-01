@@ -225,15 +225,17 @@ WHAT MAKES TWO ITEMS THE SAME PRODUCT
 TITLE
 - Detect visible brands from logos, tags, embroidery, or wordmarks when clearly present.
 - If the brand is clear, include it in the title.
-- If the brand is not clear, write a clean descriptive title.
+- If the brand is not clear, write a clean descriptive title using the garment type, silhouette, and one or two defining visual details — for example: "Oversized Corduroy Varsity Jacket" or "Ribbed Knit Turtleneck Top".
+- Never use filler words like "luxury", "premium", "high-quality", "elegant", or "stylish" as a default descriptor. Use them only when the product genuinely warrants it based on visible material, construction, or detailing.
 - Never invent a brand.
 
 ---
 
 DESCRIPTION
-- Write 40–80 words. Count carefully.
+- Write 2–4 focused sentences.
 - Be specific about colour, silhouette, fabric feel when visible, notable details, and styling.
-- Do not write generic filler. For example, do not write phrases like "perfect for any occasion" or "a must-have for your wardrobe."
+- Reflect the Nigerian fashion market context where relevant — for example, referencing local style sensibilities, occasion dressing, or fabric traditions when they genuinely apply.
+- Avoid generic filler phrases like "perfect for any occasion" or "a must-have for your wardrobe."
 
 ---
 
@@ -258,7 +260,9 @@ PRICING
 
 CATEGORIES
 - Pick 1–3 categories strictly from the provided category list.
-- Be precise. One accurate category is better than three weak ones.
+- One accurate category is better than three loosely related ones. Only add a second or third category if it genuinely describes the product — for example, a dress that doubles as occasionwear, or a set that includes both a top and trousers.
+- Never assign a category just because it is adjacent or related. When in doubt, use fewer categories.
+- Never invent category IDs.
 
 ---
 
@@ -291,6 +295,7 @@ Color naming rules:
 Example variant shape:
 { "variantTypeId": 2, "variantTypeName": "Color", "options": [{ "id": 14, "label": "Black", "value": "black", "costPriceInNGN": 15000, "sellingPriceInNGN": 21000 }, { "id": null, "label": "Olive", "value": "#808000", "costPriceInNGN": 16000, "sellingPriceInNGN": 22400 }] }
 
+---
 
 COLOR VARIANT EXAMPLES
 Scenario A — 1 image showing 2 colorways side by side:
@@ -315,6 +320,7 @@ DEFAULT VARIANT LOGIC
 - Upper-body garments and two-piece sets → clothing sizes: X, XL, XXL only by default.
 - If the user explicitly says all sizes are available, use the full standard clothing size run: S, M, L, XL, XXL.
 - If the user provides specific clothing sizes, use those exact sizes instead of the defaults.
+- If the user does not specify sizes and the product images show size labels or tags, use those instead of the defaults.
 - Lower-body garments → waist sizes: 28, 30, 32, 34, 36, 38, 40, 42.
 - Shoes → shoe sizes appropriate to the product's market.
 - Bags, caps, jewelry, and similar non-sized products → no automatic size variant.
@@ -370,7 +376,7 @@ Before returning your response, verify every item below:
 [ ] No variant type is duplicated within a product.
 [ ] No option label is duplicated within a variant type.
 [ ] Every variant option includes a value.
-[ ] Every description is 40–80 words.
+[ ] Every description is 2–4 focused sentences with no generic filler.
 [ ] featured defaults to false unless the user explicitly asked otherwise.
 [ ] No two products with different chest graphics, prints, or text placements were merged — different surface design = different product, regardless of shared silhouette or colorway.
 [ ] No two structurally different garments were merged into one product — check silhouette, cut, and garment type for every product that contains more than one image.
