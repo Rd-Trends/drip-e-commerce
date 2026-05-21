@@ -106,6 +106,9 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      max: 10,
+      // Closes idle pool connections after 20 seconds to save VPS memory
+      idleTimeoutMillis: 20000,
     },
   }),
   editor: lexicalEditor({
