@@ -6,6 +6,7 @@ import { useIsAddToCartDisabled, useSelectedVariant } from '@/hooks/use-product-
 import type { Product } from '@/payload-types'
 
 import { useCart } from '@/providers/cart'
+import * as pixel from '@/lib/facebook-pixel'
 import clsx from 'clsx'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -23,9 +24,22 @@ export function AddToCart({ product }: Props) {
     (e: React.FormEvent<HTMLButtonElement>) => {
       e.preventDefault()
 
+      const effectivePrice = selectedVariant?.priceInNGN ?? product.priceInNGN ?? 0
+
       mutate(
         { item: { product: product.id, variant: selectedVariant?.id ?? undefined } },
-        { onSuccess: () => toast.success('Item added to cart.') },
+        {
+          onSuccess: () => {
+            toast.success('Item added to cart.')
+            pixel.addToCartEvent({
+              content_ids: [product.id.toString()],
+              content_name: product.title,
+              content_type: 'product',
+              value: effectivePrice / 100,
+              currency: 'NGN',
+            })
+          },
+        },
       )
     },
     [mutate, product, selectedVariant],

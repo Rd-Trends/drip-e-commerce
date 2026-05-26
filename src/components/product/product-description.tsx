@@ -4,7 +4,8 @@ import type { Product, Variant } from '@/payload-types'
 import { RichText } from '@/components/rich-text'
 import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
-import React, { Suspense } from 'react'
+import * as pixel from '@/lib/facebook-pixel'
+import React, { Suspense, useEffect } from 'react'
 
 import { VariantSelector } from './variant-selector'
 import { StockIndicator } from '@/components/product/stockInd-indicator'
@@ -16,6 +17,18 @@ function ProductDescription({ product }: { product: Product }) {
   let amount = 0,
     lowestAmount = 0,
     highestAmount = 0
+
+  // Fire ViewContent pixel event once per product
+  useEffect(() => {
+    pixel.viewContent({
+      content_ids: [product.id.toString()],
+      content_name: product.title,
+      content_type: 'product',
+      value: (product.priceInNGN || 0) / 100,
+      currency: 'NGN',
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id])
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
 

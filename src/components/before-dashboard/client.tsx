@@ -11,7 +11,7 @@ import { RevenueChart } from './revenue-chart'
 import { RecentOrders } from './recent-orders'
 import { TopProducts } from './top-products'
 import { LowInventory } from './low-inventory'
-import { SeedButton } from './seed-button'
+// import { SeedButton } from './seed-button'
 
 export type DashboardPermissions = {
   showMetrics: boolean

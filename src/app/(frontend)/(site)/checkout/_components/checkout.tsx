@@ -26,6 +26,7 @@ import { OrderSummary } from './order-summary'
 import { ShippingInformation } from './shipping-information'
 import { Price } from '@/components/price'
 import { useAddresses } from '@/hooks/use-address'
+import * as pixel from '@/lib/facebook-pixel'
 import Link from 'next/link'
 import {
   Empty,
@@ -159,6 +160,24 @@ function CheckoutForm({
               setOrderID(confirmResult.orderID)
               await clearCart()
               setShowIsConfirmingOrder(false)
+
+              // Purchase event — fire after order is confirmed
+              const contentIds =
+                cart?.items
+                  ?.map((item) => {
+                    const prod = item.product
+                    if (!prod) return null
+                    return typeof prod === 'object' ? prod.id.toString() : prod.toString()
+                  })
+                  .filter((id): id is string => id !== null) ?? []
+              const numItems =
+                cart?.items?.reduce((acc, item) => acc + (item.quantity || 1), 0) ?? 0
+              pixel.purchase({
+                value: totalAmount / 100,
+                currency: 'NGN',
+                content_ids: contentIds,
+                num_items: numItems,
+              })
             }
           },
           onError: () => {
@@ -167,7 +186,7 @@ function CheckoutForm({
         },
       )
     },
-    [clearCart, confirmOrder, email, onConfirmingOrder],
+    [clearCart, confirmOrder, email, onConfirmingOrder, cart, totalAmount],
   )
 
   const initiatePaymentIntent = useCallback(
@@ -235,6 +254,23 @@ function CheckoutForm({
       toast.error(errorMessage)
       return
     }
+
+    // InitiateCheckout event — fire when the user proceeds to payment
+    const contentIds =
+      cart?.items
+        ?.map((item) => {
+          const prod = item.product
+          if (!prod) return null
+          return typeof prod === 'object' ? prod.id.toString() : prod.toString()
+        })
+        .filter((id): id is string => id !== null) ?? []
+    const numItems = cart?.items?.reduce((acc, item) => acc + (item.quantity || 1), 0) ?? 0
+    pixel.initiateCheckout({
+      content_ids: contentIds,
+      num_items: numItems,
+      value: totalAmount / 100,
+      currency: 'NGN',
+    })
 
     void initiatePaymentIntent('paystack')
   }

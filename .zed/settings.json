@@ -1,0 +1,36 @@
+{
+  "languages": {
+    "TypeScript": {
+      "format_on_save": "on",
+      "formatter": "prettier",
+      "language_servers": ["typescript-language-server", "eslint", "!biome"],
+    },
+    "TSX": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+      "language_servers": ["typescript-language-server", "eslint", "!biome"],
+    },
+    "JavaScript": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+      "language_servers": ["typescript-language-server", "eslint", "!biome"],
+    },
+    "JSON": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+    "JSONC": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+  },
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "codeActionOnSave": {
+          "rules": ["source.fixAll.eslint"],
+        },
+      },
+    },
+  },
+}
