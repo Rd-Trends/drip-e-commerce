@@ -1,6 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import type { Product, Variant, VariantOption, VariantType } from '@/payload-types'
+import type { Product, Variant } from '@/payload-types'
 
 // Revalidate the feed every hour
 export const revalidate = 3600
@@ -79,14 +79,34 @@ function getProductType(product: Product): string {
   return cats.map((c) => c.title).join(' > ')
 }
 
-/** Build an XML <item> for a simple (non-variant) product. */
+/** Build an XML <item> for a product. For variant products, derives stock and price from variants. */
 function buildSimpleItem(baseUrl: string, product: Product): string {
   const link = escapeXml(`${baseUrl}/products/${product.slug}`)
   const imageUrl = getImageUrl(baseUrl, product)
   const description = lexicalToText(product.description) || product.title
-  const availability = (product.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
-  const price = formatPrice(product.priceInNGN ?? 0)
   const productType = getProductType(product)
+
+  let availability: string
+  let price: string
+
+  if (product.enableVariants && product.variants?.docs?.length) {
+    const variantDocs = (product.variants.docs as (Variant | number)[]).filter(
+      (v): v is Variant => typeof v === 'object',
+    )
+    const inStock = variantDocs.some((v) => (v.inventory ?? 0) > 0)
+    availability = inStock ? 'in stock' : 'out of stock'
+
+    // Use the lowest variant price; fall back to the product-level price
+    const variantPrices = variantDocs
+      .map((v) => v.priceInNGN ?? product.priceInNGN ?? 0)
+      .filter((p) => p > 0)
+    const lowestPrice =
+      variantPrices.length > 0 ? Math.min(...variantPrices) : (product.priceInNGN ?? 0)
+    price = formatPrice(lowestPrice)
+  } else {
+    availability = (product.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
+    price = formatPrice(product.priceInNGN ?? 0)
+  }
 
   return `    <item>
       <g:id>${product.id}</g:id>
@@ -98,51 +118,6 @@ function buildSimpleItem(baseUrl: string, product: Product): string {
       <g:price>${price}</g:price>
       <g:brand>${BRAND}</g:brand>
       <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>${productType ? `\n      <g:product_type><![CDATA[${productType}]]></g:product_type>` : ''}
-    </item>`
-}
-
-/** Build an XML <item> for a single variant of a product. */
-function buildVariantItem(baseUrl: string, product: Product, variant: Variant): string {
-  const link = escapeXml(`${baseUrl}/products/${product.slug}`)
-
-  // Collect populated variant options
-  const options = variant.options.filter((opt) => typeof opt === 'object') as VariantOption[]
-
-  let color: string | undefined
-  let size: string | undefined
-  let colorOptionId: number | undefined
-
-  for (const option of options) {
-    if (typeof option.variantType === 'object') {
-      const typeName = (option.variantType as VariantType).name.toLowerCase()
-      if (typeName === 'color' || typeName === 'colour') {
-        color = option.label
-        colorOptionId = option.id
-      } else if (typeName === 'size') {
-        size = option.label
-      }
-    }
-  }
-
-  const imageUrl = getImageUrl(baseUrl, product, colorOptionId)
-  const optionLabels = options.map((o) => o.label).join(' / ')
-  const variantTitle = optionLabels ? `${product.title} - ${optionLabels}` : product.title
-  const description = lexicalToText(product.description) || product.title
-  const availability = (variant.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
-  const price = formatPrice(variant.priceInNGN ?? product.priceInNGN ?? 0)
-  const productType = getProductType(product)
-
-  return `    <item>
-      <g:id>${product.id}-${variant.id}</g:id>
-      <g:item_group_id>${product.id}</g:item_group_id>
-      <g:title><![CDATA[${variantTitle}]]></g:title>
-      <g:description><![CDATA[${description}]]></g:description>
-      <g:link>${link}</g:link>${imageUrl ? `\n      <g:image_link>${escapeXml(imageUrl)}</g:image_link>` : ''}
-      <g:condition>new</g:condition>
-      <g:availability>${availability}</g:availability>
-      <g:price>${price}</g:price>
-      <g:brand>${BRAND}</g:brand>
-      <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>${color ? `\n      <g:color><![CDATA[${color}]]></g:color>` : ''}${size ? `\n      <g:size><![CDATA[${size}]]></g:size>` : ''}${productType ? `\n      <g:product_type><![CDATA[${productType}]]></g:product_type>` : ''}
     </item>`
 }
 
@@ -159,27 +134,12 @@ export async function GET() {
     where: {
       _status: { equals: 'published' },
     },
-    populate: {
-      variants: {
-        priceInNGN: true,
-        inventory: true,
-        options: true,
-      },
-    } as Record<string, unknown>,
   })
 
   const items: string[] = []
 
   for (const product of result.docs) {
-    if (product.enableVariants && product.variants?.docs?.length) {
-      for (const variant of product.variants.docs) {
-        if (typeof variant === 'object') {
-          items.push(buildVariantItem(baseUrl, product, variant as Variant))
-        }
-      }
-    } else {
-      items.push(buildSimpleItem(baseUrl, product))
-    }
+    items.push(buildSimpleItem(baseUrl, product))
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
