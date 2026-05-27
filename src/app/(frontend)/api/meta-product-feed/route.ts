@@ -6,7 +6,17 @@ import type { Product, Variant, VariantOption, VariantType } from '@/payload-typ
 export const revalidate = 3600
 
 const BRAND = 'Drip'
-const DEFAULT_CATEGORY = 'Apparel & Accessories > Clothing'
+const DEFAULT_CATEGORY = 'Apparel &amp; Accessories &gt; Clothing'
+
+/** Escape characters that are invalid in XML text nodes (outside of CDATA). */
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
 
 /** Convert kobo → naira and format for Meta's catalog feed (e.g. "5000.00 NGN") */
 function formatPrice(amountInKobo: number): string {
@@ -61,30 +71,39 @@ function getImageUrl(baseUrl: string, product: Product, colorOptionId?: number):
   return ''
 }
 
+/** Extract category titles from a populated product, joined as a product type string. */
+function getProductType(product: Product): string {
+  const cats = (product.categories ?? []).filter(
+    (c) => typeof c === 'object',
+  ) as import('@/payload-types').Category[]
+  return cats.map((c) => c.title).join(' > ')
+}
+
 /** Build an XML <item> for a simple (non-variant) product. */
 function buildSimpleItem(baseUrl: string, product: Product): string {
-  const link = `${baseUrl}/products/${product.slug}`
+  const link = escapeXml(`${baseUrl}/products/${product.slug}`)
   const imageUrl = getImageUrl(baseUrl, product)
   const description = lexicalToText(product.description) || product.title
   const availability = (product.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
   const price = formatPrice(product.priceInNGN ?? 0)
+  const productType = getProductType(product)
 
   return `    <item>
       <g:id>${product.id}</g:id>
       <g:title><![CDATA[${product.title}]]></g:title>
       <g:description><![CDATA[${description}]]></g:description>
-      <g:link>${link}</g:link>${imageUrl ? `\n      <g:image_link>${imageUrl}</g:image_link>` : ''}
+      <g:link>${link}</g:link>${imageUrl ? `\n      <g:image_link>${escapeXml(imageUrl)}</g:image_link>` : ''}
       <g:condition>new</g:condition>
       <g:availability>${availability}</g:availability>
       <g:price>${price}</g:price>
       <g:brand>${BRAND}</g:brand>
-      <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>
+      <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>${productType ? `\n      <g:product_type><![CDATA[${productType}]]></g:product_type>` : ''}
     </item>`
 }
 
 /** Build an XML <item> for a single variant of a product. */
 function buildVariantItem(baseUrl: string, product: Product, variant: Variant): string {
-  const link = `${baseUrl}/products/${product.slug}`
+  const link = escapeXml(`${baseUrl}/products/${product.slug}`)
 
   // Collect populated variant options
   const options = variant.options.filter((opt) => typeof opt === 'object') as VariantOption[]
@@ -111,18 +130,19 @@ function buildVariantItem(baseUrl: string, product: Product, variant: Variant): 
   const description = lexicalToText(product.description) || product.title
   const availability = (variant.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
   const price = formatPrice(variant.priceInNGN ?? product.priceInNGN ?? 0)
+  const productType = getProductType(product)
 
   return `    <item>
       <g:id>${product.id}-${variant.id}</g:id>
       <g:item_group_id>${product.id}</g:item_group_id>
       <g:title><![CDATA[${variantTitle}]]></g:title>
       <g:description><![CDATA[${description}]]></g:description>
-      <g:link>${link}</g:link>${imageUrl ? `\n      <g:image_link>${imageUrl}</g:image_link>` : ''}
+      <g:link>${link}</g:link>${imageUrl ? `\n      <g:image_link>${escapeXml(imageUrl)}</g:image_link>` : ''}
       <g:condition>new</g:condition>
       <g:availability>${availability}</g:availability>
       <g:price>${price}</g:price>
       <g:brand>${BRAND}</g:brand>
-      <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>${color ? `\n      <g:color><![CDATA[${color}]]></g:color>` : ''}${size ? `\n      <g:size><![CDATA[${size}]]></g:size>` : ''}
+      <g:google_product_category>${DEFAULT_CATEGORY}</g:google_product_category>${color ? `\n      <g:color><![CDATA[${color}]]></g:color>` : ''}${size ? `\n      <g:size><![CDATA[${size}]]></g:size>` : ''}${productType ? `\n      <g:product_type><![CDATA[${productType}]]></g:product_type>` : ''}
     </item>`
 }
 

@@ -5,6 +5,7 @@ import { RichText } from '@/components/rich-text'
 import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
 import * as pixel from '@/lib/facebook-pixel'
+import { useFacebookPixel } from '@/providers/facebook-pixel'
 import React, { Suspense, useEffect } from 'react'
 
 import { VariantSelector } from './variant-selector'
@@ -14,12 +15,13 @@ import { Skeleton } from '../ui/skeleton'
 
 function ProductDescription({ product }: { product: Product }) {
   const { currency } = useCurrency()
+  const { isLoaded } = useFacebookPixel()
   let amount = 0,
     lowestAmount = 0,
     highestAmount = 0
 
-  // Fire ViewContent pixel event once per product
   useEffect(() => {
+    if (!isLoaded) return
     pixel.viewContent({
       content_ids: [product.id.toString()],
       content_name: product.title,
@@ -27,8 +29,7 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.id])
+  }, [isLoaded, product.id, product.title, product.priceInNGN])
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
 

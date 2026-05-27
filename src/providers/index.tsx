@@ -7,6 +7,7 @@ import { QueryProvider as QueryClientProvider } from './query-provider'
 import { CurrencyProvider } from './currency'
 import { CartProvider } from './cart'
 import { ThemeProvider } from './theme'
+import { FacebookPixelProvider } from './facebook-pixel'
 
 export const Providers: React.FC<{
   children: React.ReactNode
@@ -17,7 +18,9 @@ export const Providers: React.FC<{
         <QueryClientProvider>
           <AuthProvider>
             <CurrencyProvider>
-              <CartProvider>{children}</CartProvider>
+              <CartProvider>
+                <FacebookPixelProvider>{children}</FacebookPixelProvider>
+              </CartProvider>
             </CurrencyProvider>
           </AuthProvider>
         </QueryClientProvider>

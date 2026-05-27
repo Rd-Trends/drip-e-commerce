@@ -17,6 +17,7 @@ export const pageview = () => {
 
 export const event = (name: string, options: Record<string, unknown> = {}) => {
   if (!FB_PIXEL_ID) return
+  if (typeof window.fbq !== 'function') return // pixel script not loaded yet
   window.fbq('track', name, options)
 }
 
