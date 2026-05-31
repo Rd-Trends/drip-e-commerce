@@ -54,6 +54,6 @@ function initializeTikTokPixel(w, d, t) {
 }
 
 if (PIXEL_ID) {
-  initializeFacebookPixel(window, document, 'ttq')
+  initializeTikTokPixel(window, document, 'ttq')
   window.ttq.load(PIXEL_ID)
 }
