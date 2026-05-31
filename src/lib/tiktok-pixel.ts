@@ -24,12 +24,15 @@ async function hashValue(value: string): Promise<string> {
 export const pageview = () => {
   if (!TIKTOK_PIXEL_ID) return
   if (typeof window.ttq?.page !== 'function') return
+  const pathname = window.location.pathname
+  console.log('Tracking TikTok pageview:', pathname)
   window.ttq.page()
 }
 
 const track = (name: string, params: Record<string, unknown> = {}) => {
   if (!TIKTOK_PIXEL_ID) return
   if (typeof window.ttq?.track !== 'function') return
+  console.log('Tracking TikTok event:', name, params)
   window.ttq.track(name, params)
 }
 

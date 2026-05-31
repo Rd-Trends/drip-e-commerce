@@ -4,7 +4,7 @@ import * as fbPixel from '@/lib/facebook-pixel'
 import * as ttPixel from '@/lib/tiktok-pixel'
 import { usePathname } from 'next/navigation'
 import Script from 'next/script'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 type AnalyticsPixelContextType = {
   fbLoaded: boolean
@@ -21,9 +21,6 @@ const AnalyticsPixelContext = createContext<AnalyticsPixelContextType>({
 const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => {
   const [fbLoaded, setFbLoaded] = useState(false)
   const [ttLoaded, setTtLoaded] = useState(false)
-  // The TikTok init script already calls ttq.page() on first load.
-  // Skip that first call from React to avoid double-counting.
-  const ttInitialPageViewFired = useRef(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -31,12 +28,7 @@ const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => 
   }, [pathname, fbLoaded])
 
   useEffect(() => {
-    if (!ttLoaded) return
-    if (!ttInitialPageViewFired.current) {
-      ttInitialPageViewFired.current = true
-      return
-    }
-    ttPixel.pageview()
+    if (ttLoaded) ttPixel.pageview()
   }, [pathname, ttLoaded])
 
   return (
