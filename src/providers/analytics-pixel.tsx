@@ -30,7 +30,13 @@ const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => 
 
   return (
     <AnalyticsPixelContext.Provider
-      value={{ fbLoaded, ttLoaded, isAllLoaded: fbLoaded && ttLoaded }}
+      value={{
+        fbLoaded,
+        ttLoaded,
+        // True when every *configured* pixel has finished loading.
+        // If a pixel ID is not set, that pixel is considered already "loaded" (skipped).
+        isAllLoaded: (fbLoaded || !fbPixel.FB_PIXEL_ID) && (ttLoaded || !ttPixel.TIKTOK_PIXEL_ID),
+      }}
     >
       {children}
       {fbPixel.FB_PIXEL_ID && (

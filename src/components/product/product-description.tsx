@@ -13,16 +13,24 @@ import { VariantSelector } from './variant-selector'
 import { StockIndicator } from '@/components/product/stockInd-indicator'
 import { useCurrency } from '@/providers/currency'
 import { Skeleton } from '../ui/skeleton'
+import { useAuth } from '@/providers/auth'
 
 function ProductDescription({ product }: { product: Product }) {
   const { currency } = useCurrency()
   const { isAllLoaded } = useAnalyticsPixel()
+  const { user, isLoading: isLoadingUser } = useAuth()
   let amount = 0,
     lowestAmount = 0,
     highestAmount = 0
 
   useEffect(() => {
-    if (!isAllLoaded) return
+    if (!isAllLoaded || isLoadingUser) return
+    if (user) {
+      ttPixel.identify({
+        email: user.email,
+        externalId: user.id.toString(),
+      })
+    }
     pixel.viewContent({
       content_ids: [product.id.toString()],
       content_name: product.title,
@@ -38,7 +46,7 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-  }, [product.id, product.title, product.priceInNGN])
+  }, [product.id, product.title, product.priceInNGN, isLoadingUser, user])
 
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)

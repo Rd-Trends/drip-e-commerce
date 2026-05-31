@@ -3,7 +3,7 @@
 const script = document.getElementById('tiktok-pixel')
 const PIXEL_ID = script ? script.getAttribute('data-pixel-id') : null
 
-;(function (w, d, t) {
+function initializeTikTokPixel(w, d, t) {
   w.TiktokAnalyticsObject = t
   var ttq = (w[t] = w[t] || [])
   ttq.methods = [
@@ -51,8 +51,9 @@ const PIXEL_ID = script ? script.getAttribute('data-pixel-id') : null
     var a = document.getElementsByTagName('script')[0]
     a.parentNode.insertBefore(o, a)
   }
-})(window, document, 'ttq')
+}
 
 if (PIXEL_ID) {
+  initializeFacebookPixel(window, document, 'ttq')
   window.ttq.load(PIXEL_ID)
 }

@@ -12,59 +12,121 @@ declare global {
   }
 }
 
+/** SHA-256 hash a string using the Web Crypto API. Returns a lowercase hex string. */
+async function hashValue(value: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(value.toLowerCase().trim())
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 export const pageview = () => {
   if (!TIKTOK_PIXEL_ID) return
   if (typeof window.ttq?.page !== 'function') return
   window.ttq.page()
 }
 
-export const event = (name: string, params: Record<string, unknown> = {}) => {
+const track = (name: string, params: Record<string, unknown> = {}) => {
   if (!TIKTOK_PIXEL_ID) return
   if (typeof window.ttq?.track !== 'function') return
   window.ttq.track(name, params)
+}
+
+/**
+ * Call before event code on pages where PII data is available.
+ * Hashes email, phone number and external ID with SHA-256 before sending.
+ */
+export const identify = async (options: {
+  email?: string
+  phoneNumber?: string
+  /** Any unique identifier, e.g. user ID */
+  externalId?: string
+}) => {
+  if (!TIKTOK_PIXEL_ID) return
+  if (typeof window.ttq?.identify !== 'function') return
+
+  const [hashedEmail, hashedPhone, hashedId] = await Promise.all([
+    options.email ? hashValue(options.email) : undefined,
+    options.phoneNumber ? hashValue(options.phoneNumber) : undefined,
+    options.externalId ? hashValue(options.externalId) : undefined,
+  ])
+
+  window.ttq.identify({
+    ...(hashedEmail && { email: hashedEmail }),
+    ...(hashedPhone && { phone_number: hashedPhone }),
+    ...(hashedId && { external_id: hashedId }),
+  })
 }
 
 export const viewContent = (options: {
   content_id: string
   content_name: string
   content_type: 'product' | 'product_group'
-  /** Price in primary currency unit (naira, not kobo) */
+  /** Price per item in primary currency unit (naira, not kobo) */
   price: number
   value: number
   currency: string
 }) => {
-  event('ViewContent', options)
+  track('ViewContent', {
+    contents: [
+      {
+        content_id: options.content_id,
+        content_type: options.content_type,
+        content_name: options.content_name,
+        price: options.price,
+      },
+    ],
+    value: options.value,
+    currency: options.currency,
+  })
 }
 
 export const addToCartEvent = (options: {
   content_id: string
   content_name: string
   content_type: 'product' | 'product_group'
-  /** Price in primary currency unit (naira, not kobo) */
+  /** Price per item in primary currency unit (naira, not kobo) */
   price: number
   value: number
   currency: string
   quantity: number
 }) => {
-  event('AddToCart', options)
+  track('AddToCart', {
+    contents: [
+      {
+        content_id: options.content_id,
+        content_type: options.content_type,
+        content_name: options.content_name,
+        price: options.price,
+        num_items: options.quantity,
+      },
+    ],
+    value: options.value,
+    currency: options.currency,
+  })
 }
 
 export const initiateCheckout = (options: {
-  content_id: string[]
-  /** Total in primary currency unit (naira, not kobo) */
+  contents: Array<{ content_id: string; num_items: number }>
   value: number
   currency: string
-  quantity: number
 }) => {
-  event('InitiateCheckout', options)
+  track('InitiateCheckout', {
+    contents: options.contents,
+    value: options.value,
+    currency: options.currency,
+  })
 }
 
-export const completePayment = (options: {
-  content_id: string[]
-  /** Total in primary currency unit (naira, not kobo) */
+export const purchase = (options: {
+  contents: Array<{ content_id: string; num_items: number }>
   value: number
   currency: string
-  quantity: number
 }) => {
-  event('CompletePayment', options)
+  track('Purchase', {
+    contents: options.contents,
+    value: options.value,
+    currency: options.currency,
+  })
 }

@@ -179,11 +179,26 @@ function CheckoutForm({
                 content_ids: contentIds,
                 num_items: numItems,
               })
-              ttPixel.completePayment({
-                content_id: contentIds,
+
+              // Build per-item contents for TikTok
+              const ttContents =
+                cart?.items
+                  ?.map((item) => {
+                    const prod = item.product
+                    if (!prod) return null
+                    const id = typeof prod === 'object' ? prod.id.toString() : prod.toString()
+                    return { content_id: id, num_items: item.quantity || 1 }
+                  })
+                  .filter((c): c is { content_id: string; num_items: number } => c !== null) ?? []
+
+              await ttPixel.identify({
+                email: customerEmail || undefined,
+                externalId: user?.id?.toString(),
+              })
+              ttPixel.purchase({
+                contents: ttContents,
                 value: totalAmount / 100,
                 currency: 'NGN',
-                quantity: numItems,
               })
             }
           },
@@ -246,7 +261,7 @@ function CheckoutForm({
     [shippingAddress, email, appliedCoupon, handlePaymentSuccess, initiatePayment],
   )
 
-  const handleCheckout = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
     if (!canGoToPayment) {
@@ -278,11 +293,24 @@ function CheckoutForm({
       value: totalAmount / 100,
       currency: 'NGN',
     })
+    const ttCheckoutContents =
+      cart?.items
+        ?.map((item) => {
+          const prod = item.product
+          if (!prod) return null
+          const id = typeof prod === 'object' ? prod.id.toString() : prod.toString()
+          return { content_id: id, num_items: item.quantity || 1 }
+        })
+        .filter((c): c is { content_id: string; num_items: number } => c !== null) ?? []
+
+    await ttPixel.identify({
+      email: customerEmail || undefined,
+      externalId: user?.id?.toString(),
+    })
     ttPixel.initiateCheckout({
-      content_id: contentIds,
+      contents: ttCheckoutContents,
       value: totalAmount / 100,
       currency: 'NGN',
-      quantity: numItems,
     })
 
     void initiatePaymentIntent('paystack')
