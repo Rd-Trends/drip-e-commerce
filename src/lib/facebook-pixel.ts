@@ -6,7 +6,13 @@ type FbqCommand = 'track' | 'trackCustom' | 'init' | 'consent'
 
 declare global {
   interface Window {
-    fbq: (command: FbqCommand, eventName: string, options?: Record<string, unknown>) => void
+    // The 4th argument carries the eventID used for server-side deduplication.
+    fbq: (
+      command: FbqCommand,
+      eventName: string,
+      options?: Record<string, unknown>,
+      extraInfo?: { eventID?: string },
+    ) => void
   }
 }
 
@@ -15,10 +21,10 @@ export const pageview = () => {
   window.fbq('track', 'PageView')
 }
 
-export const event = (name: string, options: Record<string, unknown> = {}) => {
+export const event = (name: string, options: Record<string, unknown> = {}, eventId?: string) => {
   if (!FB_PIXEL_ID) return
   if (typeof window.fbq !== 'function') return // pixel script not loaded yet
-  window.fbq('track', name, options)
+  window.fbq('track', name, options, eventId ? { eventID: eventId } : undefined)
 }
 
 export const viewContent = (options: {
@@ -28,8 +34,10 @@ export const viewContent = (options: {
   /** Price in primary currency unit (naira, not kobo) */
   value: number
   currency: string
+  eventId?: string
 }) => {
-  event('ViewContent', options)
+  const { eventId, ...data } = options
+  event('ViewContent', data, eventId)
 }
 
 export const addToCartEvent = (options: {
@@ -39,8 +47,10 @@ export const addToCartEvent = (options: {
   /** Price in primary currency unit (naira, not kobo) */
   value: number
   currency: string
+  eventId?: string
 }) => {
-  event('AddToCart', options)
+  const { eventId, ...data } = options
+  event('AddToCart', data, eventId)
 }
 
 export const initiateCheckout = (options: {
@@ -49,8 +59,10 @@ export const initiateCheckout = (options: {
   /** Total in primary currency unit (naira, not kobo) */
   value: number
   currency: string
+  eventId?: string
 }) => {
-  event('InitiateCheckout', options)
+  const { eventId, ...data } = options
+  event('InitiateCheckout', data, eventId)
 }
 
 export const purchase = (options: {
@@ -59,6 +71,9 @@ export const purchase = (options: {
   currency: string
   content_ids: string[]
   num_items: number
+  /** Order ID — pass this so the server-side CAPI call can deduplicate. */
+  eventId?: string
 }) => {
-  event('Purchase', options)
+  const { eventId, ...data } = options
+  event('Purchase', data, eventId)
 }

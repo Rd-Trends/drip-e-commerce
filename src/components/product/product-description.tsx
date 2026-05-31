@@ -4,8 +4,7 @@ import type { Product, Variant } from '@/payload-types'
 import { RichText } from '@/components/rich-text'
 import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
-import * as pixel from '@/lib/facebook-pixel'
-import * as ttPixel from '@/lib/tiktok-pixel'
+import * as pixel from '@/lib/pixel'
 import { useAnalyticsPixel } from '@/providers/analytics-pixel'
 import React, { Suspense, useEffect } from 'react'
 
@@ -25,26 +24,12 @@ function ProductDescription({ product }: { product: Product }) {
 
   useEffect(() => {
     if (!isAllLoaded || isLoadingUser) return
-    if (user) {
-      ttPixel.identify({
-        email: user.email,
-        externalId: user.id.toString(),
-      })
-    }
     pixel.viewContent({
-      content_ids: [product.id.toString()],
-      content_name: product.title,
-      content_type: 'product',
+      contentId: product.id.toString(),
+      contentName: product.title,
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
-    })
-    ttPixel.viewContent({
-      content_id: product.id.toString(),
-      content_name: product.title,
-      content_type: 'product',
-      price: (product.priceInNGN || 0) / 100,
-      value: (product.priceInNGN || 0) / 100,
-      currency: 'NGN',
+      userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
     })
   }, [product.id, product.title, product.priceInNGN, isAllLoaded, isLoadingUser, user])
 

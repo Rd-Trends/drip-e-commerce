@@ -4,7 +4,12 @@ declare global {
   interface Window {
     ttq: {
       page: () => void
-      track: (event: string, params?: Record<string, unknown>) => void
+      track: (
+        event: string,
+        params?: Record<string, unknown>,
+        // 3rd arg carries event_id for server-side deduplication.
+        options?: { event_id?: string },
+      ) => void
       identify: (params: Record<string, unknown>) => void
       load: (pixelId: string) => void
       instance: (pixelId: string) => Window['ttq']
@@ -27,10 +32,10 @@ export const pageview = () => {
   window.ttq.page()
 }
 
-const track = (name: string, params: Record<string, unknown> = {}) => {
+const track = (name: string, params: Record<string, unknown> = {}, eventId?: string) => {
   if (!TIKTOK_PIXEL_ID) return
   if (typeof window.ttq?.track !== 'function') return
-  window.ttq.track(name, params)
+  window.ttq.track(name, params, eventId ? { event_id: eventId } : undefined)
 }
 
 /**
@@ -67,19 +72,25 @@ export const viewContent = (options: {
   price: number
   value: number
   currency: string
+  eventId?: string
 }) => {
-  track('ViewContent', {
-    contents: [
-      {
-        content_id: options.content_id,
-        content_type: options.content_type,
-        content_name: options.content_name,
-        price: options.price,
-      },
-    ],
-    value: options.value,
-    currency: options.currency,
-  })
+  const { eventId, ...rest } = options
+  track(
+    'ViewContent',
+    {
+      contents: [
+        {
+          content_id: rest.content_id,
+          content_type: rest.content_type,
+          content_name: rest.content_name,
+          price: rest.price,
+        },
+      ],
+      value: rest.value,
+      currency: rest.currency,
+    },
+    eventId,
+  )
 }
 
 export const addToCartEvent = (options: {
@@ -91,42 +102,61 @@ export const addToCartEvent = (options: {
   value: number
   currency: string
   quantity: number
+  eventId?: string
 }) => {
-  track('AddToCart', {
-    contents: [
-      {
-        content_id: options.content_id,
-        content_type: options.content_type,
-        content_name: options.content_name,
-        price: options.price,
-        num_items: options.quantity,
-      },
-    ],
-    value: options.value,
-    currency: options.currency,
-  })
+  const { eventId, ...rest } = options
+  track(
+    'AddToCart',
+    {
+      contents: [
+        {
+          content_id: rest.content_id,
+          content_type: rest.content_type,
+          content_name: rest.content_name,
+          price: rest.price,
+          num_items: rest.quantity,
+        },
+      ],
+      value: rest.value,
+      currency: rest.currency,
+    },
+    eventId,
+  )
 }
 
 export const initiateCheckout = (options: {
   contents: Array<{ content_id: string; num_items: number }>
   value: number
   currency: string
+  eventId?: string
 }) => {
-  track('InitiateCheckout', {
-    contents: options.contents,
-    value: options.value,
-    currency: options.currency,
-  })
+  const { eventId, ...rest } = options
+  track(
+    'InitiateCheckout',
+    {
+      contents: rest.contents,
+      value: rest.value,
+      currency: rest.currency,
+    },
+    eventId,
+  )
 }
 
 export const purchase = (options: {
   contents: Array<{ content_id: string; num_items: number }>
   value: number
   currency: string
+  /** Order ID — pass this so the server-side Events API call can deduplicate. */
+  eventId?: string
 }) => {
-  track('Purchase', {
-    contents: options.contents,
-    value: options.value,
-    currency: options.currency,
-  })
+  const { eventId, ...rest } = options
+  track(
+    'Purchase',
+    {
+      contents: rest.contents,
+      value: rest.value,
+      currency: rest.currency,
+    },
+    eventId,
+  )
 }

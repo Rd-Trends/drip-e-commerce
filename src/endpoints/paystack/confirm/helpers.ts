@@ -9,6 +9,7 @@ import { AdminOrderNotificationEmail } from '@/lib/emails/admin-order-notificati
 import { Resend } from 'resend'
 import { revalidateTag } from 'next/cache'
 import { queryKeys } from '@/lib/query-keys'
+import { sendPurchaseAnalytics } from './analytics'
 
 const normalizeCustomerEmail = (email?: string | null) => {
   if (!email) return null
@@ -331,6 +332,11 @@ export async function processOrderConfirmation({
 
   // Send order confirmation emails
   await sendOrderConfirmationEmail(order, payload)
+
+  // Fire server-side analytics events (fire-and-forget — never blocks the response)
+  sendPurchaseAnalytics(order, req, source).catch((err) =>
+    payload.logger.error({ msg: 'Purchase analytics event failed', err }),
+  )
 
   payload.logger.info(
     `Order ${order.id} created successfully via ${source} for reference ${reference}`,

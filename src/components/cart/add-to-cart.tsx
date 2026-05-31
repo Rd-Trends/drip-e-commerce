@@ -6,8 +6,8 @@ import { useIsAddToCartDisabled, useSelectedVariant } from '@/hooks/use-product-
 import type { Product } from '@/payload-types'
 
 import { useCart } from '@/providers/cart'
-import * as pixel from '@/lib/facebook-pixel'
-import * as ttPixel from '@/lib/tiktok-pixel'
+import { useAuth } from '@/providers/auth'
+import * as pixel from '@/lib/pixel'
 import clsx from 'clsx'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -17,6 +17,7 @@ type Props = {
 
 export function AddToCart({ product }: Props) {
   const { cart } = useCart()
+  const { user } = useAuth()
   const { mutate, isPending } = useAddToCart()
   const selectedVariant = useSelectedVariant(product)
   const disabled = useIsAddToCartDisabled(product, selectedVariant, cart)
@@ -32,21 +33,13 @@ export function AddToCart({ product }: Props) {
         {
           onSuccess: () => {
             toast.success('Item added to cart.')
-            pixel.addToCartEvent({
-              content_ids: [product.id.toString()],
-              content_name: product.title,
-              content_type: 'product',
-              value: effectivePrice / 100,
-              currency: 'NGN',
-            })
-            ttPixel.addToCartEvent({
-              content_id: product.id.toString(),
-              content_name: product.title,
-              content_type: 'product',
-              price: effectivePrice / 100,
+            pixel.addToCart({
+              contentId: product.id.toString(),
+              contentName: product.title,
               value: effectivePrice / 100,
               currency: 'NGN',
               quantity: 1,
+              userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
             })
           },
         },

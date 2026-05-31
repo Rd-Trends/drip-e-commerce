@@ -2,6 +2,7 @@
 
 import * as fbPixel from '@/lib/facebook-pixel'
 import * as ttPixel from '@/lib/tiktok-pixel'
+import * as pixel from '@/lib/pixel'
 import { usePathname } from 'next/navigation'
 import Script from 'next/script'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -23,13 +24,11 @@ const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => 
   const [ttLoaded, setTtLoaded] = useState(false)
   const pathname = usePathname()
 
-  useEffect(() => {
-    if (fbLoaded) fbPixel.pageview()
-  }, [pathname, fbLoaded])
+  const isAllLoaded = (fbLoaded || !fbPixel.FB_PIXEL_ID) && (ttLoaded || !ttPixel.TIKTOK_PIXEL_ID)
 
   useEffect(() => {
-    if (ttLoaded) ttPixel.pageview()
-  }, [pathname, ttLoaded])
+    if (isAllLoaded) pixel.pageView()
+  }, [pathname, isAllLoaded])
 
   return (
     <AnalyticsPixelContext.Provider
@@ -38,7 +37,7 @@ const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => 
         ttLoaded,
         // True when every *configured* pixel has finished loading.
         // If a pixel ID is not set, that pixel is considered already "loaded" (skipped).
-        isAllLoaded: (fbLoaded || !fbPixel.FB_PIXEL_ID) && (ttLoaded || !ttPixel.TIKTOK_PIXEL_ID),
+        isAllLoaded,
       }}
     >
       {children}

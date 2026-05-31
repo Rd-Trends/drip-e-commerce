@@ -26,8 +26,7 @@ import { OrderSummary } from './order-summary'
 import { ShippingInformation } from './shipping-information'
 import { Price } from '@/components/price'
 import { useAddresses } from '@/hooks/use-address'
-import * as pixel from '@/lib/facebook-pixel'
-import * as ttPixel from '@/lib/tiktok-pixel'
+import * as pixel from '@/lib/pixel'
 import Link from 'next/link'
 import {
   Empty,
@@ -162,43 +161,28 @@ function CheckoutForm({
               await clearCart()
               setShowIsConfirmingOrder(false)
 
-              // Purchase event — fire after order is confirmed
-              const contentIds =
+              // Purchase event — fires after order is confirmed.
+              // eventId = order ID so browser pixel and server CAPI deduplicate.
+              const contents =
                 cart?.items
                   ?.map((item) => {
                     const prod = item.product
                     if (!prod) return null
-                    return typeof prod === 'object' ? prod.id.toString() : prod.toString()
+                    const contentId =
+                      typeof prod === 'object' ? prod.id.toString() : prod.toString()
+                    return { contentId, quantity: item.quantity || 1 }
                   })
-                  .filter((id): id is string => id !== null) ?? []
-              const numItems =
-                cart?.items?.reduce((acc, item) => acc + (item.quantity || 1), 0) ?? 0
+                  .filter((c): c is { contentId: string; quantity: number } => c !== null) ?? []
+
               pixel.purchase({
+                contents,
                 value: totalAmount / 100,
                 currency: 'NGN',
-                content_ids: contentIds,
-                num_items: numItems,
-              })
-
-              // Build per-item contents for TikTok
-              const ttContents =
-                cart?.items
-                  ?.map((item) => {
-                    const prod = item.product
-                    if (!prod) return null
-                    const id = typeof prod === 'object' ? prod.id.toString() : prod.toString()
-                    return { content_id: id, num_items: item.quantity || 1 }
-                  })
-                  .filter((c): c is { content_id: string; num_items: number } => c !== null) ?? []
-
-              await ttPixel.identify({
-                email: customerEmail || undefined,
-                externalId: user?.id?.toString(),
-              })
-              ttPixel.purchase({
-                contents: ttContents,
-                value: totalAmount / 100,
-                currency: 'NGN',
+                eventId: confirmResult.orderID.toString(),
+                userData:
+                  customerEmail || user?.id
+                    ? { email: customerEmail || undefined, externalId: user?.id?.toString() }
+                    : undefined,
               })
             }
           },
@@ -208,7 +192,7 @@ function CheckoutForm({
         },
       )
     },
-    [clearCart, confirmOrder, email, onConfirmingOrder, cart, totalAmount, customerEmail, user?.id],
+    [clearCart, confirmOrder, email, onConfirmingOrder, cart, totalAmount],
   )
 
   const initiatePaymentIntent = useCallback(
@@ -261,7 +245,7 @@ function CheckoutForm({
     [shippingAddress, email, appliedCoupon, handlePaymentSuccess, initiatePayment],
   )
 
-  const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCheckout = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
     if (!canGoToPayment) {
@@ -278,39 +262,24 @@ function CheckoutForm({
     }
 
     // InitiateCheckout event — fire when the user proceeds to payment
-    const contentIds =
+    const checkoutContents =
       cart?.items
         ?.map((item) => {
           const prod = item.product
           if (!prod) return null
-          return typeof prod === 'object' ? prod.id.toString() : prod.toString()
+          const contentId = typeof prod === 'object' ? prod.id.toString() : prod.toString()
+          return { contentId, quantity: item.quantity || 1 }
         })
-        .filter((id): id is string => id !== null) ?? []
-    const numItems = cart?.items?.reduce((acc, item) => acc + (item.quantity || 1), 0) ?? 0
-    pixel.initiateCheckout({
-      content_ids: contentIds,
-      num_items: numItems,
-      value: totalAmount / 100,
-      currency: 'NGN',
-    })
-    const ttCheckoutContents =
-      cart?.items
-        ?.map((item) => {
-          const prod = item.product
-          if (!prod) return null
-          const id = typeof prod === 'object' ? prod.id.toString() : prod.toString()
-          return { content_id: id, num_items: item.quantity || 1 }
-        })
-        .filter((c): c is { content_id: string; num_items: number } => c !== null) ?? []
+        .filter((c): c is { contentId: string; quantity: number } => c !== null) ?? []
 
-    await ttPixel.identify({
-      email: customerEmail || undefined,
-      externalId: user?.id?.toString(),
-    })
-    ttPixel.initiateCheckout({
-      contents: ttCheckoutContents,
+    pixel.initiateCheckout({
+      contents: checkoutContents,
       value: totalAmount / 100,
       currency: 'NGN',
+      userData:
+        customerEmail || user?.id
+          ? { email: customerEmail || undefined, externalId: user?.id?.toString() }
+          : undefined,
     })
 
     void initiatePaymentIntent('paystack')
