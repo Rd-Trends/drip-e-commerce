@@ -46,7 +46,7 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-  }, [product.id, product.title, product.priceInNGN, isLoadingUser, user])
+  }, [product.id, product.title, product.priceInNGN, isAllLoaded, isLoadingUser, user])
 
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
