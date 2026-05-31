@@ -5,7 +5,8 @@ import { RichText } from '@/components/rich-text'
 import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
 import * as pixel from '@/lib/facebook-pixel'
-import { useFacebookPixel } from '@/providers/facebook-pixel'
+import * as ttPixel from '@/lib/tiktok-pixel'
+import { useAnalyticsPixel } from '@/providers/analytics-pixel'
 import React, { Suspense, useEffect } from 'react'
 
 import { VariantSelector } from './variant-selector'
@@ -15,13 +16,13 @@ import { Skeleton } from '../ui/skeleton'
 
 function ProductDescription({ product }: { product: Product }) {
   const { currency } = useCurrency()
-  const { isLoaded } = useFacebookPixel()
+  const { fbLoaded, ttLoaded } = useAnalyticsPixel()
   let amount = 0,
     lowestAmount = 0,
     highestAmount = 0
 
   useEffect(() => {
-    if (!isLoaded) return
+    if (!fbLoaded) return
     pixel.viewContent({
       content_ids: [product.id.toString()],
       content_name: product.title,
@@ -29,7 +30,19 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-  }, [isLoaded, product.id, product.title, product.priceInNGN])
+  }, [fbLoaded, product.id, product.title, product.priceInNGN])
+
+  useEffect(() => {
+    if (!ttLoaded) return
+    ttPixel.viewContent({
+      content_id: product.id.toString(),
+      content_name: product.title,
+      content_type: 'product',
+      price: (product.priceInNGN || 0) / 100,
+      value: (product.priceInNGN || 0) / 100,
+      currency: 'NGN',
+    })
+  }, [ttLoaded, product.id, product.title, product.priceInNGN])
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
 

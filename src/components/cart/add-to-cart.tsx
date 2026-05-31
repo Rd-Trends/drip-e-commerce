@@ -7,6 +7,7 @@ import type { Product } from '@/payload-types'
 
 import { useCart } from '@/providers/cart'
 import * as pixel from '@/lib/facebook-pixel'
+import * as ttPixel from '@/lib/tiktok-pixel'
 import clsx from 'clsx'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -37,6 +38,15 @@ export function AddToCart({ product }: Props) {
               content_type: 'product',
               value: effectivePrice / 100,
               currency: 'NGN',
+            })
+            ttPixel.addToCartEvent({
+              content_id: product.id.toString(),
+              content_name: product.title,
+              content_type: 'product',
+              price: effectivePrice / 100,
+              value: effectivePrice / 100,
+              currency: 'NGN',
+              quantity: 1,
             })
           },
         },

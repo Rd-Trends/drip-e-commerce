@@ -27,6 +27,7 @@ import { ShippingInformation } from './shipping-information'
 import { Price } from '@/components/price'
 import { useAddresses } from '@/hooks/use-address'
 import * as pixel from '@/lib/facebook-pixel'
+import * as ttPixel from '@/lib/tiktok-pixel'
 import Link from 'next/link'
 import {
   Empty,
@@ -178,6 +179,12 @@ function CheckoutForm({
                 content_ids: contentIds,
                 num_items: numItems,
               })
+              ttPixel.completePayment({
+                content_id: contentIds,
+                value: totalAmount / 100,
+                currency: 'NGN',
+                quantity: numItems,
+              })
             }
           },
           onError: () => {
@@ -270,6 +277,12 @@ function CheckoutForm({
       num_items: numItems,
       value: totalAmount / 100,
       currency: 'NGN',
+    })
+    ttPixel.initiateCheckout({
+      content_id: contentIds,
+      value: totalAmount / 100,
+      currency: 'NGN',
+      quantity: numItems,
     })
 
     void initiatePaymentIntent('paystack')
