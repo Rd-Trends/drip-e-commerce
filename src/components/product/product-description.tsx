@@ -16,13 +16,13 @@ import { Skeleton } from '../ui/skeleton'
 
 function ProductDescription({ product }: { product: Product }) {
   const { currency } = useCurrency()
-  const { fbLoaded, ttLoaded } = useAnalyticsPixel()
+  const { isAllLoaded } = useAnalyticsPixel()
   let amount = 0,
     lowestAmount = 0,
     highestAmount = 0
 
   useEffect(() => {
-    if (!fbLoaded) return
+    if (!isAllLoaded) return
     pixel.viewContent({
       content_ids: [product.id.toString()],
       content_name: product.title,
@@ -30,10 +30,6 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-  }, [fbLoaded, product.id, product.title, product.priceInNGN])
-
-  useEffect(() => {
-    if (!ttLoaded) return
     ttPixel.viewContent({
       content_id: product.id.toString(),
       content_name: product.title,
@@ -42,7 +38,8 @@ function ProductDescription({ product }: { product: Product }) {
       value: (product.priceInNGN || 0) / 100,
       currency: 'NGN',
     })
-  }, [ttLoaded, product.id, product.title, product.priceInNGN])
+  }, [product.id, product.title, product.priceInNGN])
+
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
 

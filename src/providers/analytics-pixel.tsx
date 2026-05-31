@@ -9,11 +9,13 @@ import { createContext, useContext, useEffect, useState } from 'react'
 type AnalyticsPixelContextType = {
   fbLoaded: boolean
   ttLoaded: boolean
+  isAllLoaded: boolean
 }
 
 const AnalyticsPixelContext = createContext<AnalyticsPixelContextType>({
   fbLoaded: false,
   ttLoaded: false,
+  isAllLoaded: false,
 })
 
 const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => {
@@ -27,7 +29,9 @@ const AnalyticsPixelProvider = ({ children }: { children: React.ReactNode }) => 
   }, [pathname, fbLoaded, ttLoaded])
 
   return (
-    <AnalyticsPixelContext.Provider value={{ fbLoaded, ttLoaded }}>
+    <AnalyticsPixelContext.Provider
+      value={{ fbLoaded, ttLoaded, isAllLoaded: fbLoaded && ttLoaded }}
+    >
       {children}
       {fbPixel.FB_PIXEL_ID && (
         <Script
