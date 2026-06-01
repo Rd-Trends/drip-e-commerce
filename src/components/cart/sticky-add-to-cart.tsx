@@ -62,11 +62,7 @@ export function StickyAddToCart({ product }: Props) {
 
       addToCart(
         {
-          item: { product: product.id, variant: selectedVariant?.id ?? undefined },
-          analytics: {
-            contentName: product.title,
-            priceInNGN: selectedVariant?.priceInNGN ?? product.priceInNGN ?? 0,
-          },
+          item: { product, variant: selectedVariant },
         },
         {
           onSuccess: () => {
@@ -81,8 +77,8 @@ export function StickyAddToCart({ product }: Props) {
 
   // Handle increment/decrement for variants
   const handleVariantQuantityChange = useCallback(
-    (variantId: number, action: 'increment' | 'decrement') => {
-      const cartItem = getCartItemForVariant(variantId)
+    (variant: Variant, action: 'increment' | 'decrement') => {
+      const cartItem = getCartItemForVariant(variant.id)
 
       if (cartItem && cartItem.id) {
         // Item exists in cart, update it
@@ -100,14 +96,7 @@ export function StickyAddToCart({ product }: Props) {
         // Item doesn't exist, add it
         addToCart(
           {
-            item: { product: product.id, variant: variantId },
-            analytics: {
-              contentName: product.title,
-              priceInNGN:
-                availableVariants.find((v) => v.id === variantId)?.priceInNGN ??
-                product.priceInNGN ??
-                0,
-            },
+            item: { product, variant },
           },
           {
             onSuccess: () => {
@@ -117,15 +106,7 @@ export function StickyAddToCart({ product }: Props) {
         )
       }
     },
-    [
-      getCartItemForVariant,
-      availableVariants,
-      product.priceInNGN,
-      updateQuantity,
-      addToCart,
-      product.id,
-      product.title,
-    ],
+    [getCartItemForVariant, updateQuantity, addToCart, product],
   )
 
   // Set up intersection observer to detect when main button is out of view
@@ -240,8 +221,8 @@ export function StickyAddToCart({ product }: Props) {
                       <VariantQuantityAdjuster
                         inventory={inventory}
                         quantity={quantity}
-                        onIncrement={() => handleVariantQuantityChange(variant.id, 'increment')}
-                        onDecrement={() => handleVariantQuantityChange(variant.id, 'decrement')}
+                        onIncrement={() => handleVariantQuantityChange(variant, 'increment')}
+                        onDecrement={() => handleVariantQuantityChange(variant, 'decrement')}
                         isPending={isPending}
                       />
                     </div>

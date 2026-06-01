@@ -49,8 +49,8 @@ const quickLinks = [
 
 // Legal links
 const legalLinks = [
-  { href: '/privacy', label: 'Privacy Policy' },
-  { href: '/terms', label: 'Terms of Service' },
+  { href: '/privacy-policy', label: 'Privacy Policy' },
+  { href: '/terms-of-service', label: 'Terms of Service' },
 ]
 
 export async function Footer() {

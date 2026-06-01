@@ -23,12 +23,9 @@ export function AddToCart({ product }: Props) {
     (e: React.FormEvent<HTMLButtonElement>) => {
       e.preventDefault()
 
-      const effectivePrice = selectedVariant?.priceInNGN ?? product.priceInNGN ?? 0
-
       mutate(
         {
-          item: { product: product.id, variant: selectedVariant?.id ?? undefined },
-          analytics: { contentName: product.title, priceInNGN: effectivePrice },
+          item: { product, variant: selectedVariant },
         },
         {
           onSuccess: () => {

@@ -161,12 +161,7 @@ export const useAddToCart = () => {
   const { cartID, cartSecret, updateCartIdentifier } = useCart()
 
   return useMutation({
-    mutationFn: async (data: {
-      item: CartItemInput
-      quantity?: number
-      /** When provided, fires an AddToCart pixel event on success. */
-      analytics?: { contentName: string; priceInNGN: number }
-    }) => {
+    mutationFn: async (data: { item: CartItemInput; quantity?: number }) => {
       const { item, quantity = 1 } = data
 
       // If cart exists, update it
@@ -189,8 +184,8 @@ export const useAddToCart = () => {
                 : cartItem.variant
 
             return (
-              productID === item.product &&
-              (item.variant && variantID ? variantID === item.variant : !item.variant)
+              productID === item.product.id &&
+              (item.variant && variantID ? variantID === item.variant.id : !item.variant)
             )
           }) ?? -1
 
@@ -228,16 +223,17 @@ export const useAddToCart = () => {
       if (!cartID) {
         updateCartIdentifier({ cartID: cart.id, secret: cart.secret ?? undefined })
       }
-      if (variables.analytics) {
-        pixel.addToCart({
-          contentId: String(variables.item.product),
-          contentName: variables.analytics.contentName,
-          value: variables.analytics.priceInNGN / 100,
-          currency: 'NGN',
-          quantity: variables.quantity ?? 1,
-          userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
-        })
-      }
+
+      const price = variables.item.variant?.priceInNGN ?? variables.item.product?.priceInNGN ?? 0
+
+      pixel.addToCart({
+        contentId: String(variables.item.product.id),
+        contentName: variables.item.product.title,
+        value: price ? price / 100 : 0,
+        currency: 'NGN',
+        quantity: variables.quantity ?? 1,
+        userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
+      })
     },
   })
 }

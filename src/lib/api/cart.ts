@@ -1,5 +1,5 @@
-import type { Cart } from '@/payload-types'
-import type { DefaultDocumentIDType } from 'payload'
+import type { Cart, Product, Variant } from '@/payload-types'
+import { DefaultDocumentIDType } from 'payload'
 import * as qs from 'qs-esm'
 
 /**
@@ -29,8 +29,8 @@ const fetchJSON = async (url: string, options: RequestInit = {}) => {
 }
 
 export type CartItemInput = {
-  product: DefaultDocumentIDType
-  variant?: DefaultDocumentIDType
+  product: Product
+  variant?: Variant
 }
 
 type BaseQueryParams = {
