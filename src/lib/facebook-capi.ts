@@ -86,11 +86,17 @@ export async function sendFBEvent(input: FBEventInput): Promise<void> {
   if (userData.fbp) userDataPayload.fbp = userData.fbp
   if (userData.fbc) userDataPayload.fbc = userData.fbc
 
+  const _eventTime = eventTime ?? Math.floor(Date.now() / 1000)
+
   const eventData: Record<string, unknown> = {
     event_name: eventName,
-    event_time: eventTime ?? Math.floor(Date.now() / 1000),
+    event_time: _eventTime,
     action_source: actionSource,
     user_data: userDataPayload,
+    original_event_data: {
+      event_name: eventName,
+      event_time: _eventTime,
+    },
   }
   if (eventId) eventData.event_id = eventId
   if (eventSourceUrl) eventData.event_source_url = eventSourceUrl
@@ -227,6 +233,7 @@ export async function sendFBInitiateCheckout(options: {
     customData: {
       contentIds: options.contentIds,
       contents: options.contents,
+      contentType: 'product',
       numItems: options.numItems,
       value: options.value,
       currency: options.currency,

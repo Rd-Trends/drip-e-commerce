@@ -6,9 +6,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { cartApi, type CartItemInput } from '@/lib/api/cart'
 import { queryKeys } from '@/lib/query-keys'
-import { useAuth } from '@payloadcms/ui'
+import { useAuth } from '@/providers/auth'
 import { useCart } from '@/providers/cart'
 import { useCurrency } from '@/providers/currency'
+import * as pixel from '@/lib/pixel'
 
 type CartItem = NonNullable<Cart['items']>[number]
 
@@ -160,7 +161,12 @@ export const useAddToCart = () => {
   const { cartID, cartSecret, updateCartIdentifier } = useCart()
 
   return useMutation({
-    mutationFn: async (data: { item: CartItemInput; quantity?: number }) => {
+    mutationFn: async (data: {
+      item: CartItemInput
+      quantity?: number
+      /** When provided, fires an AddToCart pixel event on success. */
+      analytics?: { contentName: string; priceInNGN: number }
+    }) => {
       const { item, quantity = 1 } = data
 
       // If cart exists, update it
@@ -217,10 +223,20 @@ export const useAddToCart = () => {
 
       return newCart
     },
-    onSuccess: (cart) => {
+    onSuccess: (cart, variables) => {
       queryClient.setQueryData(queryKeys.cart.detail(cart.id), cart)
       if (!cartID) {
         updateCartIdentifier({ cartID: cart.id, secret: cart.secret ?? undefined })
+      }
+      if (variables.analytics) {
+        pixel.addToCart({
+          contentId: String(variables.item.product),
+          contentName: variables.analytics.contentName,
+          value: variables.analytics.priceInNGN / 100,
+          currency: 'NGN',
+          quantity: variables.quantity ?? 1,
+          userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
+        })
       }
     },
   })

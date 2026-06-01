@@ -180,9 +180,17 @@ export function initiateCheckout(options: {
 
   const contentIds = contents.map((c) => c.contentId)
   const numItems = contents.reduce((acc, c) => acc + c.quantity, 0)
+  const fbContents = contents.map((c) => ({ id: c.contentId, quantity: c.quantity }))
   const ttContents = contents.map((c) => ({ content_id: c.contentId, num_items: c.quantity }))
 
-  fb.initiateCheckout({ content_ids: contentIds, num_items: numItems, value, currency, eventId })
+  fb.initiateCheckout({
+    content_ids: contentIds,
+    num_items: numItems,
+    value,
+    currency,
+    eventId,
+    contents: fbContents,
+  })
   tt.initiateCheckout({ contents: ttContents, value, currency, eventId })
 
   relay({
@@ -221,9 +229,17 @@ export function purchase(options: {
 
   const contentIds = contents.map((c) => c.contentId)
   const numItems = contents.reduce((acc, c) => acc + c.quantity, 0)
+  const fbContents = contents.map((c) => ({ id: c.contentId, quantity: c.quantity }))
   const ttContents = contents.map((c) => ({ content_id: c.contentId, num_items: c.quantity }))
 
-  fb.purchase({ content_ids: contentIds, num_items: numItems, value, currency, eventId })
+  fb.purchase({
+    content_ids: contentIds,
+    num_items: numItems,
+    value,
+    currency,
+    eventId,
+    contents: fbContents,
+  })
   tt.purchase({ contents: ttContents, value, currency, eventId })
   // No relay here — server CAPI fires from processOrderConfirmation with the same eventId.
 }

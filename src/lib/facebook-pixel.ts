@@ -59,10 +59,11 @@ export const initiateCheckout = (options: {
   /** Total in primary currency unit (naira, not kobo) */
   value: number
   currency: string
+  contents?: Array<{ id: string; quantity: number }>
   eventId?: string
 }) => {
   const { eventId, ...data } = options
-  event('InitiateCheckout', data, eventId)
+  event('InitiateCheckout', { ...data, content_type: 'product' }, eventId)
 }
 
 export const purchase = (options: {
@@ -71,9 +72,10 @@ export const purchase = (options: {
   currency: string
   content_ids: string[]
   num_items: number
+  contents?: Array<{ id: string; quantity: number }>
   /** Order ID — pass this so the server-side CAPI call can deduplicate. */
   eventId?: string
 }) => {
   const { eventId, ...data } = options
-  event('Purchase', data, eventId)
+  event('Purchase', { ...data, content_type: 'product' }, eventId)
 }

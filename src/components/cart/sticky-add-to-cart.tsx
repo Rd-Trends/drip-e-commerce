@@ -61,7 +61,13 @@ export function StickyAddToCart({ product }: Props) {
       }
 
       addToCart(
-        { item: { product: product.id, variant: selectedVariant?.id ?? undefined } },
+        {
+          item: { product: product.id, variant: selectedVariant?.id ?? undefined },
+          analytics: {
+            contentName: product.title,
+            priceInNGN: selectedVariant?.priceInNGN ?? product.priceInNGN ?? 0,
+          },
+        },
         {
           onSuccess: () => {
             toast.success('Item added to cart.')
@@ -93,7 +99,16 @@ export function StickyAddToCart({ product }: Props) {
       } else if (action === 'increment') {
         // Item doesn't exist, add it
         addToCart(
-          { item: { product: product.id, variant: variantId } },
+          {
+            item: { product: product.id, variant: variantId },
+            analytics: {
+              contentName: product.title,
+              priceInNGN:
+                availableVariants.find((v) => v.id === variantId)?.priceInNGN ??
+                product.priceInNGN ??
+                0,
+            },
+          },
           {
             onSuccess: () => {
               toast.success('Item added to cart.')
@@ -102,7 +117,15 @@ export function StickyAddToCart({ product }: Props) {
         )
       }
     },
-    [getCartItemForVariant, updateQuantity, addToCart, product.id],
+    [
+      getCartItemForVariant,
+      availableVariants,
+      product.priceInNGN,
+      updateQuantity,
+      addToCart,
+      product.id,
+      product.title,
+    ],
   )
 
   // Set up intersection observer to detect when main button is out of view

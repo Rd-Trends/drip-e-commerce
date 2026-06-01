@@ -6,7 +6,7 @@ import { AddToCart } from '@/components/cart/add-to-cart'
 import { Price } from '@/components/price'
 import * as pixel from '@/lib/pixel'
 import { useAnalyticsPixel } from '@/providers/analytics-pixel'
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense, useEffect, useMemo } from 'react'
 
 import { VariantSelector } from './variant-selector'
 import { StockIndicator } from '@/components/product/stockInd-indicator'
@@ -22,16 +22,38 @@ function ProductDescription({ product }: { product: Product }) {
     lowestAmount = 0,
     highestAmount = 0
 
+  // Mirror the catalog feed price logic: lowest variant price for variant products,
+  // product-level price for simple products. Always in NGN (kobo) for pixel consistency.
+  const pixelPriceInKobo = useMemo(() => {
+    const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)
+    if (hasVariants) {
+      const variantDocs = (product.variants?.docs ?? []).filter(
+        (v): v is Variant => typeof v === 'object',
+      )
+      const prices = variantDocs.map((v) => v.priceInNGN ?? 0).filter((p) => p > 0)
+      return prices.length > 0 ? Math.min(...prices) : (product.priceInNGN ?? 0)
+    }
+    return product.priceInNGN ?? 0
+  }, [product])
+
   useEffect(() => {
     if (!isAllLoaded || isLoadingUser) return
     pixel.viewContent({
       contentId: product.id.toString(),
       contentName: product.title,
-      value: (product.priceInNGN || 0) / 100,
+      value: pixelPriceInKobo / 100,
       currency: 'NGN',
-      userData: user ? { email: user.email, externalId: user.id.toString() } : undefined,
+      userData: user?.id ? { email: user.email, externalId: user.id.toString() } : undefined,
     })
-  }, [product.id, product.title, product.priceInNGN, isAllLoaded, isLoadingUser, user])
+  }, [
+    product.id,
+    product.title,
+    user?.id,
+    user?.email,
+    pixelPriceInKobo,
+    isAllLoaded,
+    isLoadingUser,
+  ])
 
   const priceField = `priceIn${currency.code}` as keyof Product
   const hasVariants = product.enableVariants && Boolean(product.variants?.docs?.length)

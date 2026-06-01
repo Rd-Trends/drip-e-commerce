@@ -192,7 +192,7 @@ function CheckoutForm({
         },
       )
     },
-    [clearCart, confirmOrder, email, onConfirmingOrder, cart, totalAmount],
+    [clearCart, confirmOrder, customerEmail, user?.id, email, onConfirmingOrder, cart, totalAmount],
   )
 
   const initiatePaymentIntent = useCallback(
