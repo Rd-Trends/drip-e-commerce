@@ -8,6 +8,7 @@ import * as migration_20260415_005103_add_payload_jobs from './20260415_005103_a
 import * as migration_20260415_044525_whatsapp_message_table from './20260415_044525_whatsapp_message_table';
 import * as migration_20260416_165926_whatsapp_message_cascade_delete from './20260416_165926_whatsapp_message_cascade_delete';
 import * as migration_20260418_153719_user_read_permission from './20260418_153719_user_read_permission';
+import * as migration_20260602_013129_cart_recovery_job from './20260602_013129_cart_recovery_job';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20260418_153719_user_read_permission.up,
     down: migration_20260418_153719_user_read_permission.down,
-    name: '20260418_153719_user_read_permission'
+    name: '20260418_153719_user_read_permission',
+  },
+  {
+    up: migration_20260602_013129_cart_recovery_job.up,
+    down: migration_20260602_013129_cart_recovery_job.down,
+    name: '20260602_013129_cart_recovery_job'
   },
 ];
