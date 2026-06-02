@@ -101,7 +101,7 @@ export const ShippingConfig: GlobalConfig = {
   hooks: {
     afterChange: [
       async ({ context }) => {
-        if (!context.disableRevalidation) {
+        if (!context.disableRevalidate) {
           revalidateTag(queryKeys.revalidation.global('shipping-config'))
         }
       },

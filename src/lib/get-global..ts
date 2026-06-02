@@ -24,4 +24,5 @@ async function getGlobal<T extends Global>(slug: T, depth = 0) {
 export const getCachedGlobal = <T extends Global>(slug: T, depth = 0) =>
   unstable_cache(async () => getGlobal<T>(slug, depth), [slug], {
     tags: [queryKeys.revalidation.global(slug)],
+    revalidate: 3600,
   })

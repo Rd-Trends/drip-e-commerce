@@ -201,20 +201,21 @@ export default async function ProductPage({ params }: Args) {
   )
 }
 
+const getCachedProduct = unstable_cache(
+  async (productSlug: string) => getProduct(productSlug, false),
+  ['product'],
+  {
+    tags: [queryKeys.revalidation.products],
+    revalidate: 3600,
+  },
+)
+
 const queryProductBySlug = async ({ slug }: { slug: string }) => {
   const { isEnabled: isPreview } = await draftMode()
 
   if (isPreview) {
     return getProduct(slug, true)
   }
-  // Cache published products only
-  const getCachedProduct = unstable_cache(
-    async (productSlug: string) => getProduct(productSlug, false),
-    [`product-${slug}`],
-    {
-      tags: [queryKeys.revalidation.products, queryKeys.revalidation.product(slug)],
-    },
-  )
 
   return getCachedProduct(slug)
 }

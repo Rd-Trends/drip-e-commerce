@@ -27,6 +27,7 @@ const revalidateProductByID = async ({
   })
 
   if (product?.slug) {
+    revalidateTag(queryKeys.revalidation.products)
     revalidateTag(queryKeys.revalidation.product(product.slug))
   }
 }

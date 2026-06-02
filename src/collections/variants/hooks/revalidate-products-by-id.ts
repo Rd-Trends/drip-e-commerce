@@ -29,6 +29,10 @@ export const revalidateProductsByID = async ({
     },
   })
 
+  if (products.length > 0) {
+    revalidateTag(queryKeys.revalidation.products)
+  }
+
   for (const product of products) {
     if (product.slug) {
       revalidateTag(queryKeys.revalidation.product(product.slug))

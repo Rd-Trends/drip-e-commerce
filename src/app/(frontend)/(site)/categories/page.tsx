@@ -149,6 +149,7 @@ const getCachedCategories = unstable_cache(
   ['all_categories_page'],
   {
     tags: [queryKeys.revalidation.categories],
+    revalidate: 3600,
   },
 )
 

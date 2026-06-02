@@ -49,7 +49,7 @@ export const Header: GlobalConfig = {
     ],
     afterChange: [
       async ({ context }) => {
-        if (!context.disableRevalidation) {
+        if (!context.disableRevalidate) {
           revalidateTag(queryKeys.revalidation.global('header'))
         }
       },

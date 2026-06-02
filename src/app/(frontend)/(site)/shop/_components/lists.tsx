@@ -63,5 +63,6 @@ export const getCachedCategoryList = unstable_cache(
   ['category_filter_list'],
   {
     tags: [queryKeys.revalidation.categories],
+    revalidate: 3600,
   },
 )

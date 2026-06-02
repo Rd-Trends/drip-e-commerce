@@ -30,7 +30,7 @@ export function CategoriesSection() {
 }
 
 async function CategoriesList() {
-  const categories = await getCachedCategories()()
+  const categories = await getCachedCategories()
 
   return (
     <ScrollArea className="w-full whitespace-nowrap">
@@ -63,50 +63,50 @@ function CategoriesListSkeleton() {
   )
 }
 
-const getCachedCategories = () =>
-  unstable_cache(
-    async () => {
-      const payload = await getPayload({ config: configPromise })
+const getCachedCategories = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config: configPromise })
 
-      const { docs: categories = [] } = await payload.find({
-        collection: 'categories',
-        sort: 'title',
-        limit: 8,
-      })
+    const { docs: categories = [] } = await payload.find({
+      collection: 'categories',
+      sort: 'title',
+      limit: 8,
+    })
 
-      // Fetch product counts for each category
-      const categoriesWithCounts = await Promise.all(
-        categories.map(async (category) => {
-          const { totalDocs } = await payload.find({
-            collection: 'products',
-            where: {
-              and: [
-                {
-                  _status: {
-                    equals: 'published',
-                  },
+    // Fetch product counts for each category
+    const categoriesWithCounts = await Promise.all(
+      categories.map(async (category) => {
+        const { totalDocs } = await payload.find({
+          collection: 'products',
+          where: {
+            and: [
+              {
+                _status: {
+                  equals: 'published',
                 },
-                {
-                  categories: {
-                    contains: category.id,
-                  },
+              },
+              {
+                categories: {
+                  contains: category.id,
                 },
-              ],
-            },
-            limit: 0, // We only need the count
-          })
+              },
+            ],
+          },
+          limit: 0, // We only need the count
+        })
 
-          return {
-            ...category,
-            productCount: totalDocs,
-          }
-        }),
-      )
+        return {
+          ...category,
+          productCount: totalDocs,
+        }
+      }),
+    )
 
-      return categoriesWithCounts
-    },
-    ['categories_section'],
-    {
-      tags: [queryKeys.revalidation.categories],
-    },
-  )
+    return categoriesWithCounts
+  },
+  ['categories_section'],
+  {
+    tags: [queryKeys.revalidation.categories],
+    revalidate: 3600,
+  },
+)

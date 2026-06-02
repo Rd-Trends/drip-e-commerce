@@ -66,12 +66,12 @@ async function ProductList({
   categoryID?: number
   lazyLoadImages: boolean
 }) {
-  const products = await getCachedProductsByType(type, categoryID)()
+  const products = await getCachedProductsByType(type, categoryID)
 
   return (
     <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 gap-y-6 md:gap-6">
       {products.map((product) => {
-        return <ProductGridItem key={product.id} product={product} />
+        return <ProductGridItem key={product.id} product={product} lazyLoadMedia={lazyLoadImages} />
       })}
     </section>
   )
@@ -102,19 +102,16 @@ const getViewAllLink = (type: SectionType, categorySlug?: string) => {
   }
 }
 
-const getCachedProductsByType = (type: SectionType, categoryID?: number) =>
-  unstable_cache(
-    async () => {
-      return getProductsByType(type, categoryID)
-    },
-    [type, ...(categoryID ? [String(categoryID)] : [])],
-    {
-      tags: [
-        queryKeys.revalidation.homeProductSections,
-        queryKeys.revalidation.homeProductSection(type, categoryID),
-      ],
-    },
-  )
+const getCachedProductsByType = unstable_cache(
+  async (type: SectionType, categoryID?: number) => {
+    return getProductsByType(type, categoryID)
+  },
+  ['home-product-sections'],
+  {
+    tags: [queryKeys.revalidation.homeProductSections],
+    revalidate: 3600,
+  },
+)
 
 export const getProductsByType = async (type: SectionType, categoryID?: number) => {
   const payload = await getPayload({ config: configPromise })

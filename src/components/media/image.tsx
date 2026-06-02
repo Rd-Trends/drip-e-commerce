@@ -64,12 +64,12 @@ export const Image: React.FC<MediaProps> = (props) => {
           onLoadFromProps()
         }
       }}
-      priority={(priority ?? lazyLoad) ? false : true}
+      priority={priority ?? !lazyLoad}
       quality={90}
       sizes={sizes}
       src={src}
       width={!fill ? width || widthFromProps : undefined}
-      loading={lazyLoad ? 'lazy' : 'eager'}
+      loading={lazyLoad ? 'lazy' : undefined}
     />
   )
 }
