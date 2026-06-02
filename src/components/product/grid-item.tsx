@@ -6,7 +6,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import React from 'react'
 
-export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
+export const ProductGridItem = ({
+  product,
+  lazyLoadMedia = false,
+}: {
+  product: Partial<Product>
+  lazyLoadMedia?: boolean
+}) => {
   const { gallery, priceInNGN, title, isFeatured } = product
 
   let price = priceInNGN
@@ -48,6 +54,7 @@ export const ProductGridItem = ({ product }: { product: Partial<Product> }) => {
             imgClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 rounded-md"
             resource={image}
             fill
+            lazyLoad={lazyLoadMedia}
           />
         ) : (
           <div className="h-full w-full bg-muted" />

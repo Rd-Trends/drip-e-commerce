@@ -140,6 +140,7 @@ export interface Config {
     home: Home;
     'shipping-config': ShippingConfig;
     banner: Banner;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -147,6 +148,7 @@ export interface Config {
     home: HomeSelect<false> | HomeSelect<true>;
     'shipping-config': ShippingConfigSelect<false> | ShippingConfigSelect<true>;
     banner: BannerSelect<false> | BannerSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -155,6 +157,8 @@ export interface Config {
   jobs: {
     tasks: {
       processWhatsappSession: TaskProcessWhatsappSession;
+      markAbandonedCarts: TaskMarkAbandonedCarts;
+      sendAbandonmentEmails: TaskSendAbandonmentEmails;
       inline: {
         input: unknown;
         output: unknown;
@@ -632,6 +636,10 @@ export interface Cart {
    * Timestamp when this cart was converted to an order
    */
   purchasedAt?: string | null;
+  /**
+   * Timestamp when the cart abandonment reminder email was sent
+   */
+  abandonmentEmailSentAt?: string | null;
   status?: ('active' | 'purchased' | 'abandoned') | null;
   subtotal?: number | null;
   currency?: 'NGN' | null;
@@ -1170,7 +1178,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'processWhatsappSession';
+        taskSlug: 'inline' | 'processWhatsappSession' | 'markAbandonedCarts' | 'sendAbandonmentEmails';
         taskID: string;
         input?:
           | {
@@ -1203,10 +1211,19 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'processWhatsappSession') | null;
+  taskSlug?: ('inline' | 'processWhatsappSession' | 'markAbandonedCarts' | 'sendAbandonmentEmails') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1523,6 +1540,7 @@ export interface CartsSelect<T extends boolean = true> {
   secret?: T;
   customer?: T;
   purchasedAt?: T;
+  abandonmentEmailSentAt?: T;
   status?: T;
   subtotal?: T;
   currency?: T;
@@ -1928,6 +1946,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2162,6 +2181,24 @@ export interface Banner {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2284,6 +2321,16 @@ export interface BannerSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskProcessWhatsappSession".
  */
 export interface TaskProcessWhatsappSession {
@@ -2293,6 +2340,26 @@ export interface TaskProcessWhatsappSession {
   };
   output: {
     productsCreated?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskMarkAbandonedCarts".
+ */
+export interface TaskMarkAbandonedCarts {
+  input?: unknown;
+  output: {
+    updated?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendAbandonmentEmails".
+ */
+export interface TaskSendAbandonmentEmails {
+  input?: unknown;
+  output: {
+    sent?: number | null;
   };
 }
 /**

@@ -27,6 +27,7 @@ export const Image: React.FC<MediaProps> = (props) => {
     size: sizeFromProps,
     src: srcFromProps,
     width: widthFromProps,
+    lazyLoad,
   } = props
 
   let width: number | undefined | null
@@ -63,11 +64,12 @@ export const Image: React.FC<MediaProps> = (props) => {
           onLoadFromProps()
         }
       }}
-      priority={priority}
+      priority={(priority ?? lazyLoad) ? false : true}
       quality={90}
       sizes={sizes}
       src={src}
       width={!fill ? width || widthFromProps : undefined}
+      loading={lazyLoad ? 'lazy' : 'eager'}
     />
   )
 }

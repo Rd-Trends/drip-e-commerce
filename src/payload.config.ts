@@ -40,6 +40,8 @@ import { Pages } from './collections/pages'
 import { WhatsappMessages } from '@/collections/whatsapp-messages'
 import { WhatsappSessions } from '@/collections/whatsapp-sessions'
 import { handler as processWhatsappSessionHandler } from '@/jobs/process-whatsapp-session'
+import { handler as markAbandonedCartsHandler } from '@/jobs/mark-abandoned-carts'
+import { handler as sendAbandonmentEmailsHandler } from '@/jobs/send-abandonment-emails'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -169,12 +171,33 @@ export default buildConfig({
         },
         label: 'Process WhatsApp Session',
       },
+      {
+        slug: 'markAbandonedCarts',
+        inputSchema: [],
+        outputSchema: [{ name: 'updated', type: 'number' as const }],
+        handler: markAbandonedCartsHandler,
+        schedule: [{ cron: '0 * * * *', queue: 'cart-recovery' }],
+        label: 'Mark Abandoned Carts',
+      },
+      {
+        slug: 'sendAbandonmentEmails',
+        inputSchema: [],
+        outputSchema: [{ name: 'sent', type: 'number' as const }],
+        handler: sendAbandonmentEmailsHandler,
+        schedule: [{ cron: '10 * * * *', queue: 'cart-recovery' }],
+        label: 'Send Abandonment Emails',
+      },
     ],
     autoRun: [
       {
         cron: '*/10 * * * * *',
         limit: 5,
         queue: 'whatsapp',
+      },
+      {
+        cron: '* * * * *',
+        limit: 10,
+        queue: 'cart-recovery',
       },
     ],
     deleteJobOnComplete: false,

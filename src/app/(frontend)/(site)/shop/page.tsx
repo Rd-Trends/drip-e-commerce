@@ -169,8 +169,10 @@ export default async function ShopPage({ searchParams }: Props) {
       {hasProducts ? (
         <>
           <section className="grid grid-cols-2 lg:grid-cols-3 gap-2 gap-y-6 md:gap-6">
-            {products.docs.map((product) => {
-              return <ProductGridItem key={product.id} product={product} />
+            {products.docs.map((product, index) => {
+              return (
+                <ProductGridItem key={product.id} product={product} lazyLoadMedia={index >= 9} />
+              )
             })}
           </section>
 

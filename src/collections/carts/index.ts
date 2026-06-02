@@ -81,6 +81,16 @@ export const Carts: CollectionConfig = {
       },
     },
     {
+      name: 'abandonmentEmailSentAt',
+      type: 'date',
+      label: 'Abandonment Email Sent At',
+      admin: {
+        description: 'Timestamp when the cart abandonment reminder email was sent',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       options: [

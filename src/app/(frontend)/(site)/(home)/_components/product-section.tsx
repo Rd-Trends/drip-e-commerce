@@ -17,9 +17,16 @@ type ProductSectionProps = {
   showViewAll?: boolean
   type: SectionType
   category?: Category | number
+  lazyLoadImages: boolean
 }
 
-export function ProductSection({ title, showViewAll = true, type, category }: ProductSectionProps) {
+export function ProductSection({
+  title,
+  showViewAll = true,
+  type,
+  category,
+  lazyLoadImages,
+}: ProductSectionProps) {
   const categoryID = typeof category === 'number' ? category : category?.id
   const categorySlug = typeof category === 'number' ? '' : category?.slug
 
@@ -43,14 +50,22 @@ export function ProductSection({ title, showViewAll = true, type, category }: Pr
         </div>
 
         <Suspense fallback={<ProductListSkeleton />}>
-          <ProductList type={type} categoryID={categoryID} />
+          <ProductList type={type} categoryID={categoryID} lazyLoadImages={lazyLoadImages} />
         </Suspense>
       </Container>
     </Section>
   )
 }
 
-async function ProductList({ type, categoryID }: { type: SectionType; categoryID?: number }) {
+async function ProductList({
+  type,
+  categoryID,
+  lazyLoadImages,
+}: {
+  type: SectionType
+  categoryID?: number
+  lazyLoadImages: boolean
+}) {
   const products = await getCachedProductsByType(type, categoryID)()
 
   return (

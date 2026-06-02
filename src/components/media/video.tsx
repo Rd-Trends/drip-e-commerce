@@ -6,7 +6,7 @@ import React, { useEffect, useRef } from 'react'
 import type { Props as MediaProps } from './types'
 
 export const Video: React.FC<MediaProps> = (props) => {
-  const { onClick, resource, videoClassName } = props
+  const { onClick, resource, videoClassName, lazyLoad } = props
 
   const videoRef = useRef<HTMLVideoElement>(null)
   // const [showFallback] = useState<boolean>()
@@ -34,6 +34,7 @@ export const Video: React.FC<MediaProps> = (props) => {
         onClick={onClick}
         playsInline
         ref={videoRef}
+        preload={lazyLoad ? 'metadata' : 'auto'}
       >
         <source src={`${process.env.NEXT_PUBLIC_SERVER_URL}/media/${filename}`} />
       </video>

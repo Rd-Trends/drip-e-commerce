@@ -44,6 +44,7 @@ export default async function HomePage() {
             type={section.type}
             category={section.category ?? undefined}
             showViewAll={Boolean(section.showViewAll)}
+            lazyLoadImages={index > 1} // Lazy load all sections product images except the first two for better performance
           />
         ))}
       </main>
