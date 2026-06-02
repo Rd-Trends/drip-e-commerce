@@ -176,7 +176,7 @@ export default buildConfig({
         inputSchema: [],
         outputSchema: [{ name: 'updated', type: 'number' as const }],
         handler: markAbandonedCartsHandler,
-        schedule: [{ cron: '0 * * * *', queue: 'cart-recovery' }],
+        schedule: [{ cron: '*/10 * * * *', queue: 'cart-recovery' }],
         label: 'Mark Abandoned Carts',
       },
       {
