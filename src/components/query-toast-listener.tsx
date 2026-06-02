@@ -33,21 +33,20 @@ export function QueryToastListener({
         // Display the toast based on the specified type
         switch (toastType) {
           case 'success':
-            toast.success(message)
+            toast.success(message, { id: 'query-toast-success' })
             break
           case 'warning':
-            toast.warning(message)
+            toast.warning(message, { id: 'query-toast-warning' })
             break
           case 'error':
-            toast.error(message)
+            toast.error(message, { id: 'query-toast-error' })
             break
           case 'info':
           default:
-            toast.info(message)
+            toast.info(message, { id: 'query-toast-info' })
             break
         }
       }, 0)
-      console.log('Toast displayed with message:', message)
 
       // Clear the query parameter after showing the toast
       setMessage('')

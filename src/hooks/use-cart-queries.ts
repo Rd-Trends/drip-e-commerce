@@ -199,7 +199,10 @@ export const useAddToCart = () => {
           }
         } else {
           // Add new item
-          updatedItems = [...updatedItems, { ...item, quantity }]
+          updatedItems = [
+            ...updatedItems,
+            { product: item.product.id, variant: item.variant?.id, quantity },
+          ]
         }
 
         return cartApi.updateCart(
