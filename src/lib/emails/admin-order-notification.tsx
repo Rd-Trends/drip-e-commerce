@@ -14,10 +14,11 @@ import {
   Tailwind,
   Text,
 } from '@react-email/components'
-import { Order, Product, Variant } from '@/payload-types'
+import { Order, Variant } from '@/payload-types'
 import tailwindConfig from './tailwind.config'
 import { formatDateTime } from '@/utils/format-date-time'
 import { formatCurrency } from '@/utils/format-currency'
+import { getProductImageUrl } from '@/utils/get-product-image-url'
 
 interface AdminOrderNotificationEmailProps {
   order?: Order
@@ -98,17 +99,6 @@ export const AdminOrderNotificationEmail = ({
     order.customerEmail
 
   const orderDate = formatDateTime({ date: order.createdAt, format: 'MMMM dd, yyyy HH:mm' })
-
-  const getProductImage = (product: Product): string => {
-    if (product.gallery && product.gallery.length > 0) {
-      const firstImage = product.gallery[0]?.image
-      if (firstImage && typeof firstImage === 'object') {
-        const url = firstImage.url ? `${baseUrl}${firstImage.url}` : `${baseUrl}/placeholder.png`
-        return url.replace(/([^:]\/)\/+/g, '$1')
-      }
-    }
-    return `${baseUrl}/placeholder.png`
-  }
 
   const getVariantDetails = (variant?: Variant | null): string => {
     if (!variant) return ''
@@ -261,7 +251,7 @@ export const AdminOrderNotificationEmail = ({
                       {!!product && (
                         <Column className="w-20">
                           <Img
-                            src={getProductImage(product)}
+                            src={getProductImageUrl(product, baseUrl, `${baseUrl}/placeholder.png`)}
                             width="64"
                             height="64"
                             alt={productTitle}

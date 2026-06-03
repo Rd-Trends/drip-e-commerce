@@ -17,6 +17,7 @@ import {
 import type { Product, Variant } from '@/payload-types'
 import tailwindConfig from './tailwind.config'
 import { formatCurrency } from '@/utils/format-currency'
+import { getProductImageUrl } from '@/utils/get-product-image-url'
 
 export interface CartAbandonmentEmailProps {
   customerName?: string
@@ -68,15 +69,6 @@ const dummyProps: CartAbandonmentEmailProps = {
   ],
 }
 
-const getProductImage = (product: Product): string => {
-  if (product.gallery && product.gallery.length > 0) {
-    const firstImage = product.gallery[0]?.image
-    if (firstImage && typeof firstImage === 'object' && firstImage.url) {
-      return `${baseUrl}${firstImage.url}`.replace(/([^:]\/)\/+/g, '$1')
-    }
-  }
-  return `${baseUrl}/placeholder.png`
-}
 
 const getVariantLabel = (variant?: Variant | null): string => {
   if (!variant) return ''
@@ -90,10 +82,10 @@ const getVariantLabel = (variant?: Variant | null): string => {
 }
 
 export const CartAbandonmentEmail = ({
-  customerName = dummyProps.customerName,
-  items = dummyProps.items,
-  subtotal = dummyProps.subtotal,
-  coupon = dummyProps.coupon,
+  customerName,
+  items,
+  subtotal,
+  coupon,
   unsubscribeUrl,
 }: CartAbandonmentEmailProps) => {
   return (
@@ -138,7 +130,7 @@ export const CartAbandonmentEmail = ({
                   <Row key={index} className="mb-6">
                     <Column className="w-20 sm:w-30 pr-3 align-top">
                       <Img
-                        src={getProductImage(product)}
+                        src={getProductImageUrl(product, baseUrl, `${baseUrl}/placeholder.png`)}
                         alt={product.title}
                         width="80"
                         height="80"
@@ -243,4 +235,4 @@ export const CartAbandonmentEmail = ({
   )
 }
 
-export default CartAbandonmentEmail
+export default <CartAbandonmentEmail {...dummyProps} />

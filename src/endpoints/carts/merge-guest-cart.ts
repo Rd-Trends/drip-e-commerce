@@ -39,18 +39,12 @@ export const mergeGuestCartHandler: Endpoint['handler'] = async (req) => {
         collection: 'carts',
         where: {
           and: [
-            {
-              customer: {
-                equals: user.id,
-              },
-            },
-            {
-              status: {
-                equals: 'active',
-              },
-            },
+            { customer: { equals: user.id } },
+            { purchasedAt: { exists: false } },
+            { status: { in: ['active', 'abandoned'] } },
           ],
         },
+        sort: '-updatedAt',
         limit: 1,
         depth: 0,
         req,
@@ -83,23 +77,17 @@ export const mergeGuestCartHandler: Endpoint['handler'] = async (req) => {
       return Response.json({ error: 'Guest cart not found or invalid secret' }, { status: 404 })
     }
 
-    // Find existing active user cart
+    // Find existing user cart (active or abandoned — merging reactivates it)
     const userCartsResult = await payload.find({
       collection: 'carts',
       where: {
         and: [
-          {
-            customer: {
-              equals: user.id,
-            },
-          },
-          {
-            status: {
-              equals: 'active',
-            },
-          },
+          { customer: { equals: user.id } },
+          { purchasedAt: { exists: false } },
+          { status: { in: ['active', 'abandoned'] } },
         ],
       },
+      sort: '-updatedAt',
       limit: 1,
       depth: 0,
       req,
@@ -196,7 +184,9 @@ export const mergeGuestCartHandler: Endpoint['handler'] = async (req) => {
         overrideAccess: true, // Needed to delete cart by secret, this is safe since we verified ownership above
         req,
       })
-    } catch (_) {}
+    } catch (err) {
+      payload.logger.warn({ err }, `[mergeGuestCart] Failed to delete guest cart ${guestCartId}`)
+    }
 
     return Response.json({
       success: true,

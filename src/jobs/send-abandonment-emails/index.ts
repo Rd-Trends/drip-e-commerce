@@ -5,6 +5,12 @@ import { CartAbandonmentEmail } from '@/lib/emails/cart-abandonment'
 import { validateCoupon } from '@/endpoints/coupons/helpers'
 import { formatCurrency } from '@/utils/format-currency'
 import type { Cart, Coupon, Product, User, Variant } from '@/payload-types'
+import crypto from 'crypto'
+
+function generateUnsubscribeToken(userId: number, email: string): string {
+  const secret = process.env.PAYLOAD_SECRET ?? ''
+  return crypto.createHmac('sha256', secret).update(`${userId}:${email}`).digest('hex')
+}
 
 function getCouponDescription(coupon: Coupon): string {
   if (coupon.type === 'percentage') return `${coupon.value}% off your order`
@@ -103,7 +109,8 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
         ? { code: applicableCoupon.code, description: getCouponDescription(applicableCoupon) }
         : undefined
 
-      const unsubscribeUrl = `${serverURL}/api/unsubscribe?userId=${customer.id}&email=${encodeURIComponent(customer.email)}`
+      const unsubscribeToken = generateUnsubscribeToken(customer.id, customer.email)
+      const unsubscribeUrl = `${serverURL}/api/unsubscribe?userId=${customer.id}&token=${unsubscribeToken}`
 
       const html = await render(
         CartAbandonmentEmail({ customerName, items, subtotal: cart.subtotal ?? 0, coupon, unsubscribeUrl }),

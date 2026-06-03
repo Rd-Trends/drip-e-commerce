@@ -1,4 +1,5 @@
 import type { Media } from '@/payload-types'
+import { getProductImageUrl } from '@/utils/get-product-image-url'
 import { Gallery } from '@/components/product/gallery'
 import { ProductDescription } from '@/components/product/product-description'
 import { ShippingTimeline } from '@/components/product/shipping-timeline'
@@ -101,8 +102,7 @@ export default async function ProductPage({ params }: Args) {
 
   // Generate product schema for SEO
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-  const mainImage = gallery.length > 0 ? gallery[0]?.image : undefined
-  const imageUrl = mainImage?.url ? `${baseUrl}${mainImage.url}` : undefined
+  const imageUrl = getProductImageUrl(product, baseUrl)
 
   let schemaPrice = product.priceInNGN
   let availability = 'InStock'

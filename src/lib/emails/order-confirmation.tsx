@@ -14,10 +14,11 @@ import {
   Tailwind,
   Text,
 } from '@react-email/components'
-import { Order, Product, Variant } from '@/payload-types'
+import { Order, Variant } from '@/payload-types'
 import tailwindConfig from './tailwind.config'
 import { formatDateTime } from '@/utils/format-date-time'
 import { formatCurrency } from '@/utils/format-currency'
+import { getProductImageUrl } from '@/utils/get-product-image-url'
 
 interface OrderConfirmationEmailProps {
   order?: Order
@@ -89,17 +90,6 @@ export const OrderConfirmationEmail = ({
 }: OrderConfirmationEmailProps) => {
   const customerName = order.shippingAddress?.firstName || 'there'
   const orderDate = formatDateTime({ date: order.createdAt, format: 'MMMM dd, yyyy' })
-
-  const getProductImage = (product: Product): string => {
-    if (product.gallery && product.gallery.length > 0) {
-      const firstImage = product.gallery[0]?.image
-      if (firstImage && typeof firstImage === 'object') {
-        const url = firstImage.url ? `${baseUrl}${firstImage.url}` : `${baseUrl}/placeholder.png`
-        return url.replace(/([^:]\/)\/+/g, '$1')
-      }
-    }
-    return `${baseUrl}/placeholder.png`
-  }
 
   const getVariantDetails = (variant?: Variant | null): string => {
     if (!variant) return ''
@@ -206,7 +196,7 @@ export const OrderConfirmationEmail = ({
                   <Row key={index} className="mb-6">
                     <Column className="w-20 sm:w-30 pr-3 align-top">
                       <Img
-                        src={getProductImage(product)}
+                        src={getProductImageUrl(product, baseUrl, `${baseUrl}/placeholder.png`)}
                         alt={product.title}
                         width="80"
                         height="80"

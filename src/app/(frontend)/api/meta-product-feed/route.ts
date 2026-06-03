@@ -1,6 +1,7 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import type { Product, Variant } from '@/payload-types'
+import { resolveMediaUrl } from '@/utils/get-product-image-url'
 
 // Revalidate the feed every hour
 export const revalidate = 3600
@@ -57,15 +58,13 @@ function getImageUrl(baseUrl: string, product: Product, colorOptionId?: number):
       return optionId === colorOptionId
     })
     if (variantImage && typeof variantImage.image === 'object' && variantImage.image?.url) {
-      const url = variantImage.image.url
-      return url.startsWith('http') ? url : `${baseUrl}${url}`
+      return resolveMediaUrl(variantImage.image.url, baseUrl)
     }
   }
 
   const firstImage = gallery[0]
   if (firstImage && typeof firstImage.image === 'object' && firstImage.image?.url) {
-    const url = firstImage.image.url
-    return url.startsWith('http') ? url : `${baseUrl}${url}`
+    return resolveMediaUrl(firstImage.image.url, baseUrl)
   }
 
   return ''

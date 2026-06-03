@@ -12,16 +12,16 @@ type NavMenuProps = {
 }
 
 export function NavMenu({ menu }: NavMenuProps) {
-  const [maxVisibleItems, setMaxVisibleItems] = useState(3)
+  const [maxVisibleItems, setMaxVisibleItems] = useState(2)
 
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth
       // Tablet breakpoint: 768px (md), Desktop breakpoint: 1280px (xl)
       if (width >= 1280) {
-        setMaxVisibleItems(3) // Desktop: 3 items
+        setMaxVisibleItems(2) // Desktop: 2 items
       } else if (width >= 1024) {
-        setMaxVisibleItems(2) // Small Desktop: 2 items
+        setMaxVisibleItems(1) // Small Desktop: 1 item
       } else if (width >= 768) {
         setMaxVisibleItems(1) // Tablet: 1 item
       }

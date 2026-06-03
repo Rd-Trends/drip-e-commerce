@@ -1,6 +1,6 @@
 import type { TaskHandler } from 'payload'
 
-const ABANDONMENT_THRESHOLD_MS = 10 * 60 * 1000 // 10 minutes
+const ABANDONMENT_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
 
 export const handler: TaskHandler<'markAbandonedCarts'> = async ({ req }) => {
   const payload = req.payload
@@ -16,7 +16,7 @@ export const handler: TaskHandler<'markAbandonedCarts'> = async ({ req }) => {
         { updatedAt: { less_than: cutoff } },
       ],
     },
-    limit: 0,
+    limit: 200,
     depth: 0,
   })
 
