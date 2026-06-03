@@ -10,9 +10,14 @@ import { getRevenueHandler } from './analytics/revenue'
 import { getTopProductsHandler } from './analytics/top-products'
 import { getLowInventoryHandler } from './analytics/low-inventory'
 import { getRecentOrdersHandler } from './analytics/recent-orders'
-import { resendWebhook } from './resend'
+import { unsubscribeHandler } from './unsubscribe'
 
 export const endpoints: Endpoint[] = [
+  {
+    path: '/unsubscribe',
+    method: 'get',
+    handler: unsubscribeHandler,
+  },
   {
     path: '/payments/paystack/initiate',
     method: 'post',
@@ -67,10 +72,5 @@ export const endpoints: Endpoint[] = [
     path: '/analytics/recent-orders',
     method: 'get',
     handler: getRecentOrdersHandler,
-  },
-  {
-    path: '/webhook/resend',
-    method: 'post',
-    handler: resendWebhook,
   },
 ]

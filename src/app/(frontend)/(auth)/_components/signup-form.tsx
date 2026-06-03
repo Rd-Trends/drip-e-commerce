@@ -8,6 +8,7 @@ import * as z from 'zod'
 import { useRouter } from 'next/navigation'
 
 import { Button, LinkButton } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useCreateUser } from '@/hooks/use-auth'
@@ -20,6 +21,7 @@ const signupSchema = z
     email: z.email('Please enter a valid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     passwordConfirm: z.string(),
+    marketingEmails: z.boolean(),
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: "Passwords don't match",
@@ -39,6 +41,7 @@ export function SignupForm() {
       email: '',
       password: '',
       passwordConfirm: '',
+      marketingEmails: true,
     },
   })
 
@@ -138,6 +141,28 @@ export function SignupForm() {
             )}
           />
         </FieldGroup>
+
+        {/* Marketing emails opt-in */}
+        <Controller
+          name="marketingEmails"
+          control={form.control}
+          render={({ field }) => (
+            <div className="flex items-start gap-2.5">
+              <Checkbox
+                id="signup-marketing-emails"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="signup-marketing-emails"
+                className="text-muted-foreground cursor-pointer text-xs leading-relaxed"
+              >
+                Send me exclusive offers, new arrivals, and style updates from Drip Fashion.
+              </label>
+            </div>
+          )}
+        />
 
         {/* Privacy Policy */}
         <p className="text-muted-foreground text-center text-xs leading-relaxed">

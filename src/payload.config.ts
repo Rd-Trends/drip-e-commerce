@@ -14,7 +14,8 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import { resendAdapter } from '@payloadcms/email-resend'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import nodemailer from 'nodemailer'
 
 import { plugins } from './plugins'
 import { Categories } from '@/collections/categories'
@@ -184,7 +185,7 @@ export default buildConfig({
         inputSchema: [],
         outputSchema: [{ name: 'sent', type: 'number' as const }],
         handler: sendAbandonmentEmailsHandler,
-        schedule: [{ cron: '10 * * * *', queue: 'cart-recovery' }],
+        schedule: [{ cron: '*/10 * * * *', queue: 'cart-recovery' }],
         label: 'Send Abandonment Emails',
       },
     ],
@@ -203,10 +204,17 @@ export default buildConfig({
     deleteJobOnComplete: false,
   },
   plugins,
-  email: resendAdapter({
+  email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng',
     defaultFromName: process.env.EMAIL_FROM_NAME || 'Drip Fashion',
-    apiKey: process.env.RESEND_API_KEY || '',
+    transport: nodemailer.createTransport({
+      host: 'smtp.zeptomail.com',
+      port: 587,
+      auth: {
+        user: 'emailapikey',
+        pass: process.env.ZEPTOMAIL_API_KEY || '',
+      },
+    }),
   }),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL,

@@ -9,7 +9,7 @@ export function Search() {
   const [searchQuery] = useQueryState('q', parseAsString.withDefault(''))
 
   return (
-    <Form action="/shop" className="w-max-sm relative w-full lg:w-80 xl:w-full">
+    <Form action="/shop" className="max-w-sm relative w-full lg:w-80 xl:w-full">
       <InputGroup>
         <InputGroupInput
           key={searchQuery}

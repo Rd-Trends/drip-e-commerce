@@ -9,6 +9,7 @@ import * as migration_20260415_044525_whatsapp_message_table from './20260415_04
 import * as migration_20260416_165926_whatsapp_message_cascade_delete from './20260416_165926_whatsapp_message_cascade_delete';
 import * as migration_20260418_153719_user_read_permission from './20260418_153719_user_read_permission';
 import * as migration_20260602_013129_cart_recovery_job from './20260602_013129_cart_recovery_job';
+import * as migration_20260603_022134_user_marketing_email_preference from './20260603_022134_user_marketing_email_preference';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20260602_013129_cart_recovery_job.up,
     down: migration_20260602_013129_cart_recovery_job.down,
-    name: '20260602_013129_cart_recovery_job'
+    name: '20260602_013129_cart_recovery_job',
+  },
+  {
+    up: migration_20260603_022134_user_marketing_email_preference.up,
+    down: migration_20260603_022134_user_marketing_email_preference.down,
+    name: '20260603_022134_user_marketing_email_preference'
   },
 ];

@@ -6,7 +6,7 @@ import { render } from '@react-email/components'
 import { OrderConfirmationEmail } from '@/lib/emails/order-confirmation'
 import { USER_ROLES } from '@/lib/constants'
 import { AdminOrderNotificationEmail } from '@/lib/emails/admin-order-notification'
-import { Resend } from 'resend'
+import { transporter } from '@/lib/mailer'
 import { revalidateTag } from 'next/cache'
 import { queryKeys } from '@/lib/query-keys'
 import { sendPurchaseAnalytics } from './analytics'
@@ -203,29 +203,29 @@ export async function sendOrderConfirmationEmail(order: Order, payload: BasePayl
         : ''
       : order.customerEmail
 
-    const resend = new Resend(process.env.RESEND_API_KEY || '')
     const emailFromAddress = process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng'
     const emailFromName = process.env.EMAIL_FROM_NAME || 'Drip Fashion'
+    const from = `${emailFromName} <${emailFromAddress}>`
 
-    // Send batch emails to customer and admins
-    // We are using batch send to optimize email sending and to ensure we don't hit rate limits (max 2 emails/sec)
-    await resend.batch.send([
+    await Promise.all([
       ...(!!customerEmail
         ? [
-            {
+            transporter.sendMail({
               to: customerEmail,
-              from: `${emailFromName} <${emailFromAddress}>`,
+              from,
               subject: `Order Confirmation - #${order.id} - Drip Fashion`,
               html: customerEmailHtml,
-            },
+            }),
           ]
         : []),
-      ...orderManagers.docs.map((user) => ({
-        to: user.email,
-        from: `${emailFromName} <${emailFromAddress}>`,
-        subject: `New Order #${order.id} - ${order.grandTotal} - Drip Fashion`,
-        html: adminEmailHtml,
-      })),
+      ...orderManagers.docs.map((user) =>
+        transporter.sendMail({
+          to: user.email,
+          from,
+          subject: `New Order #${order.id} - ${order.grandTotal} - Drip Fashion`,
+          html: adminEmailHtml,
+        }),
+      ),
     ])
 
     payload.logger.info(`Order confirmation email sent to ${customerEmail} for order #${order.id}`)

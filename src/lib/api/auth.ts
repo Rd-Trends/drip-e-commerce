@@ -72,6 +72,7 @@ export const authApi = {
     email: string
     password: string
     passwordConfirm: string
+    marketingEmails?: boolean
   }): Promise<User> => {
     const data = await fetchJSON(`${API_URL}/api/users`, {
       method: 'POST',

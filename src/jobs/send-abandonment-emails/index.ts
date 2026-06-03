@@ -1,5 +1,5 @@
 import type { TaskHandler } from 'payload'
-import { Resend } from 'resend'
+import { transporter } from '@/lib/mailer'
 import { render } from '@react-email/components'
 import { CartAbandonmentEmail } from '@/lib/emails/cart-abandonment'
 import { validateCoupon } from '@/endpoints/coupons/helpers'
@@ -14,23 +14,9 @@ function getCouponDescription(coupon: Coupon): string {
 
 async function findApplicableCoupon(
   cart: Cart,
+  candidates: Coupon[],
   payload: Parameters<TaskHandler<'sendAbandonmentEmails'>>[0]['req']['payload'],
 ): Promise<Coupon | null> {
-  const now = new Date().toISOString()
-
-  const { docs: candidates } = await payload.find({
-    collection: 'coupons',
-    where: {
-      and: [
-        { active: { equals: true } },
-        { validFrom: { less_than_equal: now } },
-        { validUntil: { greater_than_equal: now } },
-      ],
-    },
-    depth: 0,
-    limit: 0,
-  })
-
   if (candidates.length === 0) return null
 
   const userId =
@@ -44,8 +30,8 @@ async function findApplicableCoupon(
   const cartForValidation: Cart = { ...cart, status: 'active' }
 
   for (const coupon of candidates) {
-    const result = await validateCoupon(coupon as Coupon, cartForValidation, { payload, userId })
-    if (result.valid) return coupon as Coupon
+    const result = await validateCoupon(coupon, cartForValidation, { payload, userId })
+    if (result.valid) return coupon
   }
 
   return null
@@ -60,6 +46,7 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
       and: [
         { status: { equals: 'abandoned' } },
         { abandonmentEmailSentAt: { exists: false } },
+        { purchasedAt: { exists: false } },
         { customer: { exists: true } },
       ],
     },
@@ -71,6 +58,21 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
     return { output: { sent: 0 } }
   }
 
+  const now = new Date().toISOString()
+  const { docs: couponCandidates } = await payload.find({
+    collection: 'coupons',
+    where: {
+      and: [
+        { active: { equals: true } },
+        { validFrom: { less_than_equal: now } },
+        { validUntil: { greater_than_equal: now } },
+      ],
+    },
+    depth: 0,
+    limit: 0,
+  })
+
+  const serverURL = req.payload.config.serverURL || ''
   const emailFromAddress = process.env.EMAIL_FROM_ADDRESS || 'drip-fashion@drip.ng'
   const emailFromName = process.env.EMAIL_FROM_NAME || 'Drip Fashion'
   const from = `${emailFromName} <${emailFromAddress}>`
@@ -81,6 +83,13 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
       const customer = typeof cart.customer === 'object' ? (cart.customer as User) : null
       if (!customer?.email) return null
 
+      if (!cart.items?.length) return null
+
+      // Respect marketing email opt-out; treat missing value as opted-in (pre-existing accounts)
+      if ((customer as User & { marketingEmails?: boolean | null }).marketingEmails === false) {
+        return null
+      }
+
       const customerName = customer.name?.split(' ')[0] || 'there'
 
       const items = (cart.items || []).map((item) => ({
@@ -89,13 +98,15 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
         quantity: item.quantity,
       }))
 
-      const applicableCoupon = await findApplicableCoupon(cart, payload)
+      const applicableCoupon = await findApplicableCoupon(cart, couponCandidates as Coupon[], payload)
       const coupon = applicableCoupon
         ? { code: applicableCoupon.code, description: getCouponDescription(applicableCoupon) }
         : undefined
 
+      const unsubscribeUrl = `${serverURL}/api/unsubscribe?userId=${customer.id}&email=${encodeURIComponent(customer.email)}`
+
       const html = await render(
-        CartAbandonmentEmail({ customerName, items, subtotal: cart.subtotal ?? 0, coupon }),
+        CartAbandonmentEmail({ customerName, items, subtotal: cart.subtotal ?? 0, coupon, unsubscribeUrl }),
       )
 
       return {
@@ -116,28 +127,36 @@ export const handler: TaskHandler<'sendAbandonmentEmails'> = async ({ req }) => 
     return { output: { sent: 0 } }
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY || '')
   const sentTimestamp = new Date().toISOString()
-  let sent = 0
 
-  try {
-    await resend.batch.send(readyEmails.map((item) => item.email))
+  const results = await Promise.allSettled(
+    readyEmails.map((item) => transporter.sendMail(item.email)),
+  )
 
-    await Promise.all(
-      readyEmails.map((item) =>
-        payload.update({
-          collection: 'carts',
-          id: item.cartId,
-          data: { abandonmentEmailSentAt: sentTimestamp },
-          req,
-        }),
-      ),
-    )
+  const successfulCartIds: number[] = []
+  results.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      successfulCartIds.push(readyEmails[i].cartId)
+    } else {
+      payload.logger.error(
+        result.reason,
+        `[sendAbandonmentEmails] Failed to send email to cart ${readyEmails[i].cartId}`,
+      )
+    }
+  })
 
-    sent = readyEmails.length
-  } catch (err) {
-    payload.logger.error(err, '[sendAbandonmentEmails] Batch send failed')
-  }
+  await Promise.all(
+    successfulCartIds.map((cartId) =>
+      payload.update({
+        collection: 'carts',
+        id: cartId,
+        data: { abandonmentEmailSentAt: sentTimestamp },
+        req,
+      }),
+    ),
+  )
+
+  const sent = successfulCartIds.length
 
   payload.logger.info(`[sendAbandonmentEmails] Sent ${sent} email(s)`)
   return { output: { sent } }

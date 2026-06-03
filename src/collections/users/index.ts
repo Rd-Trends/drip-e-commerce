@@ -89,6 +89,14 @@ export const Users: CollectionConfig = {
       name: 'name',
       type: 'text',
     },
+    {
+      name: 'marketingEmails',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'User has opted in to marketing and promotional emails.',
+      },
+    },
 
     // ── Role ──────────────────────────────────────────────────────────────────
     {

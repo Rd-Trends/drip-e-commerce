@@ -193,6 +193,10 @@ export interface User {
   id: number;
   name?: string | null;
   /**
+   * User has opted in to marketing and promotional emails.
+   */
+  marketingEmails?: boolean | null;
+  /**
    * Assign a single role to this user. Saving seeds the permissions array below. Admin: full system bypass | Customer: shopping only | Order Manager: order processing | Content Manager: product & content management
    */
   role?: ('admin' | 'customer' | 'order-manager' | 'content-manager') | null;
@@ -1350,6 +1354,7 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  marketingEmails?: T;
   role?: T;
   permissions?: T;
   orders?: T;

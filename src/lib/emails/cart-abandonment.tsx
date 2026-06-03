@@ -30,6 +30,7 @@ export interface CartAbandonmentEmailProps {
     code: string
     description: string
   }
+  unsubscribeUrl?: string
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
@@ -93,6 +94,7 @@ export const CartAbandonmentEmail = ({
   items = dummyProps.items,
   subtotal = dummyProps.subtotal,
   coupon = dummyProps.coupon,
+  unsubscribeUrl,
 }: CartAbandonmentEmailProps) => {
   return (
     <Html>
@@ -208,7 +210,7 @@ export const CartAbandonmentEmail = ({
                 Complete your order before your items sell out.
               </Text>
               <Link
-                href={`${baseUrl}/shop`}
+                href={`${baseUrl}/cart`}
                 className="inline-block bg-primary text-primary-foreground font-medium text-sm py-3 px-8 rounded-full no-underline"
               >
                 Return to Shopping
@@ -225,6 +227,14 @@ export const CartAbandonmentEmail = ({
               <Text className="text-center text-[10px] sm:text-xs text-muted-foreground mt-2 mb-0">
                 You received this email because you have items in your cart at our store.
               </Text>
+              {unsubscribeUrl && (
+                <Text className="text-center text-[10px] sm:text-xs text-muted-foreground mt-1 mb-0">
+                  <Link href={unsubscribeUrl} className="text-muted-foreground underline">
+                    Unsubscribe
+                  </Link>{' '}
+                  from marketing emails.
+                </Text>
+              )}
             </Section>
           </Container>
         </Body>

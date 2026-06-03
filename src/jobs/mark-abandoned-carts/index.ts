@@ -2,11 +2,6 @@ import type { TaskHandler } from 'payload'
 
 const ABANDONMENT_THRESHOLD_MS = 10 * 60 * 1000 // 10 minutes
 
-type TaskIO = {
-  input: Record<string, never>
-  output: { updated: number }
-}
-
 export const handler: TaskHandler<'markAbandonedCarts'> = async ({ req }) => {
   const payload = req.payload
   const cutoff = new Date(Date.now() - ABANDONMENT_THRESHOLD_MS).toISOString()
