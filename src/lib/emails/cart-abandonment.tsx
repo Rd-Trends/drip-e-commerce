@@ -235,4 +235,6 @@ export const CartAbandonmentEmail = ({
   )
 }
 
-export default <CartAbandonmentEmail {...dummyProps} />
+export default function CartAbandonmentEmailPreview() {
+  return <CartAbandonmentEmail {...dummyProps} />
+}
